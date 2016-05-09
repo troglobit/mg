@@ -6,7 +6,6 @@
  *	Terminal independent keyboard handling.
  */
 
-#include <sys/queue.h>
 #include <signal.h>
 #include <stdio.h>
 

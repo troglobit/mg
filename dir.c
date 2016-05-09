@@ -9,7 +9,6 @@
  *		Modified for MG 2a by Mic Kaczmarczik 03-Aug-1987
  */
 
-#include <sys/queue.h>
 #include <sys/stat.h>
 #include <signal.h>
 #include <stdio.h>

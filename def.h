@@ -10,6 +10,15 @@
  * per-terminal definitions are in special header files.
  */
 
+#ifdef __OpenBSD__
+#include	<sys/queue.h>
+#include	<sys/tree.h>
+#include	<util.h>
+#else
+#include	<lite/lite.h>
+#include	<lite/queue.h>
+#include	<lite/tree.h>
+#endif
 #include	"chrdef.h"
 
 typedef int	(*PF)(int, int);	/* generally useful type */

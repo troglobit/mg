@@ -6,7 +6,6 @@
  *	Keyboard macros.
  */
 
-#include <sys/queue.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>

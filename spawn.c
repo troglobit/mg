@@ -7,7 +7,6 @@
  * Assumes POSIX job control.
  */
 
-#include <sys/queue.h>
 #include <signal.h>
 #include <stdio.h>
 #include <term.h>

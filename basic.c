@@ -12,7 +12,6 @@
  * current buffer framing bad, are hard.
  */
 
-#include <sys/queue.h>
 #include <ctype.h>
 #include <limits.h>
 #include <signal.h>

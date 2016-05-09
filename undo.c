@@ -3,7 +3,6 @@
  * This file is in the public domain
  */
 
-#include <sys/queue.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>

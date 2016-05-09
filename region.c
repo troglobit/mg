@@ -9,7 +9,6 @@
  * internal use.
  */
 
-#include <sys/queue.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <errno.h>

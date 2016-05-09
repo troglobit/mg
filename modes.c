@@ -8,7 +8,6 @@
  * off.  A positive argument will turn the mode on.
  */
 
-#include <sys/queue.h>
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>

@@ -11,7 +11,6 @@
  */
 
 #include <sys/ioctl.h>
-#include <sys/queue.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <errno.h>

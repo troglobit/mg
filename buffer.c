@@ -6,7 +6,6 @@
  *		Buffer handling.
  */
 
-#include <sys/queue.h>
 #include <errno.h>
 #include <libgen.h>
 #include <signal.h>

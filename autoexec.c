@@ -2,7 +2,6 @@
 /* this file is in the public domain */
 /* Author: Vincent Labrecque <vincent@openbsd.org>	April 2002 */
 
-#include <sys/queue.h>
 #include <fnmatch.h>
 #include <signal.h>
 #include <stdio.h>

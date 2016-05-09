@@ -9,7 +9,6 @@
  * are all command processors.
  */
 
-#include <sys/queue.h>
 #include <ctype.h>
 #include <signal.h>
 #include <stdio.h>

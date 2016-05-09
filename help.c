@@ -6,7 +6,6 @@
  * Help functions for Mg 2
  */
 
-#include <sys/queue.h>
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>

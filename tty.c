@@ -28,7 +28,6 @@
  */
 
 #include <sys/ioctl.h>
-#include <sys/queue.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <signal.h>

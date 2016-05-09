@@ -6,9 +6,7 @@
  * Author: Sunil Nimmagadda <sunil@openbsd.org>
  */
 
-#include <sys/queue.h>
 #include <sys/stat.h>
-#include <sys/tree.h>
 #include <sys/types.h>
 #include <ctype.h>
 #include <err.h>
@@ -18,7 +16,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <util.h>
 
 #include "def.h"
 

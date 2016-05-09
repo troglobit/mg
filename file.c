@@ -6,7 +6,6 @@
  *	File commands.
  */
 
-#include <sys/queue.h>
 #include <sys/stat.h>
 #include <errno.h>
 #include <libgen.h>

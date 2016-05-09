@@ -10,7 +10,6 @@
  * but there's enough overhead in the editor as it is.
  */
 
-#include <sys/queue.h>
 #include <signal.h>
 #include <stdio.h>
 

@@ -7,7 +7,6 @@
  * and GNU-ified by mwm@ucbvax.	 Several bug fixes by blarson@usc-oberon.
  */
 
-#include <sys/queue.h>
 #include <ctype.h>
 #include <limits.h>
 #include <signal.h>

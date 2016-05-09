@@ -6,7 +6,6 @@
  *	Mainline.
  */
 
-#include <sys/queue.h>
 #include <err.h>
 #include <limits.h>
 #include <locale.h>

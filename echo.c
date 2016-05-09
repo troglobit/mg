@@ -9,7 +9,6 @@
  * of the display screen. Used by the entire known universe.
  */
 
-#include <sys/queue.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>

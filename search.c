@@ -11,7 +11,6 @@
  * The incremental search code and the query-replace code is by Rich Ellison.
  */
 
-#include <sys/queue.h>
 #include <ctype.h>
 #include <signal.h>
 #include <stdio.h>

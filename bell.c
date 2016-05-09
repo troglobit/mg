@@ -11,7 +11,6 @@
  * Control how mg communicates with the user.
  */
 
-#include <sys/queue.h>
 #include <signal.h>
 #include <stdio.h>
 #include <unistd.h>

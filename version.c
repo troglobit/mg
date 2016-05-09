@@ -7,7 +7,6 @@
  * out by the emacs-version command.
  */
 
-#include <sys/queue.h>
 #include <signal.h>
 #include <stdio.h>
 

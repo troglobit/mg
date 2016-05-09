@@ -6,7 +6,6 @@
  *	POSIX fileio.c
  */
 
-#include <sys/queue.h>
 #include <sys/resource.h>
 #include <sys/stat.h>
 #include <sys/time.h>

@@ -6,7 +6,6 @@
  * by Robert A. Larson
  */
 
-#include <sys/queue.h>
 #include <sys/resource.h>
 #include <sys/stat.h>
 #include <sys/time.h>

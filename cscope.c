@@ -6,7 +6,6 @@
  * Author: Sunil Nimmagadda <sunil@openbsd.org>
  */
 
-#include <sys/queue.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <ctype.h>

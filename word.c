@@ -8,7 +8,6 @@
  * There are all sorts of word mode commands.
  */
 
-#include <sys/queue.h>
 #include <signal.h>
 #include <errno.h>
 #include <stdio.h>

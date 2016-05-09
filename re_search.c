@@ -14,7 +14,6 @@
  */
 
 #ifdef REGEX
-#include <sys/queue.h>
 #include <sys/types.h>
 #include <regex.h>
 #include <signal.h>

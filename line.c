@@ -17,7 +17,6 @@
  * nonsense.
  */
 
-#include <sys/queue.h>
 #include <limits.h>
 #include <signal.h>
 #include <stdio.h>

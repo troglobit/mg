@@ -8,7 +8,6 @@
  * Created:	22-Nov-1987 Mic Kaczmarczik (mic@emx.cc.utexas.edu)
  */
 
-#include <sys/queue.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
