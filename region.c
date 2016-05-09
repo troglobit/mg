@@ -617,7 +617,12 @@ pwriteout(int fd, char **text, int *len)
 {
 	int w;
 
+/* As per: http://lists.apple.com/archives/macnetworkprog/2002/Dec/msg00091.html */
+#ifdef __APPLE__
+	if (((w = send(fd, *text, *len, SO_NOSIGPIPE)) == -1)) {
+#else
 	if (((w = send(fd, *text, *len, MSG_NOSIGNAL)) == -1)) {
+#endif
 		switch(errno) {
 		case EPIPE:
 			*len = -1;
