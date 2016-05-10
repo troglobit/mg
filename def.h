@@ -327,6 +327,17 @@ struct undo_rec {
 #define KLAST	K00
 
 /*
+ * This flag is used on *BSD when calling tcsetattr() to prevent it
+ * from changing speed, duplex, parity.  GNU says we should use the
+ * CIGNORE flag to c_cflag, but that doesn't exist so ... we rely on
+ * our initial tcgetattr() and prey that nothing changes on the TTY
+ * before we exit and restore with tcsetattr()
+ */
+#ifndef TCSASOFT
+#define TCSASOFT 0
+#endif
+
+/*
  * Prototypes.
  */
 
