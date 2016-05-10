@@ -164,8 +164,9 @@ cscreatelist(int f, int n)
 	struct buffer *bp;
 	struct stat sb;
 	FILE *fpipe;
-	char dir[NFILEN], cmd[BUFSIZ], title[BUFSIZ], *line, *bufp;
-	size_t len;
+	char dir[NFILEN], cmd[BUFSIZ], title[BUFSIZ], *line = NULL, *bufp;
+	size_t len = 0;
+	size_t num;
 	int clen;
 
 	if (getbufcwd(dir, sizeof(dir)) == FALSE)
@@ -221,10 +222,12 @@ cscreatelist(int f, int n)
 	addline(bp, title);
 	addline(bp, "");
 	/* All lines are NUL terminated */
-	while ((line = fgetln(fpipe, &len)) != NULL) {
-		line[len - 1] = '\0';
+	while ((num = getline(&line, &len, fpipe)) != -1) {
+		line[strcspn(line, "\n")] = 0;
 		addline(bp, line);
 	}
+	if (len)
+		free(line);
 	pclose(fpipe);
 	return (popbuftop(bp, WNONE));
 }
@@ -394,9 +397,10 @@ do_cscope(int i)
 	struct buffer *bp;
 	FILE *fpipe;
 	char pattern[MAX_TOKEN], cmd[BUFSIZ], title[BUFSIZ];
-	char *p, *buf;
+	char *p, *buf = NULL;
 	int clen, nores = 0;
-	size_t len;
+	size_t len = 0;
+	size_t num;
 
 	/* If current buffer isn't a source file just return */
 	if (fnmatch("*.[chy]", curbp->b_fname, 0) != 0) {
@@ -447,12 +451,14 @@ do_cscope(int i)
 	addline(bp, "");
 	addline(bp, "-------------------------------------------------------------------------------");
 	/* All lines are NUL terminated */
-	while ((buf = fgetln(fpipe, &len)) != NULL) {
-		buf[len - 1] = '\0';
+	while ((num = getline(&buf, &len, fpipe)) != -1) {
+		buf[strcspn(buf, "\n")] = 0;
 		if (addentry(bp, buf) != TRUE)
 			return (FALSE);
 		nores = 1;
 	};
+	if (len)
+		free(buf);
 	pclose(fpipe);
 	addline(bp, "-------------------------------------------------------------------------------");
 	if (nores == 0)
