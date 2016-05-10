@@ -375,7 +375,7 @@ void		 dirinit(void);
 int		 changedir(int, int);
 int		 showcwdir(int, int);
 int		 getcwdir(char *, size_t);
-int		 makedir(int, int);
+int		 make_dir(int, int);
 int		 do_makedir(char *);
 int		 ask_makedir(void);
 
