@@ -18,6 +18,7 @@
 #include	<lite/lite.h>
 #include	<lite/queue.h>
 #include	<lite/tree.h>
+#define __dead
 #endif
 #include	"chrdef.h"
 
