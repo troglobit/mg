@@ -56,8 +56,10 @@ main(int argc, char **argv)
 	int	  	 nobackups = 0, bro = 0;
 	struct buffer	*bp = NULL;
 
+#ifdef __OpenBSD__
 	if (pledge("stdio rpath wpath cpath fattr getpw tty proc exec", NULL) == -1)
 		err(1, "pledge");
+#endif
 
 	while ((o = getopt(argc, argv, "nRf:")) != -1)
 		switch (o) {
@@ -90,14 +92,17 @@ main(int argc, char **argv)
 	 */
 	{
 		extern void grep_init(void);
-		extern void theo_init(void);
 		extern void cmode_init(void);
 		extern void dired_init(void);
 
 		dired_init();
 		grep_init();
-		theo_init();
 		cmode_init();
+
+#ifdef __OpenBSD__
+		extern void theo_init(void);
+		theo_init();
+#endif
 	}
 
 	if (init_fcn_name &&
