@@ -66,7 +66,7 @@ ffstat(FILE *ffp, struct buffer *bp)
 		bp->b_fi.fi_mode = sb.st_mode | 0x8000;
 		bp->b_fi.fi_uid = sb.st_uid;
 		bp->b_fi.fi_gid = sb.st_gid;
-		bp->b_fi.fi_mtime = sb.st_mtimespec;
+		bp->b_fi.fi_mtime = sb.st_mtim;
 		/* Clear the ignore flag */
 		bp->b_flag &= ~(BFIGNDIRTY | BFDIRTY);
 	}
@@ -589,8 +589,8 @@ fchecktime(struct buffer *bp)
 	if (stat(bp->b_fname, &sb) == -1)
 		return (TRUE);
 
-	if (bp->b_fi.fi_mtime.tv_sec != sb.st_mtimespec.tv_sec ||
-	    bp->b_fi.fi_mtime.tv_nsec != sb.st_mtimespec.tv_nsec)
+	if (bp->b_fi.fi_mtime.tv_sec != sb.st_mtim.tv_sec ||
+	    bp->b_fi.fi_mtime.tv_nsec != sb.st_mtim.tv_nsec)
 		return (FALSE);
 
 	return (TRUE);
