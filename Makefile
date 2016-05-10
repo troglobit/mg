@@ -2,7 +2,8 @@
 
 PROG=	mg
 
-LDADD+=	-lcurses -lutil
+#LDADD+=	-lcurses -lutil
+LDADD=-lcurses -lite
 DPADD+=	${LIBCURSES} ${LIBUTIL}
 
 # (Common) compile-time options:
@@ -10,7 +11,7 @@ DPADD+=	${LIBCURSES} ${LIBUTIL}
 #	REGEX		-- create regular expression functions.
 #	STARTUPFILE	-- look for and handle initialization file.
 #
-CFLAGS+=-Wall -DREGEX
+CFLAGS+=-Wall -DREGEX -D_GNU_SOURCE
 
 SRCS=	autoexec.c basic.c bell.c buffer.c cinfo.c dir.c display.c \
 	echo.c extend.c file.c fileio.c funmap.c help.c kbd.c keymap.c \
@@ -21,11 +22,22 @@ SRCS=	autoexec.c basic.c bell.c buffer.c cinfo.c dir.c display.c \
 #
 # More or less standalone extensions.
 #
-SRCS+=	cmode.c cscope.c dired.c grep.c tags.c theo.c
+# theo.c
+SRCS+=	cmode.c cscope.c dired.c grep.c tags.c
+OBJS = $(SRCS:.c=.o)
+
+all: $(PROG)
+
+$(PROG): $(OBJS)
+	$(CC) -o $@ $^ $(LDADD)
 
 afterinstall:
 	${INSTALL} -d ${DESTDIR}${DOCDIR}/mg
 	${INSTALL} -m ${DOCMODE} -c ${.CURDIR}/tutorial \
 		${DESTDIR}${DOCDIR}/mg
 
-.include <bsd.prog.mk>
+clean:
+	$(RM) $(OBJS) $(PROG)
+
+distclean: clean
+	$(RM) *.o *~ *.bak
