@@ -3,8 +3,7 @@
 PROG=	mg
 
 #LDADD+=	-lcurses -lutil
-LDADD=-lcurses -lite
-DPADD+=	${LIBCURSES} ${LIBUTIL}
+LDADD=-ltermcap -lite
 
 # (Common) compile-time options:
 #
