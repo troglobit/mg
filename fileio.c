@@ -558,6 +558,7 @@ make_file_list(char *buf)
 	return (last);
 }
 
+#ifndef fisdir
 /*
  * Test if a supplied filename refers to a directory
  * Returns ABORT on error, TRUE if directory. FALSE otherwise
@@ -575,6 +576,7 @@ fisdir(const char *fname)
 
 	return (FALSE);
 }
+#endif
 
 /*
  * Check the mtime of the supplied filename.

@@ -492,7 +492,9 @@ char		*adjustname(const char *, int);
 char		*startupfile(char *);
 int		 copy(char *, char *);
 struct list	*make_file_list(char *);
+#ifndef fisdir
 int		 fisdir(const char *);
+#endif
 int		 fchecktime(struct buffer *);
 int		 fupdstat(struct buffer *);
 int		 backuptohomedir(int, int);
