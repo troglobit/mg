@@ -31,10 +31,20 @@ AS_IF([test "x$enable_ctags" != "xno"], enable_ctags="yes"
 AS_IF([test "x$enable_dired" != "xno"], enable_dired="yes"
 	AC_DEFINE(ENABLE_DIRED, 1, [Enable dired, the directory editor]))
 
+case "$host_os" in
+	openbsd*)
+		enable_theo="yes"
+		AC_DEFINE(ENABLE_THEO, 1, [Enable M-x theo analyzer on OpenBSD])
+		;;
+	*)
+		;;
+esac
+
 AM_CONDITIONAL(CMODE,  [test "x$enable_cmode" = "xyes"])
 AM_CONDITIONAL(COMPILE,[test "x$enable_compile" = "xyes"])
 AM_CONDITIONAL(CSCOPE, [test "x$enable_cscope" = "xyes"])
 AM_CONDITIONAL(CTAGS,  [test "x$enable_ctags" = "xyes"])
 AM_CONDITIONAL(DIRED,  [test "x$enable_dired" = "xyes"])
+AM_CONDITIONAL(THEO,   [test "x$enable_theo" = "xyes"])
 
 AC_OUTPUT

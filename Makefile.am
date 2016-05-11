@@ -4,10 +4,14 @@ mg_SOURCES      = autoexec.c basic.c bell.c buffer.c cinfo.c dir.c display.c		\
 		  line.c macro.c main.c match.c modes.c paragraph.c			\
 		  re_search.c region.c search.c spawn.c tty.c ttyio.c ttykbd.c		\
 		  undo.c util.c version.c window.c word.c yank.c
+mg_LDADD        = -ltermcap -lite
+dist_man1_MANS  = mg.1
+doc_DATA        = README
+EXTRA_DIST      = tutorial
+
 #
 # More or less standalone extensions.
 #
-# theo.c
 if CMODE
 mg_SOURCES     += cmode.c
 endif
@@ -23,10 +27,9 @@ endif
 if DIRED
 mg_SOURCES     += dired.c
 endif
-mg_LDADD        = -ltermcap -lite
-dist_man1_MANS  = mg.1
-doc_DATA        = README
-EXTRA_DIST      = tutorial
+if THEO
+mg_SOURCES     += theo.c
+endif
 
 #
 # Target to run when building a release
