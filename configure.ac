@@ -17,6 +17,10 @@ AC_ARG_ENABLE(cscope, AS_HELP_STRING([--disable-cscope], [Disable Cscope support
 AC_ARG_ENABLE(ctags,  AS_HELP_STRING([--disable-ctags],  [Disable ctags(1) support, required by Cscope]))
 AC_ARG_ENABLE(dired,  AS_HELP_STRING([--disable-dired],  [Disable directory editor]))
 
+AC_ARG_WITH(startup,
+        AS_HELP_STRING([--with-startup=FILE], [Init file to run at startup if ~/.mg is missing]),
+	[startup=$withval], [startup='no'])
+
 AS_IF([test "x$enable_regexp" = "xyes"],
 	AC_DEFINE(REGEX, 1, [Enable regexp search support]),
 	enable_autoexec="no")
@@ -48,6 +52,12 @@ case "$host_os" in
 	*)
 		;;
 esac
+
+AS_IF([test "x$with_startup" != "xno"],[
+	AS_IF([test "x$startup" = "xyes"],[
+		AC_MSG_ERROR([Must supply argument])])
+	]
+	AC_DEFINE_UNQUOTED(STARTUPFILE, "$startup", [Init file to run if ~/.mg is missing]))
 
 AM_CONDITIONAL(REGEX,  [test "x$enable_regexp" = "xyes"])
 AM_CONDITIONAL(AUTOEXEC, [test "x$enable_autoexec" = "xyes"])
