@@ -12,7 +12,7 @@
 
 #include "def.h"
 
-const char	version[] = "Mg 2a";
+const char	version[] = PACKAGE_STRING;
 
 /*
  * Display the version. All this does
