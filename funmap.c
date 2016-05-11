@@ -87,6 +87,7 @@ static struct funmap functnames[] = {
 	{lowerregion, "downcase-region",},
 	{lowerword, "downcase-word",},
 	{showversion, "emacs-version",},
+	{showversion, "version",},
 	{finishmacro, "end-kbd-macro",},
 	{gotoeob, "end-of-buffer",},
 	{gotoeol, "end-of-line",},
