@@ -1,8 +1,8 @@
 bin_PROGRAMS    = mg
-mg_SOURCES      = basic.c bell.c buffer.c cinfo.c dir.c display.c echo.c 		\
-		  extend.c file.c fileio.c funmap.c help.c kbd.c keymap.c		\
-		  line.c macro.c main.c match.c modes.c paragraph.c			\
-		  re_search.c region.c search.c spawn.c tty.c ttyio.c ttykbd.c		\
+mg_SOURCES      = basic.c bell.c buffer.c cinfo.c dir.c display.c echo.c 	\
+		  extend.c file.c fileio.c funmap.c help.c kbd.c keymap.c	\
+		  line.c macro.c main.c match.c modes.c paragraph.c		\
+		  region.c search.c spawn.c tty.c ttyio.c ttykbd.c		\
 		  undo.c util.c version.c window.c word.c yank.c
 mg_LDADD        = -ltermcap -lite
 dist_man1_MANS  = mg.1
@@ -29,6 +29,9 @@ mg_SOURCES     += tags.c
 endif
 if DIRED
 mg_SOURCES     += dired.c
+endif
+if REGEX
+mg_SOURCES     += re_search.c
 endif
 if THEO
 mg_SOURCES     += theo.c

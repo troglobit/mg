@@ -13,7 +13,6 @@
  * them from scratch.
  */
 
-#ifdef REGEX
 #include <sys/types.h>
 #include <regex.h>
 #include <signal.h>
@@ -628,4 +627,3 @@ countmatches(int cond)
 
 	return (TRUE);
 }
-#endif	/* REGEX */
