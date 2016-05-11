@@ -96,7 +96,9 @@ main(int argc, char **argv)
 		extern void cmode_init(void);
 		extern void theo_init(void);
 
+#ifdef ENABLE_DIRED
 		dired_init();
+#endif
 		grep_init();
 #ifdef ENABLE_CMODE
 		cmode_init();

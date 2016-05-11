@@ -341,6 +341,7 @@ insertfile(char *fname, char *newname, int replacebuf)
 		goto out;
 	} else if (s == FIODIR) {
 		/* file was a directory */
+#ifdef ENABLE_DIRED
 		if (replacebuf == FALSE) {
 			dobeep();
 			ewprintf("Cannot insert: file is a directory, %s",
@@ -354,6 +355,11 @@ insertfile(char *fname, char *newname, int replacebuf)
 			return (FALSE);
 		curbp = bp;
 		return (showbuffer(bp, curwp, WFFULL | WFMODE));
+#else
+		dobeep();
+		ewprintf("Cannot insert: file is a directory, %s", fname);
+		goto cleanup;
+#endif /* ENABLE_DIRED */
 	} else {
 		(void)xdirname(bp->b_cwd, fname, sizeof(bp->b_cwd));
 		(void)strlcat(bp->b_cwd, "/", sizeof(bp->b_cwd));
@@ -760,10 +766,14 @@ xbasename(char *bp, const char *path, size_t bplen)
 int
 do_dired(char *adjf)
 {
+#ifdef ENABLE_DIRED
 	struct buffer	*bp;
 
 	if ((bp = dired_(adjf)) == FALSE)
 		return (FALSE);
 	curbp = bp;
 	return (showbuffer(bp, curwp, WFFULL | WFMODE));
+#else
+	return (FALSE);
+#endif /* ENABLE_DIRED */
 }
