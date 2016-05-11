@@ -23,7 +23,7 @@ AC_ARG_WITH(startup,
 
 AS_IF([test "x$enable_regexp" = "xyes"],
 	AC_DEFINE(REGEX, 1, [Enable regexp search support]),
-	enable_autoexec="no")
+	enable_regexp="no")
 
 AS_IF([test "x$enable_autoexec" != "xno"], enable_autoexec="yes"
 	AC_DEFINE(ENABLE_AUTOEXEC, 1, [Enable auto-exec support]))
