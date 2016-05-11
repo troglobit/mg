@@ -725,6 +725,7 @@ int		 cc_lfindent(int, int);
 
 /* grep.c X */
 int		 next_error(int, int);
+int		 globalwd(void);
 int		 globalwdtoggle(int, int);
 int		 compile(int, int);
 

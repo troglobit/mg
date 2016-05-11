@@ -94,8 +94,6 @@ static int	 colnos = FALSE;
 
 /* Is macro recording enabled? */
 extern int macrodef;
-/* Is working directory global? */
-extern int globalwd;
 
 /*
  * Since we don't have variables (we probably should) these are command
@@ -836,7 +834,7 @@ modeline(struct mgwin *wp, int modelinecolor)
 	/* XXX These should eventually move to a real mode */
 	if (macrodef == TRUE)
 		n += vtputs("-def");
-	if (globalwd == TRUE)
+	if (globalwd())
 		n += vtputs("-gwd");
 	vtputc(')');
 	++n;

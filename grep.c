@@ -17,7 +17,7 @@
 #include "kbd.h"
 #include "funmap.h"
 
-int	 globalwd = FALSE;
+static int	 global_wd_mode = FALSE;
 static int	 compile_goto_error(int, int);
 int		 next_error(int, int);
 static int	 grep(int, int);
@@ -345,11 +345,20 @@ int
 globalwdtoggle(int f, int n)
 {
 	if (f & FFARG)
-		globalwd = n > 0;
+		global_wd_mode = n > 0;
 	else
-		globalwd = !globalwd;
+		global_wd_mode = !global_wd_mode;
 
 	sgarbf = TRUE;
 
 	return (TRUE);
+}
+
+/*
+ * Is working directory global?
+ */
+int
+globalwd(void)
+{
+	return global_wd_mode;
 }
