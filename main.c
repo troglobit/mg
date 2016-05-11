@@ -92,15 +92,16 @@ main(int argc, char **argv)
 	 */
 	{
 		extern void grep_init(void);
-		extern void cmode_init(void);
 		extern void dired_init(void);
+		extern void cmode_init(void);
+		extern void theo_init(void);
 
 		dired_init();
 		grep_init();
+#ifdef ENABLE_CMODE
 		cmode_init();
-
+#endif
 #ifdef __OpenBSD__
-		extern void theo_init(void);
 		theo_init();
 #endif
 	}

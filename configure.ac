@@ -9,11 +9,16 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_HEADER_STDC
 
+AC_ARG_ENABLE(cmode,  AS_HELP_STRING([--disable-cmode],  [Disable C-mode support]))
 AC_ARG_ENABLE(cscope, AS_HELP_STRING([--disable-cscope], [Disable Cscope support]))
+
+AS_IF([test "x$enable_cmode" != "xno"], enable_cmode="yes"
+	AC_DEFINE(ENABLE_CMODE, 1, [Enable C programming mode, OpenBSD KNF]))
 
 AS_IF([test "x$enable_cscope" != "xno"], enable_cscope="yes"
 	AC_DEFINE(CSCOPE, 1, [Enable Cscope programming tool]))
 
+AM_CONDITIONAL(CMODE,  [test "x$enable_cmode" = "xyes"])
 AM_CONDITIONAL(CSCOPE, [test "x$enable_cscope" = "xyes"])
 
 AC_OUTPUT
