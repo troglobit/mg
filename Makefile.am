@@ -8,7 +8,10 @@ mg_SOURCES      = autoexec.c basic.c bell.c buffer.c cinfo.c dir.c display.c		\
 # More or less standalone extensions.
 #
 # theo.c
-mg_SOURCES     += cmode.c cscope.c dired.c grep.c tags.c
+mg_SOURCES     += cmode.c dired.c grep.c tags.c
+if CSCOPE
+mg_SOURCES     += cscope.c
+endif
 mg_LDADD        = -ltermcap -lite
 dist_man1_MANS  = mg.1
 doc_DATA        = README

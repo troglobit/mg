@@ -9,4 +9,11 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_HEADER_STDC
 
+AC_ARG_ENABLE(cscope, AS_HELP_STRING([--disable-cscope], [Disable Cscope support]))
+
+AS_IF([test "x$enable_cscope" != "xno"], enable_cscope="yes"
+	AC_DEFINE(CSCOPE, 1, [Enable Cscope programming tool]))
+
+AM_CONDITIONAL(CSCOPE, [test "x$enable_cscope" = "xyes"])
+
 AC_OUTPUT

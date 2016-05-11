@@ -52,6 +52,7 @@ static struct funmap functnames[] = {
 	{cntmatchlines, "count-matches",},
 	{cntnonmatchlines, "count-non-matches",},
 #endif /* REGEX */
+#ifdef CSCOPE
 	{cscreatelist, "cscope-create-list-of-files-to-index",},
 	{csfuncalled, "cscope-find-called-functions",},
 	{csegrep, "cscope-find-egrep-pattern",},
@@ -65,6 +66,7 @@ static struct funmap functnames[] = {
 	{csnextmatch, "cscope-next-symbol",},
 	{csprevfile, "cscope-prev-file",},
 	{csprevmatch, "cscope-prev-symbol",},
+#endif /* CSCOPE */
 	{redefine_key, "define-key",},
 	{backdel, "delete-backward-char",},
 	{deblank, "delete-blank-lines",},

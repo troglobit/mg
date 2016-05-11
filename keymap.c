@@ -44,6 +44,7 @@ struct KEYMAPE (2) helpmap = {
 	}
 };
 
+#ifdef CSCOPE
 static PF cCsc[] = {
 	cscallerfuncs,		/* c */
 	csdefinition,		/* d */
@@ -93,6 +94,7 @@ struct KEYMAPE (2) ccmap = {
 		}
 	}
 };
+#endif /* CSCOPE */
 
 static PF cX4cF[] = {
 	poptofile,		/* ^f */
@@ -403,9 +405,11 @@ static struct KEYMAPE (8) fundmap = {
 	8,
 	selfinsert,
 	{
+#ifdef CSCOPE
 		{
 			CCHR('@'), CCHR('G'), fund_at, (KEYMAP *) & ccmap
 		},
+#endif
 		{
 			CCHR('H'), CCHR('H'), fund_h, (KEYMAP *) & helpmap
 		},
