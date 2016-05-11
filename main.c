@@ -262,7 +262,9 @@ quit(int f, int n)
 	if (s == FALSE
 	    || eyesno("Modified buffers exist; really exit") == TRUE) {
 		vttidy();
+#ifdef ENABLE_CTAGS
 		closetags();
+#endif
 		exit(0);
 	}
 	return (TRUE);

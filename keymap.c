@@ -234,11 +234,19 @@ static PF metapct[] = {
 };
 
 static PF metami[] = {
+#ifdef ENABLE_CTAGS
 	poptag,                 /* * */
+#else
+	rescan,                 /* * */
+#endif
 	rescan,                 /* + */
 	rescan,                 /* , */
 	negative_argument,	/* - */
+#ifdef ENABLE_CTAGS
 	findtag,		/* . */
+#else
+	rescan,                 /* . */
+#endif
 	rescan,			/* / */
 	digit_argument,		/* 0 */
 	digit_argument,		/* 1 */

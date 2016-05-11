@@ -102,7 +102,9 @@ static struct funmap functnames[] = {
 	{filevisit, "find-file",},
 	{poptofile, "find-file-other-window",},
 	{filevisitro, "find-file-read-only",},
+#ifdef ENABLE_CTAGS
 	{findtag, "find-tag",},
+#endif
 	{forwchar, "forward-char",},
 	{gotoeop, "forward-paragraph",},
 	{forwword, "forward-word",},
@@ -148,7 +150,9 @@ static struct funmap functnames[] = {
 	{openline, "open-line",},
 	{nextwind, "other-window",},
 	{overwrite_mode, "overwrite-mode",},
+#ifdef ENABLE_CTAGS
 	{poptag, "pop-tag-mark",},
+#endif
 	{prefixregion, "prefix-region",},
 	{backline, "previous-line",},
 	{prevwind, "previous-window",},
@@ -214,7 +218,9 @@ static struct funmap functnames[] = {
 	{upperregion, "upcase-region",},
 	{upperword, "upcase-word",},
 	{togglevisiblebell, "visible-bell",},
+#ifdef ENABLE_CTAGS
 	{tagsvisit, "visit-tags-table",},
+#endif
 	{showcpos, "what-cursor-position",},
 	{filewrite, "write-file",},
 	{yank, "yank",},

@@ -8,12 +8,15 @@ mg_SOURCES      = autoexec.c basic.c bell.c buffer.c cinfo.c dir.c display.c		\
 # More or less standalone extensions.
 #
 # theo.c
-mg_SOURCES     += grep.c tags.c
+mg_SOURCES     += grep.c
 if CMODE
 mg_SOURCES     += cmode.c
 endif
 if CSCOPE
 mg_SOURCES     += cscope.c
+endif
+if CTAGS
+mg_SOURCES     += tags.c
 endif
 if DIRED
 mg_SOURCES     += dired.c
