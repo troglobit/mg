@@ -105,7 +105,7 @@ main(int argc, char **argv)
 #ifdef ENABLE_CMODE
 		cmode_init();
 #endif
-#ifdef ENABLE_THEO
+#ifdef __OpenBSD__
 		theo_init();
 #endif
 	}
