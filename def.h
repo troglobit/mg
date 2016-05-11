@@ -724,10 +724,14 @@ int		 cc_indent(int, int);
 int		 cc_lfindent(int, int);
 
 /* grep.c X */
+#ifdef ENABLE_COMPILE_GREP
 int		 next_error(int, int);
 int		 globalwd(void);
 int		 globalwdtoggle(int, int);
 int		 compile(int, int);
+#else
+static inline int globalwd(void) { return FALSE; }
+#endif
 
 /* bell.c */
 void		 bellinit(void);

@@ -110,7 +110,9 @@ static struct funmap functnames[] = {
 	{forwword, "forward-word",},
 	{bindtokey, "global-set-key",},
 	{unbindtokey, "global-unset-key",},
+#ifdef ENABLE_COMPILE_GREP
 	{globalwdtoggle, "global-wd-mode",},
+#endif
 	{gotoline, "goto-line",},
 	{help_help, "help-help",},
 	{indent, "indent-current-line",},

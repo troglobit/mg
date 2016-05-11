@@ -99,7 +99,9 @@ main(int argc, char **argv)
 #ifdef ENABLE_DIRED
 		dired_init();
 #endif
+#ifdef ENABLE_COMPILE_GREP
 		grep_init();
+#endif
 #ifdef ENABLE_CMODE
 		cmode_init();
 #endif

@@ -166,7 +166,11 @@ static PF cXeq[] = {
 static PF cXcar[] = {
 	enlargewind,		/* ^ */
 	rescan,			/* _ */
+#ifdef ENABLE_COMPILE_GREP
 	next_error,		/* ` */
+#else
+	rescan,			/* ` */
+#endif
 	rescan,			/* a */
 	usebuffer,		/* b */
 	rescan,			/* c */
