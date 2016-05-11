@@ -27,7 +27,9 @@ static struct funmap *funs;
 static struct funmap functnames[] = {
 	{apropos_command, "apropos",},
 	{toggleaudiblebell, "audible-bell",},
+#ifdef ENABLE_AUTOEXEC
 	{auto_execute, "auto-execute",},
+#endif
 	{fillmode, "auto-fill-mode",},
 	{indentmode, "auto-indent-mode",},
 	{backtoindent, "back-to-indentation",},

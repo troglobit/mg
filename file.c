@@ -201,7 +201,9 @@ readin(char *fname)
 	struct mgwin	*wp;
 	struct stat	 statbuf;
 	int	 status, i, ro = FALSE;
+#ifdef ENABLE_AUTOEXEC
 	PF	*ael;
+#endif
 	char	 dp[NFILEN];
 
 	/* might be old */
@@ -224,6 +226,7 @@ readin(char *fname)
 		}
 	}
 
+#ifdef ENABLE_AUTOEXEC
 	/*
 	 * Call auto-executing function if we need to.
 	 */
@@ -232,6 +235,7 @@ readin(char *fname)
 			(*ael[i])(0, 1);
 		free(ael);
 	}
+#endif
 
 	/* no change */
 	curbp->b_flag &= ~BFCHG;
