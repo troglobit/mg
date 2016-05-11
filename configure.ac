@@ -14,6 +14,9 @@ PKG_CHECK_MODULES([lite], [libite >= 1.6.0])
 
 # Check for configured features
 AC_ARG_ENABLE(regexp, AS_HELP_STRING([--enable-regexp],  [Enable full regexp search]))
+AC_ARG_ENABLE(size-optimizations,
+	AS_HELP_STRING([--enable-size-optimizations], [Optimize for size, try real hard]))
+
 AC_ARG_ENABLE(autoexec, AS_HELP_STRING([--disable-autoexec], [Disable auto-execute support]))
 AC_ARG_ENABLE(cmode,  AS_HELP_STRING([--disable-cmode],  [Disable C-mode support]))
 AC_ARG_ENABLE(compile,AS_HELP_STRING([--disable-compile],[Disable C compile & grep mode, used by C-mode]))
@@ -29,6 +32,11 @@ AC_ARG_WITH(startup,
 AS_IF([test "x$enable_regexp" = "xyes"],
 	AC_DEFINE(REGEX, 1, [Enable regexp search support]),
 	enable_regexp="no")
+
+AS_IF([test "x$enable_size_optimizations" = "xyes"], enable_tiny="yes"
+	CFLAGS="-g -Os"
+	AC_DEFINE(TINY, 1, [Enable extreme size optimizations]),
+	enable_tiny="no")
 
 AS_IF([test "x$enable_autoexec" != "xno"], enable_autoexec="yes"
 	AC_DEFINE(ENABLE_AUTOEXEC, 1, [Enable auto-exec support]))
@@ -73,6 +81,7 @@ AM_CONDITIONAL(CSCOPE, [test "x$enable_cscope" = "xyes"])
 AM_CONDITIONAL(CTAGS,  [test "x$enable_ctags" = "xyes"])
 AM_CONDITIONAL(DIRED,  [test "x$enable_dired" = "xyes"])
 AM_CONDITIONAL(THEO,   [test "x$enable_theo" = "xyes"])
+AM_CONDITIONAL(TINY,   [test "x$enable_tiny" = "xyes"])
 
 # Generate all files
 AC_OUTPUT

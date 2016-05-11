@@ -5,6 +5,13 @@ mg_SOURCES      = basic.c bell.c buffer.c cinfo.c dir.c display.c echo.c 	\
 		  region.c search.c spawn.c tty.c ttyio.c ttykbd.c		\
 		  undo.c util.c version.c window.c word.c yank.c
 mg_CFLAGS       = $(lite_CFLAGS)
+if TINY
+mg_CFLAGS      += -U_FORTIFY_SOURCE -fomit-frame-pointer -fdata-sections	\
+		  -ffunction-sections -fno-stack-protector -Wl,--gc-sections	\
+		  -fno-asynchronous-unwind-tables -fmerge-all-constants		\
+		  -fno-ident -finline-small-functions -Wl,-z,norelro		\
+		  -Wl,--hash-style=gnu -Wl,--build-id=none
+endif
 mg_LDADD        = -ltermcap $(lite_LIBS)
 dist_man1_MANS  = mg.1
 doc_DATA        = README
