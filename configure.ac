@@ -9,6 +9,10 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_HEADER_STDC
 
+# Check for required libraries
+PKG_CHECK_MODULES([lite], [libite >= 1.6.0])
+
+# Check for configured features
 AC_ARG_ENABLE(regexp, AS_HELP_STRING([--enable-regexp],  [Enable full regexp search]))
 AC_ARG_ENABLE(autoexec, AS_HELP_STRING([--disable-autoexec], [Disable auto-execute support]))
 AC_ARG_ENABLE(cmode,  AS_HELP_STRING([--disable-cmode],  [Disable C-mode support]))
@@ -21,6 +25,7 @@ AC_ARG_WITH(startup,
         AS_HELP_STRING([--with-startup=FILE], [Init file to run at startup if ~/.mg is missing]),
 	[startup=$withval], [startup='no'])
 
+# Enable features
 AS_IF([test "x$enable_regexp" = "xyes"],
 	AC_DEFINE(REGEX, 1, [Enable regexp search support]),
 	enable_regexp="no")
@@ -59,6 +64,7 @@ AS_IF([test "x$with_startup" != "xno"],[
 	]
 	AC_DEFINE_UNQUOTED(STARTUPFILE, "$startup", [Init file to run if ~/.mg is missing]))
 
+# Control build with automake flags
 AM_CONDITIONAL(REGEX,  [test "x$enable_regexp" = "xyes"])
 AM_CONDITIONAL(AUTOEXEC, [test "x$enable_autoexec" = "xyes"])
 AM_CONDITIONAL(CMODE,  [test "x$enable_cmode" = "xyes"])
@@ -68,4 +74,5 @@ AM_CONDITIONAL(CTAGS,  [test "x$enable_ctags" = "xyes"])
 AM_CONDITIONAL(DIRED,  [test "x$enable_dired" = "xyes"])
 AM_CONDITIONAL(THEO,   [test "x$enable_theo" = "xyes"])
 
+# Generate all files
 AC_OUTPUT

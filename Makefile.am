@@ -4,7 +4,8 @@ mg_SOURCES      = basic.c bell.c buffer.c cinfo.c dir.c display.c echo.c 	\
 		  line.c macro.c main.c match.c modes.c paragraph.c		\
 		  region.c search.c spawn.c tty.c ttyio.c ttykbd.c		\
 		  undo.c util.c version.c window.c word.c yank.c
-mg_LDADD        = -ltermcap -lite
+mg_CFLAGS       = $(lite_CFLAGS)
+mg_LDADD        = -ltermcap $(lite_LIBS)
 dist_man1_MANS  = mg.1
 doc_DATA        = README
 EXTRA_DIST      = tutorial
