@@ -23,10 +23,21 @@ AC_ARG_ENABLE(compile,AS_HELP_STRING([--disable-compile],[Disable C compile & gr
 AC_ARG_ENABLE(cscope, AS_HELP_STRING([--disable-cscope], [Disable Cscope support]))
 AC_ARG_ENABLE(ctags,  AS_HELP_STRING([--disable-ctags],  [Disable ctags(1) support, required by Cscope]))
 AC_ARG_ENABLE(dired,  AS_HELP_STRING([--disable-dired],  [Disable directory editor]))
+AC_ARG_ENABLE(all,    AS_HELP_STRING([--disable-all],    [Disable all optional features]))
 
 AC_ARG_WITH(startup,
         AS_HELP_STRING([--with-startup=FILE], [Init file to run at startup if ~/.mg is missing]),
 	[startup=$withval], [startup='no'])
+
+# If all features are to be disabled, do that here
+AS_IF([test "x$enable_all" = "xno"], enable_regexp="no"
+	enable_autoexec="no"
+	enable_cmode="no"
+	enable_compile="no"
+	enable_cscope="no"
+	enable_ctags="no"
+	enable_dired="no"
+	with_startup="no")
 
 # Enable features
 AS_IF([test "x$enable_regexp" = "xyes"],
