@@ -1,4 +1,4 @@
-AC_INIT([Mg], [3.0-beta1], [https://github.com/troglobit/mg/issues], [mg])
+AC_INIT([Mg], [3.0-rc1], [https://github.com/troglobit/mg/issues], [mg])
 AM_INIT_AUTOMAKE([1.11 foreign])
 
 AC_CONFIG_SRCDIR([main.c])
