@@ -18,12 +18,12 @@ AC_ARG_ENABLE(size-optimizations,
 	AS_HELP_STRING([--enable-size-optimizations], [Optimize for size, try real hard]))
 
 AC_ARG_ENABLE(autoexec, AS_HELP_STRING([--disable-autoexec], [Disable auto-execute support]))
-AC_ARG_ENABLE(cmode,  AS_HELP_STRING([--disable-cmode],  [Disable C-mode support]))
-AC_ARG_ENABLE(compile,AS_HELP_STRING([--disable-compile],[Disable C compile & grep mode, used by C-mode]))
-AC_ARG_ENABLE(cscope, AS_HELP_STRING([--disable-cscope], [Disable Cscope support]))
-AC_ARG_ENABLE(ctags,  AS_HELP_STRING([--disable-ctags],  [Disable ctags(1) support, required by Cscope]))
-AC_ARG_ENABLE(dired,  AS_HELP_STRING([--disable-dired],  [Disable directory editor]))
-AC_ARG_ENABLE(all,    AS_HELP_STRING([--disable-all],    [Disable all optional features]))
+AC_ARG_ENABLE(cmode,    AS_HELP_STRING([--disable-cmode],    [Disable C-mode support]))
+AC_ARG_ENABLE(compile  ,AS_HELP_STRING([--disable-compile],  [Disable C compile & grep mode, used by C-mode]))
+AC_ARG_ENABLE(cscope,   AS_HELP_STRING([--disable-cscope],   [Disable Cscope support]))
+AC_ARG_ENABLE(ctags,    AS_HELP_STRING([--disable-ctags],    [Disable ctags(1) support, required by Cscope]))
+AC_ARG_ENABLE(dired,    AS_HELP_STRING([--disable-dired],    [Disable directory editor]))
+AC_ARG_ENABLE(all,      AS_HELP_STRING([--disable-all],      [Disable all optional features]))
 
 AC_ARG_WITH(startup,
         AS_HELP_STRING([--with-startup=FILE], [Init file to run at startup if ~/.mg is missing]),
@@ -84,15 +84,15 @@ AS_IF([test "x$with_startup" != "xno"],[
 	AC_DEFINE_UNQUOTED(STARTUPFILE, "$startup", [Init file to run if ~/.mg is missing]))
 
 # Control build with automake flags
-AM_CONDITIONAL(REGEX,  [test "x$enable_regexp" = "xyes"])
+AM_CONDITIONAL(REGEX,    [test "x$enable_regexp"   = "xyes"])
 AM_CONDITIONAL(AUTOEXEC, [test "x$enable_autoexec" = "xyes"])
-AM_CONDITIONAL(CMODE,  [test "x$enable_cmode" = "xyes"])
-AM_CONDITIONAL(COMPILE,[test "x$enable_compile" = "xyes"])
-AM_CONDITIONAL(CSCOPE, [test "x$enable_cscope" = "xyes"])
-AM_CONDITIONAL(CTAGS,  [test "x$enable_ctags" = "xyes"])
-AM_CONDITIONAL(DIRED,  [test "x$enable_dired" = "xyes"])
-AM_CONDITIONAL(THEO,   [test "x$enable_theo" = "xyes"])
-AM_CONDITIONAL(TINY,   [test "x$enable_tiny" = "xyes"])
+AM_CONDITIONAL(CMODE,    [test "x$enable_cmode"    = "xyes"])
+AM_CONDITIONAL(COMPILE,  [test "x$enable_compile"  = "xyes"])
+AM_CONDITIONAL(CSCOPE,   [test "x$enable_cscope"   = "xyes"])
+AM_CONDITIONAL(CTAGS,    [test "x$enable_ctags"    = "xyes"])
+AM_CONDITIONAL(DIRED,    [test "x$enable_dired"    = "xyes"])
+AM_CONDITIONAL(THEO,     [test "x$enable_theo"     = "xyes"])
+AM_CONDITIONAL(TINY,     [test "x$enable_tiny"     = "xyes"])
 
 # Generate all files
 AC_OUTPUT
