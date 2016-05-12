@@ -1,10 +1,19 @@
 Micro Emacs
 ===========
 
-This is OpenBSD Mg, a public domain [Micro Emacs][1] derivative.  It was
-created in 1986 based on the original MicroEMACS by Dave Conroy.  The
-history is long and intertwined with other spin-offs but goes basically
-like this:
+This is OpenBSD Mg, a public domain [Micro Emacs][] derivative.  It was
+created in 1986 based on the original MicroEMACS by Dave Conroy.
+
+Mg is intended to be a small, fast, and portable editor for people who
+can't (or don't want to) run real Emacs for one reason or another.  It
+is compatible with GNU because there shouldn't be any reason to learn
+more than one Emacs flavor.
+
+History
+-------
+
+The history is long and intertwined with other spin-offs but goes
+basically like this:
 
 * Nov 16, 1986: First release to mod.sources
 * Mar  3, 1987: First Release (mg1a) via comp.sources.unix
@@ -16,8 +25,8 @@ like this:
   currently maintained with contributions from many others.
 * May  8, 2016: First import from OpenBSD 5.9 to [GitHub][]
 
-See the file AUTHORS in the source distribution for a list of known
-authors.
+See the source distribution for the list of [AUTHORS][].
 
 [Micro Emacs]: http://texteditors.org/cgi-bin/wiki.pl?action=browse&id=MicroEmacs
 [GitHub]:      https://github.com/troglobit/mg
+[AUTHORS]:     https://github.com/troglobit/mg/blob/master/AUTHORS
