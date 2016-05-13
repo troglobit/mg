@@ -31,4 +31,4 @@ script:
   - tree /tmp
   - ldd /tmp/bin/mg
   - size /tmp/bin/mg
-  - /tmp/bin/mg -h
+  - LD_LIBRARY_PATH=/tmp/lib /tmp/bin/mg -h
