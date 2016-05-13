@@ -25,10 +25,13 @@ Building
 
 This project maintains a set of patches on top of OpenBSD Mg, one of
 which is a GNU configure script to simplify building on multiple UNIX
-systems, as well as cross compilation to different targets.
+systems, as well as cross compilation to different targets.  However,
+the project is not self hosting, you also need to download and install
+[libite][] (-lite), v1.6.0 or later.  It provides some API's otherwise
+only available on OpenBSD.
 
-After having checked out the source, or unpacked a release tarball,
-you simply have to
+Having installed [libite][], checked out the Mg source from GitHub, or
+unpacked a release tarball, you simply have to:
 
     ./configure --disable-all --enable-size-optimizations
     make
@@ -70,6 +73,7 @@ the GitHub issue tracker <https://github.com/troglobit/mg/issues>
 
 [Micro Emacs]:     https://www.emacswiki.org/emacs/MicroEmacs
 [ErsatzEmacs]:     https://www.emacswiki.org/emacs/ErsatzEmacs
+[libite]:          https://github.com/troglobit/libite/releases/tag/v1.6.0
 [GitHub]:          https://github.com/troglobit/mg
 [AUTHORS]:         https://github.com/troglobit/mg/blob/master/AUTHORS
 [Joachim Nilsson]: http://troglobit.com
