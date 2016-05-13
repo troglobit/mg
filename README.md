@@ -1,6 +1,6 @@
 Micro Emacs
 ===========
-[![Travis Status][]][Travis]
+[![Travis Status][]][Travis] [![Coverity Status]][Coverity Scan]
 
 Mg is a public domain [Micro Emacs][] derivative.  Created in 1986 based
 on the original MicroEMACS released by Dave Conroy in 1985.
@@ -80,3 +80,5 @@ the GitHub issue tracker <https://github.com/troglobit/mg/issues>
 [Joachim Nilsson]: http://troglobit.com
 [Travis]:          https://travis-ci.org/troglobit/mg
 [Travis Status]:   https://travis-ci.org/troglobit/mg.png?branch=master
+[Coverity Scan]:   https://scan.coverity.com/projects/8859
+[Coverity Status]: https://scan.coverity.com/projects/8859/badge.svg
