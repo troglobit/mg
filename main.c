@@ -34,17 +34,16 @@ struct mgwin	*wheadp;			/* MGWIN listhead	*/
 char		 pat[NPAT];			/* pattern		*/
 
 static void	 edinit(struct buffer *);
-static __dead void usage(void);
 
 extern char	*__progname;
 extern void     closetags(void);
 
 static __dead void
-usage()
+usage(int code)
 {
-	fprintf(stderr, "usage: %s [-nR] [-f mode] [+number] [file ...]\n",
+	fprintf(stderr, "usage: %s [-hnR] [-f mode] [+number] [file ...]\n",
 	    __progname);
-	exit(1);
+	exit(code);
 }
 
 int
@@ -61,7 +60,7 @@ main(int argc, char **argv)
 		err(1, "pledge");
 #endif
 
-	while ((o = getopt(argc, argv, "nRf:")) != -1)
+	while ((o = getopt(argc, argv, "hnRf:")) != -1)
 		switch (o) {
 		case 'R':
 			bro = 1;
@@ -75,8 +74,10 @@ main(int argc, char **argv)
 				    "initial function");
 			init_fcn_name = optarg;
 			break;
+		case 'h':
+			usage(0);
 		default:
-			usage();
+			usage(1);
 		}
 	argc -= optind;
 	argv += optind;
