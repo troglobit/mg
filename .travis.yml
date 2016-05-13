@@ -1,0 +1,34 @@
+# Travis CI integration -- https://travis-ci.org/troglobit/finit
+# Defaults to GNU GCC and autotools: ./configure && make && make test
+language: c
+
+# Use docker for quicker builds, it now allows https://docs.travis-ci.com/user/apt/
+sudo: false
+
+# Test build only with both GCC for the moment
+compiler:
+  - gcc
+  - clang
+
+addons:
+  apt:
+    packages:
+      - tree
+
+# Install dependencies first
+install:
+  - wget https://github.com/troglobit/libite/releases/download/v1.6.0/libite-1.6.0.tar.xz
+  - tar xf libite-1.6.0.tar.xz
+  - (cd libite-1.6.0 && ./configure --prefix=/tmp && make && make install-strip)
+
+# Custom build script for the time being, no "make test" yet
+script:
+  - ./autogen.sh
+  - PKG_CONFIG_PATH=/tmp/lib/pkgconfig ./configure --prefix=/tmp
+  - make clean
+  - make -j5
+  - make install-strip
+  - tree /tmp
+  - ldd /tmp/bin/mg
+  - size /tmp/bin/mg
+  - /tmp/bin/mg -h
