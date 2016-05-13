@@ -31,14 +31,15 @@ addons:
       name: "troglobit/mg"
       description: "Build submitted via Travis CI"
     notification_email: troglobit@gmail.com
-    build_command_prepend: "./autogen.sh; ./configure; make clean"
+    build_command_prepend: "export PKG_CONFIG_PATH=/tmp/lib/pkgconfig; ./autogen.sh; ./configure; make clean"
     build_command: "make -j5"
     branch_pattern: master
 
 # Custom build script for the time being, no "make test" yet
 script:
+  - export PKG_CONFIG_PATH=/tmp/lib/pkgconfig
   - ./autogen.sh
-  - PKG_CONFIG_PATH=/tmp/lib/pkgconfig ./configure --prefix=/tmp
+  - ./configure --prefix=/tmp
   - make clean
   - make -j5
   - make install-strip
