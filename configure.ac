@@ -19,7 +19,7 @@ AC_ARG_ENABLE(size-optimizations,
 
 AC_ARG_ENABLE(autoexec, AS_HELP_STRING([--disable-autoexec], [Disable auto-execute support]))
 AC_ARG_ENABLE(cmode,    AS_HELP_STRING([--disable-cmode],    [Disable C-mode support]))
-AC_ARG_ENABLE(compile  ,AS_HELP_STRING([--disable-compile],  [Disable C compile & grep mode, used by C-mode]))
+AC_ARG_ENABLE(compile,  AS_HELP_STRING([--disable-compile],  [Disable C compile & grep mode, used by C-mode]))
 AC_ARG_ENABLE(cscope,   AS_HELP_STRING([--disable-cscope],   [Disable Cscope support]))
 AC_ARG_ENABLE(ctags,    AS_HELP_STRING([--disable-ctags],    [Disable ctags(1) support, required by Cscope]))
 AC_ARG_ENABLE(dired,    AS_HELP_STRING([--disable-dired],    [Disable directory editor]))
