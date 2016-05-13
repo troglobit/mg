@@ -45,8 +45,8 @@ installed on the build system.
 History
 -------
 
-The history is long and intertwined with other spin-offs but goes
-basically like this:
+The history is long and intertwined with other MicroEMACS spin-offs but
+goes something like this:
 
 * Nov 16, 1986: First release to mod.sources
 * Mar  3, 1987: First Release (mg1a) via comp.sources.unix
