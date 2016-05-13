@@ -30,10 +30,10 @@ addons:
     project:
       name: "troglobit/mg"
       description: "Build submitted via Travis CI"
-      notification_email: troglobit@gmail.com
-      build_command_prepend: "./autogen.sh; ./configure; make clean"
-      build_command: "make -j 4"
-      branch_pattern: master
+    notification_email: troglobit@gmail.com
+    build_command_prepend: "./autogen.sh; ./configure; make clean"
+    build_command: "make -j5"
+    branch_pattern: master
 
 # Custom build script for the time being, no "make test" yet
 script:
