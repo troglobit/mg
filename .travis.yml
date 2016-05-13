@@ -6,20 +6,34 @@ language: c
 sudo: false
 
 # Test build only with both GCC for the moment
+#- clang
 compiler:
   - gcc
-  - clang
-
-addons:
-  apt:
-    packages:
-      - tree
 
 # Install dependencies first
 install:
   - wget https://github.com/troglobit/libite/releases/download/v1.6.0/libite-1.6.0.tar.xz
   - tar xf libite-1.6.0.tar.xz
   - (cd libite-1.6.0 && ./configure --prefix=/tmp && make && make install-strip)
+
+env:
+  global:
+    # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+    #   via the "travis encrypt" command using the project repo's public key
+    - secure: "j1sQKB/Rm3uC3umkXEQKa+H/TPph4ZJyKnXfZ+HdjiZnEu9xPFRxbs2/vRti8hSRoGUVg8gOCpjqo6zBzPXKGdZ/nhdB9zAAmGh2dhT0IahkTxigUSKKRsGVQdyPz0bf79pzrFPVURnyRxpvYtfbTE9nVQZ5Z2logj+BirQSuV2tLFZOogaiTT09OcsqLQgBXRrdJtMh3P4c8paCAKa8abdRjyB/LuW/IoSgOLX9OHgSu1N2250S7dvwKQjFgAf9LV/hVw2Liin79u3jlZb+zdLHlMOM2pNE3mFXObNZyKkkqcr5S8J1FtqKH4WOJkFsPYepV3HXi18prFA7qb5GrqF5vKxcOJe/jaH/VhWy1G62FDb5OFCVbYshRVyqCz0nT7kMcFHMgvuSLtnAvY3QN+3GlWEfxuAubIx4qEbvI8AzikvMAyYq2LJOgLOp7d/ToYjS34clM8UaySeSyxsE7wRiNeNFm2sh0pJvW5n4IbllQDc8s2ovX+PNJPKJ2Ykh+JjEm18wJclRmGzfrr6kF6kXATouaV4u1U+P2iaVku8UrdT9cdzj3TUq2D/6h9fTxFNVRxFPR4P6oCcl/2dC8xlSOjkdGS7NsiZn7SeEnqITONhCrXxJlyMo+OLCS+KeqZZLuA713ZvjzYOH0ysMvKsKW24I5uyQngqPhcPy8HU="
+
+addons:
+  apt:
+    packages:
+      - tree
+  coverity_scan:
+    project:
+      name: "troglobit/mg"
+      description: "Build submitted via Travis CI"
+      notification_email: troglobit@gmail.com
+      build_command_prepend: "./autogen.sh; ./configure; make clean"
+      build_command: "make -j 4"
+      branch_pattern: master
 
 # Custom build script for the time being, no "make test" yet
 script:
