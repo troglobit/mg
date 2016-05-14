@@ -333,8 +333,8 @@ insertfile(char *fname, char *newname, int replacebuf)
 	}
 
 	/* hard file open */
-	if ((s = ffropen(&ffp, fname, (replacebuf == TRUE) ? bp : NULL))
-	    == FIOERR)
+	s = ffropen(&ffp, fname, (replacebuf == TRUE) ? bp : NULL);
+	if (s == FIOERR)
 		goto out;
 	if (s == FIOFNF) {
 		/* file not found */
@@ -348,20 +348,23 @@ insertfile(char *fname, char *newname, int replacebuf)
 #ifdef ENABLE_DIRED
 		if (replacebuf == FALSE) {
 			dobeep();
-			ewprintf("Cannot insert: file is a directory, %s",
-			    fname);
+			ewprintf("Cannot insert: file is a directory, %s", fname);
+			(void)ffclose(ffp, NULL);
 			goto cleanup;
 		}
 		killbuffer(bp);
 		bp = dired_(fname);
 		undo_enable(FFRAND, x);
-		if (bp == NULL)
+		if (bp == NULL) {
+			(void)ffclose(ffp, NULL);
 			return (FALSE);
+		}
 		curbp = bp;
 		return (showbuffer(bp, curwp, WFFULL | WFMODE));
 #else
 		dobeep();
 		ewprintf("Cannot insert: file is a directory, %s", fname);
+		(void)ffclose(ffp, NULL);
 		goto cleanup;
 #endif /* ENABLE_DIRED */
 	} else {
