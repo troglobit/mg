@@ -3,7 +3,9 @@ mg_SOURCES      = basic.c bell.c buffer.c cinfo.c dir.c display.c echo.c 	\
 		  extend.c file.c fileio.c funmap.c help.c kbd.c keymap.c	\
 		  line.c macro.c main.c match.c modes.c paragraph.c		\
 		  region.c search.c spawn.c tty.c ttyio.c ttykbd.c		\
-		  undo.c util.c version.c window.c word.c yank.c
+		  undo.c util.c version.c window.c word.c yank.c		\
+		  chrdef.h def.h funmap.h kbd.h key.h macro.h pathnames.h
+
 mg_CFLAGS       = -U_FORTIFY_SOURCE -D_GNU_SOURCE $(lite_CFLAGS)
 if TINY
 mg_CFLAGS      += -fomit-frame-pointer -fdata-sections -ffunction-sections	\
