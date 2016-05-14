@@ -544,7 +544,7 @@ pipeio(const char* const path, char* const argv[], char* const text, int len,
 
 		execv(path, argv);
 		err = strerror(errno);
-		write(s[1], err, strlen(err));
+		(void)write(s[1], err, strlen(err));
 		_exit(1);
 	default:
 		/* Parent process */

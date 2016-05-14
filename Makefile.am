@@ -4,13 +4,13 @@ mg_SOURCES      = basic.c bell.c buffer.c cinfo.c dir.c display.c echo.c 	\
 		  line.c macro.c main.c match.c modes.c paragraph.c		\
 		  region.c search.c spawn.c tty.c ttyio.c ttykbd.c		\
 		  undo.c util.c version.c window.c word.c yank.c
-mg_CFLAGS       = -D_GNU_SOURCE $(lite_CFLAGS)
+mg_CFLAGS       = -U_FORTIFY_SOURCE -D_GNU_SOURCE $(lite_CFLAGS)
 if TINY
-mg_CFLAGS      += -U_FORTIFY_SOURCE -fomit-frame-pointer -fdata-sections	\
-		  -ffunction-sections -fno-stack-protector -Wl,--gc-sections	\
-		  -fno-asynchronous-unwind-tables -fmerge-all-constants		\
-		  -fno-ident -finline-small-functions -Wl,-z,norelro		\
-		  -Wl,--hash-style=gnu -Wl,--build-id=none
+mg_CFLAGS      += -fomit-frame-pointer -fdata-sections -ffunction-sections	\
+		  -fno-stack-protector -fno-asynchronous-unwind-tables		\
+		  -fmerge-all-constants -fno-ident -finline-small-functions	\
+		  -Wl,--gc-sections -Wl,-z,norelro -Wl,--hash-style=gnu		\
+		  -Wl,--build-id=none
 endif
 mg_LDADD        = -ltermcap $(lite_LIBS)
 dist_man1_MANS  = mg.1
