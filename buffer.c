@@ -712,14 +712,20 @@ popbuf(struct buffer *bp, int flags)
 
 		while (wp != NULL && wp == curwp)
 			wp = wp->w_wndp;
-	} else
+	} else {
 		for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
 			if (wp->w_bufp == bp) {
 				wp->w_rflag |= WFFULL | WFFRAME;
 				return (wp);
 			}
+	}
+
+	if (!wp)
+		return (NULL);
+
 	if (showbuffer(bp, wp, WFFULL) != TRUE)
 		return (NULL);
+
 	return (wp);
 }
 
