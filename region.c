@@ -649,7 +649,7 @@ preadin(int fd, struct buffer *bp)
 	int len;
 	char buf[BUFSIZ], *p, *q;
 
-	if ((len = read(fd, buf, BUFSIZ - 1)) == 0)
+	if ((len = read(fd, buf, BUFSIZ - 1)) <= 0)
 		return (FALSE);
 
 	buf[len] = '\0';
