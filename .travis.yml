@@ -5,10 +5,10 @@ language: c
 # Use docker for quicker builds, it now allows https://docs.travis-ci.com/user/apt/
 sudo: false
 
-# Test build only with both GCC for the moment
-#- clang
+# Test build with both GCC and Clang (LLVM)
 compiler:
   - gcc
+  - clang
 
 # Install dependencies first
 install:
@@ -33,7 +33,7 @@ addons:
     notification_email: troglobit@gmail.com
     build_command_prepend: "export PKG_CONFIG_PATH=/tmp/lib/pkgconfig; ./autogen.sh; ./configure; make clean"
     build_command: "make -j5"
-    branch_pattern: master
+    branch_pattern: dev
 
 # Custom build script for the time being, no "make test" yet
 script:
