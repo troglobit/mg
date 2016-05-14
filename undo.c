@@ -268,6 +268,8 @@ undo_add_insert(struct line *lp, int offset, int size)
 
 	if (!undo_enable_flag)
 		return (TRUE);
+
+	memset(&reg, 0, sizeof(reg));
 	reg.r_linep = lp;
 	reg.r_offset = offset;
 	reg.r_size = size;
@@ -314,6 +316,7 @@ undo_add_delete(struct line *lp, int offset, int size, int isreg)
 	if (!undo_enable_flag)
 		return (TRUE);
 
+	memset(&reg, 0, sizeof(reg));
 	reg.r_linep = lp;
 	reg.r_offset = offset;
 	reg.r_size = size;
