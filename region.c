@@ -564,7 +564,7 @@ iomux(int fd, char* const text, int len, struct buffer *outbp)
 	char *textcopy;
 
 	textcopy = text;
-	fcntl(fd, F_SETFL, O_NONBLOCK);
+	(void)fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK);
 	pfd[0].fd = fd;
 
 	/* There is nothing to write if len is zero
