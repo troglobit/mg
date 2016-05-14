@@ -11,6 +11,7 @@
 
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <poll.h>
@@ -514,8 +515,9 @@ int
 pipeio(const char* const path, char* const argv[], char* const text, int len,
     struct buffer *outbp)
 {
-	int s[2];
+	int s[2], ret;
 	char *err;
+	pid_t pid;
 
 	if (socketpair(AF_UNIX, SOCK_STREAM, PF_UNSPEC, s) == -1) {
 		dobeep();
@@ -523,7 +525,7 @@ pipeio(const char* const path, char* const argv[], char* const text, int len,
 		return (FALSE);
 	}
 
-	switch(fork()) {
+	switch ((pid = fork())) {
 	case -1:
 		dobeep();
 		ewprintf("Can't fork");
@@ -547,7 +549,10 @@ pipeio(const char* const path, char* const argv[], char* const text, int len,
 	default:
 		/* Parent process */
 		close(s[1]);
-		return (iomux(s[0], text, len, outbp));
+		ret = iomux(s[0], text, len, outbp);
+		waitpid(pid, NULL, 0); /* Collect child to prevent zombies */
+
+		return (ret);
 	}
 	return (FALSE);
 }
