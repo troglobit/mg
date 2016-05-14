@@ -85,6 +85,8 @@ tagsvisit(int f, int n)
 	
 	bufp = eread("visit tags table (default %s): ", fname,
 	    NFILEN, EFFILE | EFCR | EFNEW | EFDEF, DEFAULTFN);
+	if (bufp == NULL)
+		return (ABORT);
 
 	if (stat(bufp, &sb) == -1) {
 		dobeep();
@@ -101,9 +103,7 @@ tagsvisit(int f, int n)
 	}
 	
 	if (tagsfn == NULL) {
-		if (bufp == NULL)
-			return (ABORT);
-		else if (bufp[0] == '\0') {
+		if (bufp[0] == '\0') {
 			if ((tagsfn = strdup(fname)) == NULL) {
 				dobeep();
 				ewprintf("Out of memory");
