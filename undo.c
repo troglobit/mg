@@ -395,8 +395,8 @@ undo_dump(int f, int n)
 	 */
 	if ((bp = bfind("*undo*", TRUE)) == NULL)
 		return (FALSE);
-	bp->b_flag |= BFREADONLY;
-	bclear(bp);
+	bp->b_flag |= BFREADONLY | BFIGNDIRTY;
+	(void)bclear(bp);
 	if ((wp = popbuf(bp, WNONE)) == NULL)
 		return (FALSE);
 
