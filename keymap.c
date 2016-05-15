@@ -421,6 +421,10 @@ static struct KEYMAPE (8) fundmap = {
 		{
 			CCHR('@'), CCHR('G'), fund_at, (KEYMAP *) & ccmap
 		},
+#else
+		{
+			CCHR('@'), CCHR('G'), fund_at, NULL
+		},
 #endif
 		{
 			CCHR('H'), CCHR('H'), fund_h, (KEYMAP *) & helpmap
