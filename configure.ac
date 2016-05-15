@@ -12,6 +12,20 @@ AC_HEADER_STDC
 # Check for required libraries
 PKG_CHECK_MODULES([lite], [libite >= 1.6.0])
 
+# Check for a termcap compatible library
+AC_CHECK_LIB(termcap, tgoto, , [
+	AC_CHECK_LIB(tinfo, tgoto, , [
+		AC_CHECK_LIB(curses, tgoto, , [
+			AC_CHECK_LIB(ncurses, tgoto, , [
+				AC_MSG_ERROR([Cannot find a termcap capable library, try installing Ncurses.])])
+			])
+		])
+	])
+
+# We want term.h, not termcap.h, because cookies ...
+AC_CHECK_HEADERS(term.h, , [
+	AC_MSG_ERROR([Cannot find required header file term.h, try installing Ncurses.])])
+
 # Check for configured features
 AC_ARG_ENABLE(regexp, AS_HELP_STRING([--enable-regexp],  [Enable full regexp search]))
 AC_ARG_ENABLE(size-optimizations,

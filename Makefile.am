@@ -14,7 +14,7 @@ mg_CFLAGS      += -fomit-frame-pointer -fdata-sections -ffunction-sections	\
 		  -Wl,--gc-sections -Wl,-z,norelro -Wl,--hash-style=gnu		\
 		  -Wl,--build-id=none
 endif
-mg_LDADD        = -ltermcap $(lite_LIBS)
+mg_LDADD        = $(lite_LIBS)
 dist_man1_MANS  = mg.1
 doc_DATA        = README
 EXTRA_DIST      = tutorial
