@@ -3,6 +3,17 @@ Change Log
 
 All relevant changes to the project are documented in this file.
 
+
+[v3.0.1][] - 2016-05-16
+-----------------------
+
+Bugfix release.
+
+### Fixes
+- Fix `C-a`, `C-e`, `C-space`, etc. regression when Cscope integration,
+  `--disable-cscope` or `--disable-all` is selected.
+
+
 [v3.0][] - 2016-05-15
 ---------------------
 
@@ -56,11 +67,13 @@ set as Mg3a.
 	functions.  Some simply marked as "don't care"
   - Fix missing initialization of stack variables
 
-[UNRELEASED]: https://github.com/troglobit/mg/compare/TAIL...HEAD
+[UNRELEASED]: https://github.com/troglobit/mg/compare/v3.0.1...HEAD
+[v3.0.1]:     https://github.com/troglobit/mg/compare/v3.0..v3.0.1
 [v3.0]:       https://github.com/troglobit/mg/compare/TAIL...v3.0
 [Mg2a]:       http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/mg/
 [Mg3a]:       http://www.bengtl.net/files/mg3a/
 [libite]:     https://github.com/troglobit/libite/
+
 <!--
   -- Local Variables:
   -- mode: markdown
