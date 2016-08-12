@@ -52,6 +52,10 @@ char   *fparseln(FILE *, size_t *, size_t *, const char[3], int);
 #define FPARSELN_UNESCALL	0x0f
 #endif
 
+#ifndef HAVE_FUTIMENS
+int     futimens(int, const struct timespec[2]);
+#endif
+
 #ifndef __dead
 #define __dead
 #endif

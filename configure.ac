@@ -25,10 +25,10 @@ esac
 
 # Check for library functions
 AC_CHECK_LIB([util], [fparseln])
-AC_CHECK_FUNCS([futimens])
+#AC_CHECK_FUNCS([futimens])
 
 # Check for usually missing API's, which we can replace
-AC_REPLACE_FUNCS([fparseln reallocarray strlcpy strlcat strtonum])
+AC_REPLACE_FUNCS([fparseln futimens reallocarray strlcpy strlcat strtonum])
 AC_CONFIG_LIBOBJ_DIR([lib])
 
 # Check for a termcap compatible library

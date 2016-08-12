@@ -276,16 +276,14 @@ fbackupfile(const char *fn)
 
 	/*
 	 * Older UNIX and Linux versions, e.g. macOS pre 10.13, don't
-	 * have futimens() or utimensat().  So they will not get the
-	 * correct mtime on backup files.  Sorry!
+	 * have futimens().  This is detected by the configure script
+	 * which replaces it with a futimes() wrapper.
 	 */
-#ifdef HAVE_FUTIMENS
 	struct timespec new_times[2];
 
 	new_times[0] = sb.st_atim;
 	new_times[1] = sb.st_mtim;
 	futimens(to, new_times);
-#endif
 
 	close(from);
 	close(to);
