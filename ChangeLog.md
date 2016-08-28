@@ -4,6 +4,18 @@ Change Log
 All relevant changes to the project are documented in this file.
 
 
+[v3.0.2][] - 2016-08-28
+-----------------------
+
+Bugfix release.
+
+### Fixes
+- Fix segfault when closing `*scratch*` buffer with `C-x k RET` having
+  issued `C-x b RET` from a fresh started `mg`.
+- Bring `fileio.c` up to speed with OpenBSD, r1.102, replacing `TMPDIR`
+  with the standard `/tmp` directory for temp files.
+
+
 [v3.0.1][] - 2016-05-16
 -----------------------
 
