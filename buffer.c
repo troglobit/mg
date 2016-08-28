@@ -78,8 +78,7 @@ usebuffer(int f, int n)
 	char    bufn[NBUFN], *bufp;
 
 	/* Get buffer to use from user */
-	if ((curbp->b_altb == NULL) &&
-	    ((curbp->b_altb = bfind("*scratch*", TRUE)) == NULL))
+	if (curbp->b_altb == NULL)
 		bufp = eread("Switch to buffer: ", bufn, NBUFN, EFNEW | EFBUF);
 	else
 		bufp = eread("Switch to buffer: (default %s) ", bufn, NBUFN,
@@ -168,8 +167,12 @@ killbuffer(struct buffer *bp)
 		bp1 = (bp == bheadp) ? bp->b_bufp : bheadp;
 		if (bp1 == NULL) {
 			/* only one buffer. see if it's *scratch* */
-			if (bp == bfind("*scratch*", FALSE))
+			if (bp == bfind("*scratch*", FALSE)) {
+				if ((s = bclear(bp)) != TRUE)
+					return (s);
+				redraw(0,0);
 				return (TRUE);
+			}
 			/* create *scratch* for alternate buffer */
 			if ((bp1 = bfind("*scratch*", TRUE)) == NULL)
 				return (FALSE);
