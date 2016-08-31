@@ -51,12 +51,13 @@ togglereadonly(int f, int n)
 int
 usebufname(const char *bufp)
 {
-	struct buffer *bp;
+	struct buffer *bp = NULL;
 
-	if (bufp == NULL)
-		return (ABORT);
-	if (bufp[0] == '\0' && curbp->b_altb != NULL)
-		bp = curbp->b_altb;
+	if (bufp == NULL) {
+		if ((bp = bfind("*scratch*", TRUE)) == NULL)
+			return(FALSE);
+	} else if (bufp[0] == '\0' && curbp->b_altb != NULL)
+			bp = curbp->b_altb;
 	else if ((bp = bfind(bufp, TRUE)) == NULL)
 		return (FALSE);
 
@@ -164,19 +165,28 @@ killbuffer(struct buffer *bp)
 	 * buffer.  Return if *scratch* is only buffer...
 	 */
 	if ((bp1 = bp->b_altb) == NULL) {
-		bp1 = (bp == bheadp) ? bp->b_bufp : bheadp;
-		if (bp1 == NULL) {
-			/* only one buffer. see if it's *scratch* */
-			if (bp == bfind("*scratch*", FALSE)) {
-				if ((s = bclear(bp)) != TRUE)
-					return (s);
-				redraw(0,0);
-				return (TRUE);
-			}
-			/* create *scratch* for alternate buffer */
-			if ((bp1 = bfind("*scratch*", TRUE)) == NULL)
-				return (FALSE);
+		/* only one buffer. see if it's *scratch* */
+		if (bp == bfind("*scratch*", FALSE)) {
+			/*
+			 * Actually clear *scratch* buffer
+			 * Note: emacs does not do this
+			 */
+			if ((s = bclear(bp)) != TRUE)
+				return (s);
+
+			/*
+			 * Not really kosher, breaks the abstraction model
+			 * to call redraw() from the buffer handling, but
+			 * if we don't the old buffer contents will remain
+			 * until the next update.
+			 */
+			redraw(0,0);
+
+			return (TRUE);
 		}
+		/* create *scratch* for alternate buffer */
+		if ((bp1 = bfind("*scratch*", TRUE)) == NULL)
+			return (FALSE);
 	}
 	if ((s = bclear(bp)) != TRUE)
 		return (s);
