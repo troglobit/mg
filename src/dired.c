@@ -943,7 +943,7 @@ dired_(char *dname)
 void
 redelete(struct buffer *bp)
 {
-	struct delentry	*d1 = NULL;
+	struct delentry	*dt, *d1 = NULL;
 	struct line	*lp, *nlp;
 	char		 fname[NFILEN];
 	char		*p = fname;
@@ -960,7 +960,7 @@ redelete(struct buffer *bp)
 			continue;
 		}
 		plen = strlen(p);
-		SLIST_FOREACH(d1, &delhead, entry) {
+		SLIST_FOREACH_SAFE(d1, &delhead, entry, dt) {
 			fnlen = strlen(d1->fn);
 			if ((plen == fnlen) && 
 			    (strncmp(p, d1->fn, plen) == 0)) {
