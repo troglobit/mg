@@ -35,14 +35,12 @@ char		 pat[NPAT];			/* pattern		*/
 
 static void	 edinit(struct buffer *);
 
-extern char	*__progname;
 extern void     closetags(void);
 
 static __dead void
 usage(int code)
 {
-	fprintf(stderr, "usage: %s [-hnR] [-f mode] [+number] [file ...]\n",
-	    __progname);
+	fprintf(stderr, "usage: %s [-hnR] [-f mode] [+number] [file ...]\n", PACKAGE_NAME);
 	exit(code);
 }
 
