@@ -85,6 +85,9 @@ usebuffer(int f, int n)
 		bufp = eread("Switch to buffer: (default %s) ", bufn, NBUFN,
 		    EFNUL | EFNEW | EFBUF, curbp->b_altb->b_bname);
 
+	if (bufp == NULL)
+		return (FALSE);
+
 	return (usebufname(bufp));
 }
 
