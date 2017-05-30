@@ -1,4 +1,4 @@
-/*	$OpenBSD: fileio.c,v 1.99 2015/03/19 21:22:15 bcallah Exp $	*/
+/*	$OpenBSD: fileio.c,v 1.104 2017/05/30 07:05:22 florian Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -219,6 +219,7 @@ int
 fbackupfile(const char *fn)
 {
 	struct stat	 sb;
+	struct timespec	 new_times[2];
 	int		 from, to, serrno;
 	ssize_t		 nread;
 	char		 buf[BUFSIZ];
@@ -276,8 +277,6 @@ fbackupfile(const char *fn)
 	 * have futimens().  This is detected by the configure script
 	 * which replaces it with a futimes() wrapper.
 	 */
-	struct timespec new_times[2];
-
 	new_times[0] = sb.st_atim;
 	new_times[1] = sb.st_mtim;
 	futimens(to, new_times);

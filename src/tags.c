@@ -1,4 +1,4 @@
-/*	$OpenBSD: tags.c,v 1.12 2015/12/31 12:06:48 sunil Exp $	*/
+/*	$OpenBSD: tags.c,v 1.15 2017/05/30 07:05:22 florian Exp $	*/
 
 /*
  * This file is in the public domain.
@@ -399,18 +399,18 @@ cleanup:
  * Search through each line of buffer for pattern.
  */
 int
-searchpat(char *pat)
+searchpat(char *s_pat)
 {
 	struct line *lp;
 	int dotline;
 	size_t plen;
 
-	plen = strlen(pat);
+	plen = strlen(s_pat);
 	dotline = 1;
 	lp = lforw(curbp->b_headp);
 	while (lp != curbp->b_headp) {
 		if (ltext(lp) != NULL && (int)plen <= llength(lp) &&
-		    (strncmp(pat, ltext(lp), plen) == 0)) {
+		    (strncmp(s_pat, ltext(lp), plen) == 0)) {
 			curwp->w_doto = 0;
 			curwp->w_dotp = lp;
 			curwp->w_dotline = dotline;
