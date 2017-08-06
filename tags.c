@@ -83,7 +83,7 @@ tagsvisit(int f, int n)
 		return (FALSE);
 	}
 	
-	bufp = eread("visit tags table (default %s): ", fname,
+	bufp = eread("Visit tags table (default %s): ", fname,
 	    NFILEN, EFFILE | EFCR | EFNEW | EFDEF, DEFAULTFN);
 	if (bufp == NULL)
 		return (ABORT);
@@ -147,9 +147,9 @@ findtag(int f, int n)
 
 	if (curtoken(f, n, dtok) == FALSE) {
 		dtok[0] = '\0';
-		bufp = eread("Find tag:", utok, MAX_TOKEN, EFNUL | EFNEW);
+		bufp = eread("Find tag: ", utok, MAX_TOKEN, EFNUL | EFNEW);
 	} else
-		bufp = eread("Find tag (default %s):", utok, MAX_TOKEN,
+		bufp = eread("Find tag (default %s): ", utok, MAX_TOKEN,
 		    EFNUL | EFNEW, dtok);
 
 	if (bufp == NULL)

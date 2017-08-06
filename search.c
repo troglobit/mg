@@ -837,7 +837,7 @@ readpattern(char *prompt)
 	if (pat[0] == '\0')
 		rep = eread("%s: ", tpat, NPAT, EFNEW | EFCR, prompt);
 	else
-		rep = eread("%s: (default %s) ", tpat, NPAT,
+		rep = eread("%s (default %s): ", tpat, NPAT,
 		    EFNUL | EFNEW | EFCR, prompt, pat);
 
 	/* specified */
