@@ -51,6 +51,8 @@ ttykeymapinit(void)
 		dobindkey(fundamental_map, "scroll-up", key_npage);
 	if (key_ppage)
 		dobindkey(fundamental_map, "scroll-down", key_ppage);
+	if (key_ic)
+		dobindkey(fundamental_map, "overwrite-mode", key_ic);
 	if (key_dc)
 		dobindkey(fundamental_map, "delete-char", key_dc);
 
