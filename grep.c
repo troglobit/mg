@@ -3,6 +3,8 @@
 /* This file is in the public domain */
 
 #include <sys/types.h>
+#include <sys/wait.h>
+
 #include <ctype.h>
 #include <libgen.h>
 #include <limits.h>
@@ -179,7 +181,7 @@ compile_mode(const char *name, const char *command)
 	char	*buf = NULL;
 	size_t	 len = 0;
 	size_t   num;
-	int	 ret, n;
+	int	 ret, n, status;
 	char	 cwd[NFILEN], qcmd[NFILEN];
 	char	 timestr[NTIME];
 	time_t	 t;
@@ -225,11 +227,16 @@ compile_mode(const char *name, const char *command)
 	t = time(NULL);
 	strftime(timestr, sizeof(timestr), "%a %b %e %T %Y", localtime(&t));
 	addline(bp, "");
-	if (ret != 0)
-		addlinef(bp, "Command exited abnormally with code %d"
-		    " at %s", ret, timestr);
-	else
-		addlinef(bp, "Command finished at %s", timestr);
+	if (WIFEXITED(ret)) {
+		status = WEXITSTATUS(ret);
+		if (status == 0)
+			addlinef(bp, "Command finished at %s", timestr);
+		else
+			addlinef(bp, "Command exited abnormally with code %d "
+			    "at %s", status, timestr);
+	} else
+		addlinef(bp, "Subshell killed by signal %d at %s",
+		    WTERMSIG(ret), timestr);
 
 	bp->b_dotp = bfirstlp(bp);
 	bp->b_modes[0] = name_mode("fundamental");
