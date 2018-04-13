@@ -1,4 +1,4 @@
-/*	$OpenBSD: line.c,v 1.57 2015/09/29 02:07:49 guenther Exp $	*/
+/*	$OpenBSD: line.c,v 1.60 2018/07/12 12:38:56 florian Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -17,6 +17,7 @@
  * nonsense.
  */
 
+#include <ctype.h>
 #include <limits.h>
 #include <signal.h>
 #include <stdio.h>
@@ -510,7 +511,11 @@ int
 lreplace(RSIZE plen, char *st)
 {
 	RSIZE	rlen;	/* replacement length		 */
-	int s;
+	struct line *lp;
+	RSIZE n;
+	int s, doto, is_query_capitalised = 0, is_query_allcaps = 0;
+	int is_replace_alllower = 0;
+	char *repl;
 
 	if ((s = checkdirty(curbp)) != TRUE)
 		return (s);
@@ -519,16 +524,59 @@ lreplace(RSIZE plen, char *st)
 		ewprintf("Buffer is read only");
 		return (FALSE);
 	}
+
+	if ((repl = strdup(st)) == NULL) {
+		dobeep();
+		ewprintf("out of memory");
+		return (FALSE);
+	}
+
 	undo_boundary_enable(FFRAND, 0);
 
 	(void)backchar(FFARG | FFRAND, (int)plen);
+
+	lp = curwp->w_dotp;
+	doto = curwp->w_doto;
+	n = plen;
+
+	is_query_capitalised = isupper((unsigned char)lgetc(lp, doto));
+
+	if (is_query_capitalised) {
+		for (n = 0, is_query_allcaps = 1; n < plen && is_query_allcaps;
+		    n++) {
+			is_query_allcaps = !isalpha((unsigned char)lgetc(lp,
+			    doto)) || isupper((unsigned char)lgetc(lp, doto));
+			doto++;
+			if (doto == llength(lp)) {
+				doto = 0;
+				lp = lforw(lp);
+				n++; /* \n is implicit in the buffer */
+			}
+		}
+	}
+
 	(void)ldelete(plen, KNONE);
 
-	rlen = strlen(st);
-	region_put_data(st, rlen);
+	rlen = strlen(repl);
+	for (n = 0, is_replace_alllower = 1; n < rlen && is_replace_alllower;
+	    n++)
+		is_replace_alllower = !isupper((unsigned char)repl[n]);
+
+	if (is_replace_alllower) {
+		if (is_query_allcaps) {
+			for (n = 0; n < rlen; n++)
+				repl[n] = toupper((unsigned char)repl[n]);
+		} else if (is_query_capitalised) {
+			repl[0] = toupper((unsigned char)repl[0]);
+		}
+	}
+
+	region_put_data(repl, rlen);
 	lchange(WFFULL);
 
 	undo_boundary_enable(FFRAND, 1);
+
+	free(repl);
 	return (TRUE);
 }
 
