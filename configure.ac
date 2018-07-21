@@ -37,6 +37,7 @@ AC_ARG_ENABLE(compile,  AS_HELP_STRING([--disable-compile],  [Disable C compile 
 AC_ARG_ENABLE(cscope,   AS_HELP_STRING([--disable-cscope],   [Disable Cscope support]))
 AC_ARG_ENABLE(ctags,    AS_HELP_STRING([--disable-ctags],    [Disable ctags(1) support, required by Cscope]))
 AC_ARG_ENABLE(dired,    AS_HELP_STRING([--disable-dired],    [Disable directory editor]))
+AC_ARG_ENABLE(notab,    AS_HELP_STRING([--disable-notab],    [Disable notab mode support]))
 AC_ARG_ENABLE(all,      AS_HELP_STRING([--disable-all],      [Disable all optional features]))
 
 AC_ARG_WITH(startup,
@@ -51,6 +52,7 @@ AS_IF([test "x$enable_all" = "xno"], enable_regexp="no"
 	enable_cscope="no"
 	enable_ctags="no"
 	enable_dired="no"
+	enable_notab="no"
 	with_startup="no")
 
 # Enable features
@@ -81,6 +83,9 @@ AS_IF([test "x$enable_ctags" != "xno"], enable_ctags="yes"
 
 AS_IF([test "x$enable_dired" != "xno"], enable_dired="yes"
 	AC_DEFINE(ENABLE_DIRED, 1, [Enable dired, the directory editor]))
+
+AS_IF([test "x$enable_notab" != "xno"], enable_notab="yes"
+	AC_DEFINE(NOTAB, 1, [Enable notab mode, disabled in OpenBSD]))
 
 case "$host_os" in
 	openbsd*)

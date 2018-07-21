@@ -714,9 +714,9 @@ Assumes tabs are every eight characters.
 Move forward
 .Va n
 lines.
-.\" .It no-tab-mode
-.\" Toggle notab mode.
-.\" In this mode, spaces are inserted rather than tabs.
+.It no-tab-mode
+Toggle notab mode.
+In this mode, spaces are inserted rather than tabs.
 .It not-modified
 Turn off the modified flag in the current buffer.
 .It open-line
@@ -859,7 +859,7 @@ This is the default.
 .It set-default-mode
 Append the supplied mode to the list of default modes
 used by subsequent buffer creation.
-Built in modes include: fill, indent and overwrite.
+Built in modes include: fill, indent, overwrite, and notab.
 .It set-fill-column
 Prompt the user for a fill column.
 Used by auto-fill-mode.
