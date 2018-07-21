@@ -1,3 +1,4 @@
+# Written by Joachim Nilsson <troglobit@gmail.com> and put in the public domain.
 AUTOMAKE_OPTIONS = subdir-objects
 
 bin_PROGRAMS     = mg
