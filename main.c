@@ -93,7 +93,6 @@ main(int argc, char **argv)
 		extern void grep_init(void);
 		extern void dired_init(void);
 		extern void cmode_init(void);
-		extern void theo_init(void);
 
 #ifdef ENABLE_DIRED
 		dired_init();
@@ -103,9 +102,6 @@ main(int argc, char **argv)
 #endif
 #ifdef ENABLE_CMODE
 		cmode_init();
-#endif
-#ifdef __OpenBSD__
-		theo_init();
 #endif
 	}
 

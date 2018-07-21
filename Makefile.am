@@ -45,9 +45,6 @@ endif
 if REGEX
 mg_SOURCES     += re_search.c
 endif
-if THEO
-mg_SOURCES     += theo.c
-endif
 
 #
 # Target to run when building a release

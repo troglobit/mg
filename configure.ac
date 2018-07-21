@@ -89,15 +89,6 @@ AS_IF([test "x$enable_dired" != "xno"], enable_dired="yes"
 AS_IF([test "x$enable_notab" != "xno"], enable_notab="yes"
 	AC_DEFINE(NOTAB, 1, [Enable notab mode, disabled in OpenBSD]))
 
-case "$host_os" in
-	openbsd*)
-		enable_theo="yes"
-		AC_DEFINE(ENABLE_THEO, 1, [Enable M-x theo analyzer on OpenBSD])
-		;;
-	*)
-		;;
-esac
-
 AS_IF([test "x$with_startup" != "xno"],[
 	AS_IF([test "x$startup" = "xyes"],[
 		AC_MSG_ERROR([Must supply argument])])
@@ -112,7 +103,6 @@ AM_CONDITIONAL(COMPILE,  [test "x$enable_compile"  = "xyes"])
 AM_CONDITIONAL(CSCOPE,   [test "x$enable_cscope"   = "xyes"])
 AM_CONDITIONAL(CTAGS,    [test "x$enable_ctags"    = "xyes"])
 AM_CONDITIONAL(DIRED,    [test "x$enable_dired"    = "xyes"])
-AM_CONDITIONAL(THEO,     [test "x$enable_theo"     = "xyes"])
 AM_CONDITIONAL(TINY,     [test "x$enable_tiny"     = "xyes"])
 
 # Generate all files
