@@ -33,18 +33,22 @@ or ncurses, to provide terminal manipulation APIs like `setupterm()`,
 
 On Debian/Ubuntu systems:
 
-	sudo apt install libncurses5-dev
+    sudo apt install libncurses5-dev
 
 Then build mg from the unpacked release tarball, the `configure` flags
 are optional, see `./configure --help` for a description:
 
     ./configure --disable-all --enable-size-optimizations
     make
-	sudo make install-strip
+    sudo make install-strip
 
 Users who checked out the source from GitHub must run `./autogen.sh`
 first to create the configure script.  This requires GNU autotools to be
 installed on the build system.
+
+To build a completely static mg with all features:
+
+    ./configure LDFLAGS="-static"
 
 
 History
