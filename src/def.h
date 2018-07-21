@@ -15,8 +15,8 @@
 #include	<sys/tree.h>
 #include	<util.h>
 #else
-#include	"lib/queue.h"
-#include	"lib/tree.h"
+#include	"queue.h"
+#include	"tree.h"
 #include	<signal.h>
 #include	<sys/stat.h>
 #include	"config.h"
