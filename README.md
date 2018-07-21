@@ -31,9 +31,9 @@ Building
 
 This project maintains a set of patches on top of OpenBSD Mg, one of
 which is a GNU configure script to simplify building on multiple UNIX
-systems, as well as cross compilation to different targets.  However,
-the project is not completely self hosting, you need a termcap library,
-or ncurses, to provide terminal manipulation APIs like `setupterm()`,
+systems, as well as cross compilation to different targets.  The project
+is almost completely self hosting, you only need a termcap library, or
+ncurses, to provide terminal manipulation APIs like `setupterm()`,
 `tgoto()`, and `tputs()`.
 
 On Debian/Ubuntu systems:
@@ -43,17 +43,25 @@ On Debian/Ubuntu systems:
 Then build mg from the unpacked release tarball, the `configure` flags
 are optional, see `./configure --help` for a description:
 
-    ./configure --disable-all --enable-size-optimizations
+    ./configure
     make
-    sudo make install-strip
+    sudo make install
 
 Users who checked out the source from GitHub must run `./autogen.sh`
 first to create the configure script.  This requires GNU autotools to be
 installed on the build system.
 
+To build the smallest possible mg, with many features removed:
+
+    ./configure --disable-all --enable-size-optimizations
+    make
+    sudo make install-strip
+
 To build a completely static mg with all features:
 
     ./configure LDFLAGS="-static"
+    make
+    sudo make install-strip
 
 
 History
