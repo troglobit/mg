@@ -9,8 +9,9 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_HEADER_STDC
 
-# Check for required libraries
-PKG_CHECK_MODULES([lite], [libite >= 1.6.0])
+# Check for usually missing API's, which we can replace
+AC_REPLACE_FUNCS([fparseln reallocarray strlcpy strlcat strtonum])
+AC_CONFIG_LIBOBJ_DIR([lib])
 
 # Check for a termcap compatible library
 AC_CHECK_LIB(termcap, tgoto, , [

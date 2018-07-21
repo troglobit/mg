@@ -1,3 +1,5 @@
+AUTOMAKE_OPTIONS = subdir-objects
+
 bin_PROGRAMS    = mg
 mg_SOURCES      = basic.c bell.c buffer.c cinfo.c dir.c display.c echo.c 	\
 		  extend.c file.c fileio.c funmap.c help.c kbd.c keymap.c	\
@@ -6,7 +8,7 @@ mg_SOURCES      = basic.c bell.c buffer.c cinfo.c dir.c display.c echo.c 	\
 		  undo.c util.c version.c window.c word.c yank.c		\
 		  chrdef.h def.h funmap.h kbd.h key.h macro.h pathnames.h
 
-mg_CFLAGS       = -U_FORTIFY_SOURCE -D_GNU_SOURCE $(lite_CFLAGS)
+mg_CFLAGS       = -U_FORTIFY_SOURCE -D_GNU_SOURCE
 if TINY
 mg_CFLAGS      += -fomit-frame-pointer -fdata-sections -ffunction-sections	\
 		  -fno-stack-protector -fno-asynchronous-unwind-tables		\
@@ -14,7 +16,7 @@ mg_CFLAGS      += -fomit-frame-pointer -fdata-sections -ffunction-sections	\
 		  -Wl,--gc-sections -Wl,-z,norelro -Wl,--hash-style=gnu		\
 		  -Wl,--build-id=none
 endif
-mg_LDADD        = $(lite_LIBS)
+mg_LDADD        = $(LIBS) $(LIBOBJS)
 dist_man1_MANS  = mg.1
 doc_DATA        = README
 EXTRA_DIST      = tutorial

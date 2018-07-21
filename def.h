@@ -15,10 +15,37 @@
 #include	<sys/tree.h>
 #include	<util.h>
 #else
-#include	<lite/lite.h>
-#include	<lite/queue.h>
-#include	<lite/tree.h>
+#include	"lib/queue.h"
+#include	"lib/tree.h"
+#include	<signal.h>
+#include	<sys/stat.h>
 #include	"config.h"
+
+#ifndef strlcpy
+size_t  strlcpy(char *dst, const char *src, size_t siz);
+#endif
+
+#ifndef strlcat
+size_t  strlcat(char *dst, const char *src, size_t siz);
+#endif
+
+#ifndef strtonum
+long long strtonum(const char *numstr, long long minval, long long maxval, const char **errstrp);
+#endif
+
+#ifndef reallocarray
+void   *reallocarray(void *optr, size_t nmemb, size_t size);
+#endif
+
+#ifndef fparseln
+char   *fparseln(FILE *, size_t *, size_t *, const char[3], int);
+#define FPARSELN_UNESCESC	0x01
+#define FPARSELN_UNESCCONT	0x02
+#define FPARSELN_UNESCCOMM	0x04
+#define FPARSELN_UNESCREST	0x08
+#define FPARSELN_UNESCALL	0x0f
+#endif
+
 #define __dead
 #endif
 #include	"chrdef.h"
