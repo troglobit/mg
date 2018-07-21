@@ -20,6 +20,11 @@ currently not supported.
 Feature patches are of course most welcome, as long as they remain in
 the spirit of Mg -- to be small, fast, and portable.
 
+> **Note**: the official [portable Mg][] project, used by Debian and
+> other GNU/Linux distributions, is maintained by Han Boetes.  It uses
+> libbsd to maintain portability and follows the OpenBSD version very
+> closely.
+
 
 Building
 --------
@@ -73,18 +78,14 @@ See the source distribution for the list of [AUTHORS][].
 Origin and References
 ---------------------
 
-This project is a derivative of OpenBSD Mg, which currently is the best
-maintained source.  The intention of this project is to track OpenBSD
-development and other sources of Mg functionality, enable as much of it
-as possible using a standard GNU configure script, and be friendly for
-porting to resource constrained systems.
+This project is derived from OpenBSD Mg, which is the best (maintained)
+source of the original Micro Emacs.  The intention of this project is to
+track all clones, and unlike the OpenBSD version, enable as much of its
+hidden features as possible using a standard GNU configure script, while
+being friendly to porting to resource constrained systems.
 
 Please report any bugs and problems with the packaging and porting to
 the GitHub issue tracker <https://github.com/troglobit/mg/issues>
-
-Note: the official [portable Mg][] project is maintained by Han Boetes.
-It uses libbsd to maintain portability and follows the OpenBSD version
-very closely.  It is also the version used by Debian and others.
 
 [Micro Emacs]:     https://www.emacswiki.org/emacs/MicroEmacs
 [ErsatzEmacs]:     https://www.emacswiki.org/emacs/ErsatzEmacs
