@@ -26,6 +26,14 @@
 #include "kbd.h"
 #include "pathnames.h"
 
+#ifndef MAXNAMLEN
+#define MAXNAMLEN 255
+#endif
+
+#ifndef DEFFILEMODE
+#define DEFFILEMODE 0666
+#endif
+
 static char *bkuplocation(const char *);
 static int   bkupleavetmp(const char *);
 

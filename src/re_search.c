@@ -32,6 +32,10 @@
 #define RE_NMATCH	10		/* max number of matches	    */
 #define REPLEN		256		/* max length of replacement string */
 
+#ifndef REG_STARTEND
+#define REG_STARTEND 4
+#endif
+
 char	re_pat[NPAT];			/* regex pattern		    */
 int	re_srch_lastdir = SRCH_NOPR;	/* last search flags		    */
 int	casefoldsearch = TRUE;		/* does search ignore case?	    */
