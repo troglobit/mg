@@ -894,6 +894,10 @@ excline(char *line)
 		break;
 	case BINDDO:
 		if (fp != unbindtokey && fp != localunbind) {
+			if (!lp) {
+				status = FALSE;
+				goto cleanup;
+			}
 			lp->l_text[lp->l_used] = '\0';
 			status = bindkey(&curmap, lp->l_text, key.k_chars,
 			    key.k_count);
