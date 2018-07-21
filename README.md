@@ -2,6 +2,8 @@ Micro Emacs
 ===========
 [![License Badge][]][License] [![Travis Status][]][Travis] [![Coverity Status]][Coverity Scan]
 
+<img align="right" src="mg.png" title="mg in action">
+
 Mg is a public domain [Micro Emacs][] derivative.  Created in 1986 based
 on the original MicroEMACS released by Dave Conroy in 1985.
 
