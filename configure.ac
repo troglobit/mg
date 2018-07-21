@@ -1,5 +1,6 @@
 AC_INIT([Mg], [3.1-dev], [https://github.com/troglobit/mg/issues], [mg])
 AM_INIT_AUTOMAKE([1.11 foreign])
+AM_SILENT_RULES([yes])
 
 AC_CONFIG_SRCDIR([main.c])
 AC_CONFIG_HEADER([config.h])
