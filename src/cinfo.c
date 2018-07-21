@@ -104,8 +104,7 @@ char cinfo[256] = {
 char *
 getkeyname(char *cp, size_t len, int k)
 {
-	const char	*np;
-	size_t		 copied;
+	const char *np;
 
 	if (k < 0)
 		k = CHARMASK(k);	/* sign extended char */
@@ -150,8 +149,6 @@ getkeyname(char *cp, size_t len, int k)
 		*cp = '\0';
 		return (cp);
 	}
-	copied = strlcpy(cp, np, len);
-	if (copied >= len)
-		copied = len - 1;
-	return (cp + copied);
+
+	return (cp + strlcpy(cp, np, len));
 }
