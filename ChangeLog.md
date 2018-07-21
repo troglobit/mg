@@ -19,6 +19,8 @@ The standalone release, with lots of OpenBSD fixes and improvements.
 - GNU Emacs compatibility with query-replace & capitilisation, from OpenBSD
 - When exiting i-search with ^M, drop mark, like GNU Emacs, from OpenBSD
 - Remove theo analyzer from OpenBSD build, archived upstream
+- Enable regexp search by default in configure script, now all features
+  are on parity and can be disabled/enabled in the same fashion
 
 ### Fixes
 - Fix #1: Enable `M-x no-tab-mode`, disabled in OpenBSD by default

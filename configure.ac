@@ -29,7 +29,6 @@ AC_CHECK_HEADERS(term.h, , [
 	AC_MSG_ERROR([Cannot find required header file term.h, try installing Ncurses.])])
 
 # Check for configured features
-AC_ARG_ENABLE(regexp, AS_HELP_STRING([--enable-regexp],  [Enable full regexp search]))
 AC_ARG_ENABLE(size-optimizations,
 	AS_HELP_STRING([--enable-size-optimizations], [Optimize for size, try real hard]))
 
@@ -40,6 +39,7 @@ AC_ARG_ENABLE(cscope,   AS_HELP_STRING([--disable-cscope],   [Disable Cscope sup
 AC_ARG_ENABLE(ctags,    AS_HELP_STRING([--disable-ctags],    [Disable ctags(1) support, required by Cscope]))
 AC_ARG_ENABLE(dired,    AS_HELP_STRING([--disable-dired],    [Disable directory editor]))
 AC_ARG_ENABLE(notab,    AS_HELP_STRING([--disable-notab],    [Disable notab mode support]))
+AC_ARG_ENABLE(regexp,   AS_HELP_STRING([--disable-regexp],   [Disable full regexp search]))
 AC_ARG_ENABLE(all,      AS_HELP_STRING([--disable-all],      [Disable all optional features]))
 
 AC_ARG_WITH(startup,
@@ -47,7 +47,7 @@ AC_ARG_WITH(startup,
 	[startup=$withval], [startup='no'])
 
 # If all features are to be disabled, do that here
-AS_IF([test "x$enable_all" = "xno"], enable_regexp="no"
+AS_IF([test "x$enable_all" = "xno"],
 	enable_autoexec="no"
 	enable_cmode="no"
 	enable_compile="no"
@@ -55,13 +55,10 @@ AS_IF([test "x$enable_all" = "xno"], enable_regexp="no"
 	enable_ctags="no"
 	enable_dired="no"
 	enable_notab="no"
+	enable_regexp="no"
 	with_startup="no")
 
 # Enable features
-AS_IF([test "x$enable_regexp" = "xyes"],
-	AC_DEFINE(REGEX, 1, [Enable regexp search support]),
-	enable_regexp="no")
-
 AS_IF([test "x$enable_size_optimizations" = "xyes"], enable_tiny="yes"
 	CFLAGS="-g -Os"
 	AC_DEFINE(TINY, 1, [Enable extreme size optimizations]),
@@ -88,6 +85,9 @@ AS_IF([test "x$enable_dired" != "xno"], enable_dired="yes"
 
 AS_IF([test "x$enable_notab" != "xno"], enable_notab="yes"
 	AC_DEFINE(NOTAB, 1, [Enable notab mode, disabled in OpenBSD]))
+
+AS_IF([test "x$enable_regexp" != "xno"], enable_regexp="yes"
+	AC_DEFINE(REGEX, 1, [Enable regexp search support]))
 
 AS_IF([test "x$with_startup" != "xno"],[
 	AS_IF([test "x$startup" = "xyes"],[
