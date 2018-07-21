@@ -233,6 +233,9 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 	for (;;) {
 		c = getkey(FALSE);
 		if ((flag & EFAUTO) != 0 && c == CCHR('I')) {
+			if (buf == NULL)
+				goto memfail;
+
 			if (cplflag == TRUE) {
 				complt_list(flag, buf, cpos);
 				cwin = TRUE;
@@ -271,6 +274,7 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 				continue;
 			}
 		}
+
 		switch (c) {
 		case CCHR('A'): /* start of line */
 			while (cpos > 0) {
@@ -283,6 +287,7 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 			}
 			ttflush();
 			break;
+
 		case CCHR('D'):
 			if (cpos != epos) {
 				tteeol();
@@ -297,12 +302,14 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 				ttflush();
 			}
 			break;
+
 		case CCHR('E'): /* end of line */
 			while (cpos < epos) {
 				eputc(buf[cpos++]);
 			}
 			ttflush();
 			break;
+
 		case CCHR('B'): /* back */
 			if (cpos > 0) {
 				if (ISCTRL(buf[--cpos]) != FALSE) {
@@ -314,16 +321,19 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 				ttflush();
 			}
 			break;
+
 		case CCHR('F'): /* forw */
 			if (cpos < epos) {
 				eputc(buf[cpos++]);
 				ttflush();
 			}
 			break;
+
 		case CCHR('Y'): /* yank from kill buffer */
 			i = 0;
 			while ((y = kremove(i++)) >= 0 && y != '\n') {
 				int t;
+
 				if (dynbuf && epos + 1 >= nbuf) {
 					void *newp;
 					size_t newsize = epos + epos + 16;
@@ -338,6 +348,8 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 					ewprintf("Line too long");
 					return (emptyval);
 				}
+				if (buf == NULL)
+					goto memfail;
 				for (t = epos; t > cpos; t--)
 					buf[t] = buf[t - 1];
 				buf[cpos++] = (char)y;
@@ -351,6 +363,7 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 			}
 			ttflush();
 			break;
+
 		case CCHR('K'): /* copy here-EOL to kill buffer */
 			kdelete();
 			for (i = cpos; i < epos; i++)
@@ -359,12 +372,15 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 			epos = cpos;
 			ttflush();
 			break;
+
 		case CCHR('['):
 			ml = mr = esc = 1;
 			break;
+
 		case CCHR('J'):
 			c = CCHR('M');
-			/* FALLTHROUGH */
+			/* fallthrough */
+
 		case CCHR('M'):			/* return, done */
 			/* if there's nothing in the minibuffer, abort */
 			if (epos == 0 && !(flag & EFNUL)) {
@@ -373,13 +389,16 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 				return (NULL);
 			}
 			if ((flag & EFFUNC) != 0) {
+				if (buf == NULL)
+					goto memfail;
 				if (complt(flag, c, buf, nbuf, epos, &i)
 				    == FALSE)
 					continue;
 				if (i > 0)
 					epos += i;
 			}
-			buf[epos] = '\0';
+			if (buf != NULL)
+				buf[epos] = '\0';
 			if ((flag & EFCR) != 0) {
 				ttputc(CCHR('M'));
 				ttflush();
@@ -397,15 +416,20 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 			}
 			ret = buf;
 			goto done;
+
 		case CCHR('G'):			/* bell, abort */
 			eputc(CCHR('G'));
 			(void)ctrlg(FFRAND, 0);
 			ttflush();
 			ret = NULL;
 			goto done;
+
 		case CCHR('H'):			/* rubout, erase */
+			/* fallthrough */
 		case CCHR('?'):
 			if (cpos != 0) {
+				if (buf == NULL)
+					goto memfail;
 				y = buf[--cpos];
 				epos--;
 				ttputc('\b');
@@ -430,9 +454,13 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 				ttflush();
 			}
 			break;
+
 		case CCHR('X'):			/* kill line */
+			/* fallthrough */
 		case CCHR('U'):
 			while (cpos != 0) {
+				if (buf == NULL)
+					goto memfail;
 				ttputc('\b');
 				ttputc(' ');
 				ttputc('\b');
@@ -447,7 +475,10 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 			}
 			ttflush();
 			break;
+
 		case CCHR('W'):			/* kill to beginning of word */
+			if (buf == NULL)
+				goto memfail;
 			while ((cpos > 0) && !ISWORD(buf[cpos - 1])) {
 				ttputc('\b');
 				ttputc(' ');
@@ -462,6 +493,8 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 				epos--;
 			}
 			while ((cpos > 0) && ISWORD(buf[cpos - 1])) {
+				if (buf == NULL)
+					goto memfail;
 				ttputc('\b');
 				ttputc(' ');
 				ttputc('\b');
@@ -476,10 +509,12 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 			}
 			ttflush();
 			break;
+
 		case CCHR('\\'):
+			/* fallthrough */
 		case CCHR('Q'):			/* quote next */
 			c = getkey(FALSE);
-			/* FALLTHROUGH */
+			/* fallthrough */
 		default:
 			if (dynbuf && epos + 1 >= nbuf) {
 				void *newp;
