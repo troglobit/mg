@@ -10,12 +10,6 @@ compiler:
   - gcc
   - clang
 
-# Install dependencies first
-install:
-  - wget https://github.com/troglobit/libite/releases/download/v1.6.0/libite-1.6.0.tar.xz
-  - tar xf libite-1.6.0.tar.xz
-  - (cd libite-1.6.0 && ./configure --prefix=/tmp && make && make install-strip)
-
 env:
   global:
     # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
@@ -31,13 +25,12 @@ addons:
       name: "troglobit/mg"
       description: "Build submitted via Travis CI"
     notification_email: troglobit@gmail.com
-    build_command_prepend: "export PKG_CONFIG_PATH=/tmp/lib/pkgconfig; ./autogen.sh; ./configure; make clean"
+    build_command_prepend: "./autogen.sh; ./configure; make clean"
     build_command: "make -j5"
     branch_pattern: dev
 
 # Custom build script for the time being, no "make test" yet
 script:
-  - export PKG_CONFIG_PATH=/tmp/lib/pkgconfig
   - ./autogen.sh
   - ./configure --prefix=/tmp
   - make clean
@@ -46,4 +39,4 @@ script:
   - tree /tmp
   - ldd /tmp/bin/mg
   - size /tmp/bin/mg
-  - LD_LIBRARY_PATH=/tmp/lib /tmp/bin/mg -h
+  - /tmp/bin/mg -h
