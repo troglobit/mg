@@ -470,6 +470,9 @@ d_copy(int f, int n)
 		return (FALSE);
 
 	topath = adjustname(toname, TRUE);
+	if (topath == NULL)
+		return (FALSE);
+
 	ret = (copy(frname, topath) >= 0) ? TRUE : FALSE;
 	if (ret != TRUE)
 		return (ret);
@@ -509,6 +512,9 @@ d_rename(int f, int n)
 		return (FALSE);
 
 	topath = adjustname(toname, TRUE);
+	if (topath == NULL)
+		return (FALSE);
+
 	ret = (rename(frname, topath) >= 0) ? TRUE : FALSE;
 	if (ret != TRUE)
 		return (ret);
