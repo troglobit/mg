@@ -3,6 +3,27 @@ Change Log
 
 All relevant changes to the project are documented in this file.
 
+[v3.1][UNRELEASED]
+------------------
+
+The standalone release, with lots of OpenBSD fixes and improvements.
+
+### Changes
+- Remove libite (-lite) build/runtime requirement.  All OpenBSD compat
+  functions now maintained in-tree, used automatically when missing
+- Keep current buffer if switch-to-buffer is aborted, from OpenBSD
+- Present the default choice before the colon in prompts, from OpenBSD
+- Extract compile_mode command status with WEXITSTATUS, from OpenBSD
+- Let the Insert key toggle overwrite mode, from OpenBSD
+- GNU Emacs compatibility with query-replace & capitilisation, from OpenBSD
+
+### Fixes
+- Fix #1: Enable `M-x no-tab-mode`, disabled in OpenBSD by default
+- Fix line numbering bug, from OpenBSD
+- Fix display of overlong lines containing non-ASCII bytes, from OpenBSD
+- Fix description of delete-non-matching-lines, from OpenBSD
+- Backups saved to wrong directory when running as another user, from OpenBSD
+
 
 [v3.0.2][] - 2016-08-28
 -----------------------
@@ -79,7 +100,8 @@ set as Mg3a.
 	functions.  Some simply marked as "don't care"
   - Fix missing initialization of stack variables
 
-[UNRELEASED]: https://github.com/troglobit/mg/compare/v3.0.1...HEAD
+[UNRELEASED]: https://github.com/troglobit/mg/compare/v3.0.2...HEAD
+[v3.0.2]:     https://github.com/troglobit/mg/compare/v3.0.1..v3.0.2
 [v3.0.1]:     https://github.com/troglobit/mg/compare/v3.0..v3.0.1
 [v3.0]:       https://github.com/troglobit/mg/compare/TAIL...v3.0
 [Mg2a]:       http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/mg/
