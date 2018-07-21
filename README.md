@@ -81,6 +81,7 @@ goes something like this:
 * Feb 25, 2000: First import into the OpenBSD tree, where it is
   currently maintained with contributions from many others.
 * May  8, 2016: First import from OpenBSD 5.9 to [GitHub][]
+* Jul 22, 2018: Second major release from GitHub, now standalone!
 
 See the source distribution for the list of [AUTHORS][].
 
