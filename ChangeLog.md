@@ -4,8 +4,8 @@ Change Log
 All relevant changes to the project are documented in this file.
 
 
-[v3.1][UNRELEASED]
-------------------
+[v3.1][] - 2018-07-22
+---------------------
 
 The standalone release, with lots of OpenBSD fixes and improvements.
 
@@ -21,6 +21,7 @@ The standalone release, with lots of OpenBSD fixes and improvements.
 - Remove theo analyzer from OpenBSD build, archived upstream
 - Enable regexp search by default in configure script, now all features
   are on parity and can be disabled/enabled in the same fashion
+- Clarify licensing of project, everything is in the public domain
 
 ### Fixes
 - Fix #1: Enable `M-x no-tab-mode`, disabled in OpenBSD by default
@@ -30,6 +31,14 @@ The standalone release, with lots of OpenBSD fixes and improvements.
 - Backups saved to wrong directory when running as another user, from OpenBSD
 - Fix editing files in a directory without read permission, use relative
   paths if we cannot get the CWD, from OpenBSD
+- Fixes to warnings from Coverity Scan (static code analyzer):
+  - Insecure data handling in `getkeyname()`
+  - Possible NULL pointer deref(s) in `dired.c`
+  - Fix explicit NULL pointer deref in `dired.c`
+  - Fix unchecked return value in `delleadwhite()` and `indent()`
+  - Fix explicit NULL pointer deref in `excline()`
+  - Fix many dereference after NULL check in `veread()`
+  - Fix possible memory leak in error handling of `veread()`
 
 
 [v3.0.2][] - 2016-08-28
@@ -107,16 +116,11 @@ set as Mg3a.
 	functions.  Some simply marked as "don't care"
   - Fix missing initialization of stack variables
 
-[UNRELEASED]: https://github.com/troglobit/mg/compare/v3.0.2...HEAD
+[UNRELEASED]: https://github.com/troglobit/mg/compare/v3.1...HEAD
+[v3.1]:       https://github.com/troglobit/mg/compare/v3.0.2...v3.1
 [v3.0.2]:     https://github.com/troglobit/mg/compare/v3.0.1..v3.0.2
 [v3.0.1]:     https://github.com/troglobit/mg/compare/v3.0..v3.0.1
 [v3.0]:       https://github.com/troglobit/mg/compare/TAIL...v3.0
 [Mg2a]:       http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/mg/
 [Mg3a]:       http://www.bengtl.net/files/mg3a/
 [libite]:     https://github.com/troglobit/libite/
-
-<!--
-  -- Local Variables:
-  -- mode: markdown
-  -- End:
-  -->
