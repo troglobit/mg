@@ -65,15 +65,21 @@ Origin and References
 ---------------------
 
 This project is a derivative of OpenBSD Mg, which currently is the best
-maintained source.  The intention is to follow the OpenBSD development
-and release portable versions with every OpenBSD release.
+maintained source.  The intention of this project is to track OpenBSD
+development and other sources of Mg functionality, enable as much of it
+as possible using a standard GNU configure script, and be friendly for
+porting to resource constrained systems.
 
-Current maintainer of the portable Mg project is [Joachim Nilsson][].
 Please report any bugs and problems with the packaging and porting to
 the GitHub issue tracker <https://github.com/troglobit/mg/issues>
 
+Note: the official [portable Mg][] project is maintained by Han Boetes.
+It uses libbsd to maintain portability and follows the OpenBSD version
+very closely.  It is also the version used by Debian and others.
+
 [Micro Emacs]:     https://www.emacswiki.org/emacs/MicroEmacs
 [ErsatzEmacs]:     https://www.emacswiki.org/emacs/ErsatzEmacs
+[portable Mg]:     https://github.com/hboetes/mg
 [libite]:          https://github.com/troglobit/libite/releases/tag/v1.6.0
 [GitHub]:          https://github.com/troglobit/mg
 [AUTHORS]:         https://github.com/troglobit/mg/blob/master/AUTHORS
