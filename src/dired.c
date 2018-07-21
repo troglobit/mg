@@ -1021,17 +1021,24 @@ createlist(struct buffer *bp)
 		} else {
 			if ((d2 = malloc(sizeof(struct delentry)))
 			     == NULL) {
-				free(d1->fn);
-				free(d1);
+				if (d1) {
+					free(d1->fn);
+					free(d1);
+				}
 				return (ABORT);
 			}
 			if ((d2->fn = strdup(p)) == NULL) {
-				free(d1->fn);
-				free(d1);
+				if (d1) {
+					free(d1->fn);
+					free(d1);
+				}
 				free(d2);
 				return (ABORT);
 			}
-			SLIST_INSERT_AFTER(d1, d2, entry);
+			if (!d1)
+				SLIST_INSERT_HEAD(&delhead, d2, entry);
+			else
+				SLIST_INSERT_AFTER(d1, d2, entry);
 			d1 = d2;				
 		}
 		ret = TRUE;
