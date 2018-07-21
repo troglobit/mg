@@ -386,6 +386,8 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 			if (epos == 0 && !(flag & EFNUL)) {
 				(void)ctrlg(FFRAND, 0);
 				ttflush();
+				if (dynbuf && buf)
+					free(buf);
 				return (NULL);
 			}
 			if ((flag & EFFUNC) != 0) {
