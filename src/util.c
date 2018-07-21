@@ -299,7 +299,7 @@ delleadwhite(int f, int n)
 	soff -= ls;
 	if (soff < 0)
 		soff = 0;
-	forwchar(FFRAND, soff);
+	(void)forwchar(FFRAND, soff);
 
 	return (TRUE);
 }
@@ -400,7 +400,7 @@ indent(int f, int n)
 	    ((i = n % 8) != 0 && linsert(i, ' ') == FALSE)))
 		return (FALSE);
 
-	forwchar(FFRAND, soff);
+	(void)forwchar(FFRAND, soff);
 
 	return (TRUE);
 }
