@@ -32,11 +32,11 @@ addons:
 # Custom build script for the time being, no "make test" yet
 script:
   - ./autogen.sh
-  - ./configure --prefix=/tmp
+  - ./configure --prefix=/tmp/mg
   - make clean
   - make -j5
   - make install-strip
-  - tree /tmp
-  - ldd /tmp/bin/mg
-  - size /tmp/bin/mg
-  - /tmp/bin/mg -h
+  - tree /tmp/mg
+  - ldd /tmp/mg/bin/mg
+  - size /tmp/mg/bin/mg
+  - /tmp/mg/bin/mg -h
