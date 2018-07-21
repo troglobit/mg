@@ -3,6 +3,7 @@ Change Log
 
 All relevant changes to the project are documented in this file.
 
+
 [v3.1][UNRELEASED]
 ------------------
 
@@ -16,6 +17,8 @@ The standalone release, with lots of OpenBSD fixes and improvements.
 - Extract compile_mode command status with WEXITSTATUS, from OpenBSD
 - Let the Insert key toggle overwrite mode, from OpenBSD
 - GNU Emacs compatibility with query-replace & capitilisation, from OpenBSD
+- When exiting i-search with ^M, drop mark, like GNU Emacs, from OpenBSD
+- Remove theo analyzer from OpenBSD build, archived upstream
 
 ### Fixes
 - Fix #1: Enable `M-x no-tab-mode`, disabled in OpenBSD by default
@@ -23,6 +26,8 @@ The standalone release, with lots of OpenBSD fixes and improvements.
 - Fix display of overlong lines containing non-ASCII bytes, from OpenBSD
 - Fix description of delete-non-matching-lines, from OpenBSD
 - Backups saved to wrong directory when running as another user, from OpenBSD
+- Fix editing files in a directory without read permission, use relative
+  paths if we cannot get the CWD, from OpenBSD
 
 
 [v3.0.2][] - 2016-08-28
