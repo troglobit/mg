@@ -16,3 +16,7 @@ install-sh
 missing
 stamp-h1
 mg
+GPATH
+GRTAGS
+GSYMS
+GTAGS
