@@ -16,16 +16,15 @@ reason to learn more than one Emacs flavor.
 The size constraints and target audience pose challenging limitations on
 the feature set of Mg.  It is not scriptable or extensible like a true
 Emacs, although a startup file is supported, and not all features are
-available.  For instance `M-x split-window-horizontally`, or `C-x 3`, is
-currently not supported.
+available.
 
 Feature patches are of course most welcome, as long as they remain in
 the spirit of Mg -- to be small, fast, and portable.
 
 > **Note**: the official [portable Mg][] project, used by Debian and
-> other GNU/Linux distributions, is maintained by Han Boetes.  It uses
-> libbsd to maintain portability and follows the OpenBSD version very
-> closely.
+> other GNU/Linux distributions, is maintained by Han Boetes.  Unlike
+> this project, which is stand-alone, it uses [libbsd][] to maintain
+> portability and follows the OpenBSD version very closely.
 
 
 Building
@@ -81,6 +80,7 @@ goes something like this:
 * Feb 25, 2000: First import into the OpenBSD tree, where it is
   currently maintained with contributions from many others.
 * May  8, 2016: First import from OpenBSD 5.9 to [GitHub][]
+* May 15, 2016: First major release from GitHub
 * Jul 22, 2018: Second major release from GitHub, now standalone!
 
 See the source distribution for the list of [AUTHORS][].
@@ -101,6 +101,7 @@ the GitHub issue tracker <https://github.com/troglobit/mg/issues>
 [Micro Emacs]:     https://www.emacswiki.org/emacs/MicroEmacs
 [ErsatzEmacs]:     https://www.emacswiki.org/emacs/ErsatzEmacs
 [portable Mg]:     https://github.com/hboetes/mg
+[libbsd]:          https://libbsd.freedesktop.org/wiki/
 [GitHub]:          https://github.com/troglobit/mg
 [AUTHORS]:         https://github.com/troglobit/mg/blob/master/AUTHORS
 [Joachim Nilsson]: http://troglobit.com
