@@ -31,18 +31,18 @@ Building
 --------
 
 This project maintains a set of patches on top of OpenBSD Mg, one of
-which is a GNU configure script to simplify building on multiple UNIX
-systems, as well as cross compilation to different targets.  The project
-is almost completely self hosting, you only need a termcap library, or
-ncurses, to provide terminal manipulation APIs like `setupterm()`,
-`tgoto()`, and `tputs()`.
+which is a standard GNU configure script to simplify building on various
+UNIX systems, as well as cross compilation to different targets.
+
+The project is almost completely self hosting, you need a 3rd party
+termcap library, or ncurses, to provide terminal manipulation APIs
+like `setupterm()`, `tgoto()`, and `tputs()`.
 
 On Debian/Ubuntu systems:
 
     sudo apt install libncurses5-dev
 
-Then build mg from the unpacked release tarball, the `configure` flags
-are optional, see `./configure --help` for a description:
+Then build mg from the unpacked release tarball:
 
     ./configure
     make
@@ -51,6 +51,24 @@ are optional, see `./configure --help` for a description:
 Users who checked out the source from GitHub must run `./autogen.sh`
 first to create the configure script.  This requires GNU autotools to be
 installed on the build system.
+
+There are several options to the configure script to disable features,
+e.g., to reduce the size, or remove features if you want to be on par
+with the official Mg.  By default, all below features are enabled:
+
+    ./configure --help
+    [..]
+    --disable-autoexec   Disable auto-execute support
+    --disable-cmode      Disable C-mode support
+    --disable-compile    Disable C compile & grep mode, used by C-mode
+    --disable-cscope     Disable Cscope support
+    --disable-ctags      Disable ctags(1) support, required by Cscope
+    --disable-dired      Disable directory editor
+    --disable-notab      Disable notab mode support (not in OpenBSD)
+    --disable-regexp     Disable full regexp search
+    --disable-all        Disable all optional features
+    [..]
+    --with-startup=FILE  Init file to run at startup if ~/.mg is missing
 
 To build the smallest possible mg, with many features removed:
 
