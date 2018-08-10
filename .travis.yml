@@ -1,4 +1,4 @@
-# Travis CI integration -- https://travis-ci.org/troglobit/finit
+# Travis CI integration -- https://travis-ci.org/troglobit/mg
 # Defaults to GNU GCC and autotools: ./configure && make && make test
 language: c
 
