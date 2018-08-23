@@ -3,6 +3,20 @@ Change Log
 
 All relevant changes to the project are documented in this file.
 
+[v3.2][UNRELEASED]
+------------------
+
+Fixes for older UNIX and Linux distributions.
+
+### Changes
+- None
+
+### Fixes
+- Fix, or rather disable use of, missing `futimens()` on older UNIX or
+  Linux distributions, in particular macOS < 10.13
+- Fix missing `LOGIN_NAME_MAX` on macOS
+- Fix missing `st_mtim` on macOS
+
 
 [v3.1][] - 2018-07-22
 ---------------------
