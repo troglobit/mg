@@ -279,7 +279,7 @@ fbackupfile(const char *fn)
 	 * have futimens() or utimensat().  So they will not get the
 	 * correct mtime on backup files.  Sorry!
 	 */
-#ifdef futimens
+#ifdef HAVE_FUTIMENS
 	struct timespec new_times[2];
 
 	new_times[0] = sb.st_atim;

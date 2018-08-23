@@ -11,6 +11,9 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_HEADER_STDC
 
+# Check for library functions
+AC_CHECK_FUNCS([futimens])
+
 # Check for usually missing API's, which we can replace
 AC_REPLACE_FUNCS([fparseln reallocarray strlcpy strlcat strtonum])
 AC_CONFIG_LIBOBJ_DIR([lib])
