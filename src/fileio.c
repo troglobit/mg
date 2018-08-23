@@ -274,11 +274,18 @@ fbackupfile(const char *fn)
 	serrno = errno;
 	(void) fchmod(to, (sb.st_mode & 0777));
 
-	/* copy the mtime to the backupfile */
+	/*
+	 * Older UNIX and Linux versions, e.g. macOS pre 10.13, don't
+	 * have futimens() or utimensat().  So they will not get the
+	 * correct mtime on backup files.  Sorry!
+	 */
+#ifdef futimens
 	struct timespec new_times[2];
+
 	new_times[0] = sb.st_atim;
 	new_times[1] = sb.st_mtim;
 	futimens(to, new_times);
+#endif
 
 	close(from);
 	close(to);
