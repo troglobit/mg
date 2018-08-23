@@ -47,7 +47,15 @@ char   *fparseln(FILE *, size_t *, size_t *, const char[3], int);
 #endif
 
 #define __dead
+
+/* Workarounds for Darwin here */
+#ifdef __APPLE__
+#define st_atim st_atimespec
+#define st_ctim st_ctimespec
+#define st_mtim st_mtimespec
 #endif
+
+#endif /* !__OpenBSD__ */
 #include	"chrdef.h"
 
 typedef int	(*PF)(int, int);	/* generally useful type */
