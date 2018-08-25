@@ -21,6 +21,14 @@ available.
 Feature patches are of course most welcome, as long as they remain in
 the spirit of Mg -- to be small, fast, and portable.
 
+
+Supported Platforms
+-------------------
+
+This project has been extensively tested on Debian GNU/Linux, Ubuntu,
+Alpine Linux, FreeBSD, NetBSD, OpenBSD, and several embedded Linux
+distributions.
+
 > **Note**: the official [portable Mg][] project, used by Debian and
 > other GNU/Linux distributions, is maintained by Han Boetes.  Unlike
 > this project, which is stand-alone, it uses [libbsd][] to maintain
