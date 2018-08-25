@@ -11,6 +11,18 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_HEADER_STDC
 
+AC_CANONICAL_HOST
+
+# Check build host, DragonFly BSD uses priv
+case $host_os in
+    *dragonfly*)
+        LIBS="$LIBS -L/usr/lib/priv"
+        CPPFLAGS="$CPPFLAGS -I/usr/include/priv/ncurses"
+        ;;
+    *)
+        ;;
+esac
+
 # Check for library functions
 AC_CHECK_LIB([util], [fparseln])
 AC_CHECK_FUNCS([futimens])

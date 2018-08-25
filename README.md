@@ -26,7 +26,8 @@ Supported Platforms
 -------------------
 
 This project has been extensively tested on Debian GNU/Linux, Ubuntu,
-Alpine Linux, FreeBSD, NetBSD, OpenBSD, macOS, and embedded Linux.
+Alpine Linux, FreeBSD, NetBSD, OpenBSD, DragonFly BSD, macOS, as well
+as a few embedded Linux systems.
 
 > **Note**: the official [portable Mg][] project, used by Debian and
 > other GNU/Linux distributions, is maintained by Han Boetes.  Unlike
