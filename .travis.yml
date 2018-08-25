@@ -5,6 +5,11 @@ language: c
 # Use docker for quicker builds, it now allows https://docs.travis-ci.com/user/apt/
 sudo: false
 
+# Build on both Linux and macOS
+os:
+ - linux
+ - osx
+
 # Test build with both GCC and Clang (LLVM)
 compiler:
   - gcc
