@@ -12,6 +12,7 @@ AC_PROG_INSTALL
 AC_HEADER_STDC
 
 # Check for library functions
+AC_CHECK_LIB([util], [fparseln])
 AC_CHECK_FUNCS([futimens])
 
 # Check for usually missing API's, which we can replace

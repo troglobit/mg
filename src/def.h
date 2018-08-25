@@ -10,16 +10,22 @@
  * per-terminal definitions are in special header files.
  */
 
-#ifdef __OpenBSD__
+#include	"config.h"
+
+#if defined(__OpenBSD__) || defined(__NetBSD__) || defined(__FreeBSD__)
 #include	<sys/queue.h>
 #include	<sys/tree.h>
+#ifdef __FreeBSD__
+#include	<libutil.h>
+#else
 #include	<util.h>
+#endif
 #else
 #include	"queue.h"
 #include	"tree.h"
 #include	<signal.h>
 #include	<sys/stat.h>
-#include	"config.h"
+#endif
 
 #ifndef strlcpy
 size_t  strlcpy(char *dst, const char *src, size_t siz);
@@ -46,7 +52,9 @@ char   *fparseln(FILE *, size_t *, size_t *, const char[3], int);
 #define FPARSELN_UNESCALL	0x0f
 #endif
 
+#ifndef __dead
 #define __dead
+#endif
 
 /* Workarounds for Darwin here */
 #ifdef __APPLE__
@@ -63,7 +71,6 @@ char   *fparseln(FILE *, size_t *, size_t *, const char[3], int);
 #  endif
 # endif
 
-#endif /* !__OpenBSD__ */
 #include	"chrdef.h"
 
 typedef int	(*PF)(int, int);	/* generally useful type */
