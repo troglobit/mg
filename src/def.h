@@ -56,8 +56,7 @@ char   *fparseln(FILE *, size_t *, size_t *, const char[3], int);
 #define __dead
 #endif
 
-/* Workarounds for Darwin here */
-#ifdef __APPLE__
+#if defined(__APPLE__) || defined(__NetBSD__) 
 #define st_atim st_atimespec
 #define st_ctim st_ctimespec
 #define st_mtim st_mtimespec
