@@ -74,6 +74,7 @@ with the official Mg.  By default, all below features are enabled:
     --disable-dired      Disable directory editor
     --disable-notab      Disable notab mode support (not in OpenBSD)
     --disable-regexp     Disable full regexp search
+    --disable-togglenl   Disable toggle-newline-prompt extension (not in OpenBSD)
     --disable-all        Disable all optional features
     [..]
     --with-startup=FILE  Init file to run at startup if ~/.mg is missing
@@ -108,6 +109,7 @@ goes something like this:
 * May  8, 2016: First import from OpenBSD 5.9 to [GitHub][]
 * May 15, 2016: First major release from GitHub
 * Jul 22, 2018: Second major release from GitHub, now standalone!
+* Aug 26, 2018: Third major release from GitHub, now portable!
 
 See the source distribution for the list of [AUTHORS][].
 
