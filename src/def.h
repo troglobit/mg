@@ -24,7 +24,10 @@
 # else
 #  include	<util.h>
 # endif
-#else /* __NotBSD__ */
+#else /* __NotBSD__ or DragonFly BSD */
+# ifdef __DragonFly__
+#  include	<util.h>
+# endif
 # include	"queue.h"
 # include	"tree.h"
 #endif
