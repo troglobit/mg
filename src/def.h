@@ -78,6 +78,9 @@ int     futimens(int, const struct timespec[2]);
 #   define LOGIN_NAME_MAX 9
 #  endif
 # endif
+#ifndef MSG_NOSIGNAL
+#define MSG_NOSIGNAL	SO_NOSIGPIPE
+#endif
 
 #include	"chrdef.h"
 
