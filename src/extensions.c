@@ -19,6 +19,7 @@
 
 int	shownlprompt = TRUE;
 
+#ifdef TOGGLENL
 /* Check for a newline at the end of a file? */
 int
 togglenewlineprompt(int f, int n)
@@ -30,3 +31,4 @@ togglenewlineprompt(int f, int n)
 
 	return (TRUE);
 }
+#endif /* TOGGLENL */
