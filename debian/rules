@@ -1,0 +1,23 @@
+#!/usr/bin/make -f
+
+DH_VERBOSE=1
+# export DH_OPTIONS=-v
+
+include /usr/share/dpkg/architecture.mk
+PKG_CONFIG ?= $(DEB_HOST_GNU_TYPE)-pkg-config
+
+MAKE_VARS=DESTDIR=debian/mg prefix=/usr mandir=/usr/share/man CURSES_LIBS=-ltinfo PKG_CONFIG='$(PKG_CONFIG)'
+
+%:
+	dh $@
+
+override_dh_auto_clean:
+	dh_auto_clean -- $(MAKE_VARS)
+
+override_dh_auto_build:
+	dh_auto_build -- $(MAKE_VARS)
+
+override_dh_auto_install:
+	$(MAKE) install $(MAKE_VARS)
+# Install the ".mg" example config manually, as debhelper can't rename
+	install -D -m444 .mg debian/mg/usr/share/doc/mg/examples/dot_mg
