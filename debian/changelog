@@ -1,6 +1,9 @@
 mg (3.2) unstable; urgency=medium
 
-  * New upstream source, https://github.com/troglobit/mg/
+  * New upstream source, https://github.com/troglobit/mg/, and release
+  * New functions:
+    + toggle-newline-prompt
+    + no-tab-mode
   * Drop all dependencies, neither libbsd or pkg-config needed for this port
   * License changes:
     + theo.c has been removed by upstream OpenBSD

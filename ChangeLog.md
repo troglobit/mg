@@ -3,28 +3,30 @@ Change Log
 
 All relevant changes to the project are documented in this file.
 
-[v3.2][UNRELEASED]
-------------------
+[v3.2][] - 2018-08-26
+---------------------
 
-Fixes for both current and older UNIX and Linux distributions.
-Extensive testing on many systems: Debian GNU/Linux, Ubuntu, Alpine
-Linux, FreeBSD, NetBSD, OpenBSD, DragonFly BSD, macOS >= 10.10, Cygwin,
-and a few embedded Linux systems.
+Portability fixes for current and older UNIX and Linux distributions.
+Extensive testing on many systems: Debian GNU/Linux, Ubuntu, Fedora,
+CentOS, Alpine Linux, FreeBSD, NetBSD, OpenBSD, DragonFly BSD, Apple
+macOS >= 10.10, Cygwin, and a few embedded Linux systems.
 
 ### Changes
-- New function: toggle-newline-prompt.  From ibara/mg
-- Continuous integration support, Travis-CI for macOS > 10.10
+- New function: toggle-newline-prompt.  From ibara/mg@befd2cf
+- Continuous integration support, Travis-CI, for macOS > 10.10
 - Support for Cygwin, tested on Windows 10
 - Verified support for DragonFly BSD, NetBSD, FreeBSD, and OpenBSD
+- Adopt Debian packaging and adapt to this project
+- Add example `~/.mg` from Han Boetes' portable Mg project
 
 ### Fixes
 - Fix missing `futimens()` on older UNIX or Linux distributions, in
-  particular macOS < 10.13, by Martin Kühl.  From ibara/mg
+  particular macOS < 10.13, by Martin Kühl.  From ibara/mg@4a4ac31
 - Fix missing `libutil.h` detection on FreeBSD
 - Fix missing `LOGIN_NAME_MAX` on macOS
 - Fix missing `st_mtim` on macOS and NetBSD
 - Fix missing `FIONREAD` on Cygwin
-- Silence compiler warning for uninitialized variable.  From ibara/mg
+- Silence compiler warning, uninitialized variable.  From ibara/mg@f62f966
 
 
 [v3.1][] - 2018-07-22
