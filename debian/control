@@ -12,7 +12,7 @@ Package: mg
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Provides: editor
-Description: microscopic GNU Emacs-style editor
+Description: public domain Micro Emacs derivative
  This program is intended to be a small, fast, and portable
  editor for people who can't (or don't want to) run real
  Emacs for one reason or another.  It is compatible with GNU

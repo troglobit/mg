@@ -1,4 +1,4 @@
-# Micro GNU Emacs default configuration file
+# Micro Emacs default configuration file
 auto-indent-mode
 make-backup-files
 auto-fill-mode
