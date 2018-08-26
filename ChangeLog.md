@@ -6,16 +6,25 @@ All relevant changes to the project are documented in this file.
 [v3.2][UNRELEASED]
 ------------------
 
-Fixes for older UNIX and Linux distributions.
+Fixes for both current and older UNIX and Linux distributions.
+Extensive testing on many systems: Debian GNU/Linux, Ubuntu, Alpine
+Linux, FreeBSD, NetBSD, OpenBSD, DragonFly BSD, macOS >= 10.10, Cygwin,
+and a few embedded Linux systems.
 
 ### Changes
-- None
+- New function: toggle-newline-prompt.  From ibara/mg
+- Continuous integration support, Travis-CI for macOS > 10.10
+- Support for Cygwin, tested on Windows 10
+- Verified support for DragonFly BSD, NetBSD, FreeBSD, and OpenBSD
 
 ### Fixes
-- Fix, or rather disable use of, missing `futimens()` on older UNIX or
-  Linux distributions, in particular macOS < 10.13
+- Fix missing `futimens()` on older UNIX or Linux distributions, in
+  particular macOS < 10.13, by Martin Kühl.  From ibara/mg
+- Fix missing `libutil.h` detection on FreeBSD
 - Fix missing `LOGIN_NAME_MAX` on macOS
-- Fix missing `st_mtim` on macOS
+- Fix missing `st_mtim` on macOS and NetBSD
+- Fix missing `FIONREAD` on Cygwin
+- Silence compiler warning for uninitialized variable.  From ibara/mg
 
 
 [v3.1][] - 2018-07-22
@@ -130,7 +139,8 @@ set as Mg3a.
 	functions.  Some simply marked as "don't care"
   - Fix missing initialization of stack variables
 
-[UNRELEASED]: https://github.com/troglobit/mg/compare/v3.1...HEAD
+[UNRELEASED]: https://github.com/troglobit/mg/compare/v3.2...HEAD
+[v3.2]:       https://github.com/troglobit/mg/compare/v3.1...v3.2
 [v3.1]:       https://github.com/troglobit/mg/compare/v3.0.2...v3.1
 [v3.0.2]:     https://github.com/troglobit/mg/compare/v3.0.1..v3.0.2
 [v3.0.1]:     https://github.com/troglobit/mg/compare/v3.0..v3.0.1
