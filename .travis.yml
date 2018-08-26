@@ -10,6 +10,9 @@ os:
  - linux
  - osx
 
+# Verify on macOS X 10.10 -- https://docs.travis-ci.com/user/reference/osx/
+osx_image: xcode6.4
+
 # Test build with both GCC and Clang (LLVM)
 compiler:
   - gcc
