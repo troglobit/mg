@@ -1,20 +1,17 @@
 #!/usr/bin/make -f
-#DH_VERBOSE=1
 # export DH_OPTIONS=-v
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
-
-MAKE_VARS=DESTDIR=debian/mg prefix=/usr mandir=/usr/share/man CURSES_LIBS=-ltinfo
 
 %:
 	dh $@
 
-override_dh_auto_clean:
-	dh_auto_clean -- $(MAKE_VARS)
-
-override_dh_auto_build:
-	dh_auto_build -- $(MAKE_VARS)
-
-override_dh_auto_install:
-	$(MAKE) install $(MAKE_VARS)
+# Prune OpenBSD README and UNLICESE file, copyright file is canon
 # Install the ".mg" example config manually, as debhelper can't rename
+override_dh_auto_install:
+	dh_auto_install
+	-rm -f debian/mg/usr/share/doc/mg/README
+	-rm -f debian/mg/usr/share/doc/mg/UNLICENSE
 	install -D -m444 .mg debian/mg/usr/share/doc/mg/examples/dot_mg
+
+override_dh_installchangelog:
+	dh_installchangelog ChangeLog.md

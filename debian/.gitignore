@@ -2,6 +2,7 @@ autoreconf.after
 autoreconf.before
 debhelper-build-stamp
 files
+mg.debhelper.log
 mg.postinst.debhelper
 mg.postrm.debhelper
 mg.substvars
