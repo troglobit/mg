@@ -1,13 +1,12 @@
 Source: mg
 Section: editors
 Priority: optional
-Maintainer: Harald Dunkel <harri@afaics.de>
-Uploaders: Tomasz Buchert <tomasz@debian.org>
-Build-Depends: debhelper (>= 10), libbsd-dev, libncurses-dev, pkg-config
+Maintainer: Joachim Nilsson <troglobit@gmail.com>
+Build-Depends: debhelper (>= 10), libncurses-dev
 Standards-Version: 4.1.0
-Homepage: http://homepage.boetes.org/software/mg/
-Vcs-Git: git://anonscm.debian.org/collab-maint/mg.git
-Vcs-Browser: https://anonscm.debian.org/cgit/collab-maint/mg.git
+Homepage: https://github.com/troglobit/mg/
+Vcs-Git: https://github.com/troglobit/mg.git
+Vcs-Browser: https://github.com/troglobit/mg.git
 
 Package: mg
 Architecture: any

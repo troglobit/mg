@@ -1,0 +1,7 @@
+autoreconf.after
+autoreconf.before
+debhelper-build-stamp
+files
+mg.postinst.debhelper
+mg.postrm.debhelper
+mg.substvars

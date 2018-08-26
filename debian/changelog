@@ -1,3 +1,14 @@
+mg (3.2) unstable; urgency=medium
+
+  * New upstream source, https://github.com/troglobit/mg/
+  * Drop all dependencies, neither libbsd or pkg-config needed for this port
+  * License changes:
+    + theo.c has been removed by upstream OpenBSD
+    + undo.c has been put in the public domain by upstream OpenBSD
+    + lib/*.c new BSD replacement functions, instead of libbsd, ISC licensed
+
+ -- Joachim Nilsson <troglobit@gmail.com>  Sun, 26 Aug 2018 16:58:27 +0200
+
 mg (20171014-1) unstable; urgency=medium
 
   * new upstream version 20171014

@@ -1,2 +1,2 @@
 version=4
-http://homepage.boetes.org/software/mg/mg-(.*).tar.gz
+https://github.com/troglobit/mg/releases/download/v(.*)/mg-(.*).tar.gz

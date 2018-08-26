@@ -1,12 +1,9 @@
 #!/usr/bin/make -f
-
-DH_VERBOSE=1
+#DH_VERBOSE=1
 # export DH_OPTIONS=-v
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
-include /usr/share/dpkg/architecture.mk
-PKG_CONFIG ?= $(DEB_HOST_GNU_TYPE)-pkg-config
-
-MAKE_VARS=DESTDIR=debian/mg prefix=/usr mandir=/usr/share/man CURSES_LIBS=-ltinfo PKG_CONFIG='$(PKG_CONFIG)'
+MAKE_VARS=DESTDIR=debian/mg prefix=/usr mandir=/usr/share/man CURSES_LIBS=-ltinfo
 
 %:
 	dh $@
