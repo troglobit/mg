@@ -12,24 +12,20 @@
 
 #include	"config.h"
 
-#if defined(__OpenBSD__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined(__APPLE__)
-#include	<sys/queue.h>
-# ifdef __APPLE__
-#  include	"tree.h"
-# else
-#  include	<sys/tree.h>
-# endif
+#if defined(__OpenBSD__) || defined(__NetBSD__) || defined(__FreeBSD__)
+# include	<sys/queue.h>
+# include	<sys/tree.h>
 # ifdef __FreeBSD__
 #  include	<libutil.h>
 # else
 #  include	<util.h>
 # endif
-#else /* __NotBSD__ or DragonFly BSD */
-# ifdef __DragonFly__
-#  include	<util.h>
-# endif
+#else /* __NotBSD__, DragonFly BSD, or macOS */
 # include	"queue.h"
 # include	"tree.h"
+# if defined(__DragonFly__) || defined(__APPLE__)
+#  include	<util.h>
+# endif
 #endif
 
 #include	<signal.h>
