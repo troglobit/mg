@@ -27,23 +27,23 @@
 #include	<sys/stat.h>
 #endif
 
-#ifndef strlcpy
+#ifndef HAVE_STRLCPY
 size_t  strlcpy(char *dst, const char *src, size_t siz);
 #endif
 
-#ifndef strlcat
+#ifndef HAVE_STRLCAT
 size_t  strlcat(char *dst, const char *src, size_t siz);
 #endif
 
-#ifndef strtonum
+#ifndef HAVE_STRTONUM
 long long strtonum(const char *numstr, long long minval, long long maxval, const char **errstrp);
 #endif
 
-#ifndef reallocarray
+#ifndef HAVE_REALLOCARRAY
 void   *reallocarray(void *optr, size_t nmemb, size_t size);
 #endif
 
-#ifndef fparseln
+#ifndef HAVE_FPARSELN
 char   *fparseln(FILE *, size_t *, size_t *, const char[3], int);
 #define FPARSELN_UNESCESC	0x01
 #define FPARSELN_UNESCCONT	0x02
