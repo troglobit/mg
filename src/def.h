@@ -12,20 +12,25 @@
 
 #include	"config.h"
 
-#if defined(__OpenBSD__) || defined(__NetBSD__) || defined(__FreeBSD__)
+#if defined(__OpenBSD__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined(__APPLE__)
 #include	<sys/queue.h>
-#include	<sys/tree.h>
-#ifdef __FreeBSD__
-#include	<libutil.h>
-#else
-#include	<util.h>
+# ifdef __APPLE__
+#  include	"tree.h"
+# else
+#  include	<sys/tree.h>
+# endif
+# ifdef __FreeBSD__
+#  include	<libutil.h>
+# else
+#  include	<util.h>
+# endif
+#else /* __NotBSD__ */
+# include	"queue.h"
+# include	"tree.h"
 #endif
-#else
-#include	"queue.h"
-#include	"tree.h"
+
 #include	<signal.h>
 #include	<sys/stat.h>
-#endif
 
 #ifndef HAVE_STRLCPY
 size_t  strlcpy(char *dst, const char *src, size_t siz);

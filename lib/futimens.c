@@ -10,5 +10,5 @@ futimens(int fd, const struct timespec times[2])
 	TIMESPEC_TO_TIMEVAL(&timevals[0], &times[0]);
 	TIMESPEC_TO_TIMEVAL(&timevals[1], &times[1]);
 
-	return futimes(fildes, timevals);
+	return futimes(fd, timevals);
 }
