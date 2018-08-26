@@ -121,6 +121,13 @@ track all clones, and unlike the OpenBSD version, enable as much of its
 hidden features as possible using a standard GNU configure script, while
 being friendly to porting to resource constrained systems.
 
+Currently merged, and continously tracked, clones:
+
+- http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/mg/ (upstream)
+- https://github.com/hboetes/mg (official portable version)
+- https://github.com/ibara/mg (active)
+- https://github.com/scott-parker/mg-openbsd (inactive since 2015)
+
 Please report any bugs and problems with the packaging and porting to
 the GitHub issue tracker <https://github.com/troglobit/mg/issues>
 
