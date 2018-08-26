@@ -174,7 +174,7 @@ ffputbuf(FILE *ffp, struct buffer *bp)
 	/*
 	 * XXX should be variable controlled (once we have variables)
 	 */
-	if (llength(lback(lpend)) != 0) {
+	if (shownlprompt && llength(lback(lpend)) != 0) {
 		if (eyorn("No newline at end of file, add one") == TRUE) {
 			lnewline_at(lback(lpend), llength(lback(lpend)));
 			putc('\n', ffp);

@@ -57,6 +57,7 @@ AC_ARG_ENABLE(ctags,    AS_HELP_STRING([--disable-ctags],    [Disable ctags(1) s
 AC_ARG_ENABLE(dired,    AS_HELP_STRING([--disable-dired],    [Disable directory editor]))
 AC_ARG_ENABLE(notab,    AS_HELP_STRING([--disable-notab],    [Disable notab mode support]))
 AC_ARG_ENABLE(regexp,   AS_HELP_STRING([--disable-regexp],   [Disable full regexp search]))
+AC_ARG_ENABLE(togglenl, AS_HELP_STRING([--disable-togglenl], [Disable toggle-newline-prompt extension]))
 AC_ARG_ENABLE(all,      AS_HELP_STRING([--disable-all],      [Disable all optional features]))
 
 AC_ARG_WITH(startup,
@@ -73,6 +74,7 @@ AS_IF([test "x$enable_all" = "xno"],
 	enable_dired="no"
 	enable_notab="no"
 	enable_regexp="no"
+	enable_togglenl="no"
 	with_startup="no")
 
 # Enable features
@@ -105,6 +107,9 @@ AS_IF([test "x$enable_notab" != "xno"], enable_notab="yes"
 
 AS_IF([test "x$enable_regexp" != "xno"], enable_regexp="yes"
 	AC_DEFINE(REGEX, 1, [Enable regexp search support]))
+
+AS_IF([test "x$enable_togglenl" != "xno"], enable_togglenl="yes"
+	AC_DEFINE(TOGGLENL, 1, [Enable toggle-newline-prompt support]))
 
 AS_IF([test "x$with_startup" != "xno"],[
 	AS_IF([test "x$startup" = "xyes"],[

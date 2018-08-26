@@ -11,6 +11,7 @@ mg_SOURCES       = basic.c bell.c buffer.c cinfo.c dir.c display.c echo.c 	\
 		   undo.c util.c version.c window.c word.c yank.c		\
 		   chrdef.h def.h funmap.h kbd.h key.h macro.h pathnames.h
 mg_SOURCES      += queue.h tree.h
+mg_SOURCES      += extensions.c
 
 mg_CFLAGS        = -U_FORTIFY_SOURCE -D_GNU_SOURCE
 if TINY
