@@ -26,8 +26,8 @@ Supported Platforms
 -------------------
 
 This project has been extensively tested on Debian GNU/Linux, Ubuntu,
-Alpine Linux, FreeBSD, NetBSD, OpenBSD, DragonFly BSD, macOS >= 10.10,
-Cygwin, as well as a few embedded Linux systems.
+CentOS, Fedora, Alpine Linux, FreeBSD, NetBSD, OpenBSD, DragonFly BSD,
+macOS >= 10.10, Cygwin, as well as a few embedded Linux systems.
 
 > **Note**: the official [portable Mg][] project, used by Debian and
 > other GNU/Linux distributions, is maintained by Han Boetes.  Unlike
@@ -46,11 +46,24 @@ The project is almost completely self hosting, you need a 3rd party
 termcap library, or ncurses, to provide terminal manipulation APIs
 like `setupterm()`, `tgoto()`, and `tputs()`.
 
-On Debian/Ubuntu systems:
+On Debian/Ubuntu based systems `libtinfo-dev` can be used:
 
-    sudo apt install libncurses5-dev
+    sudo apt install libtinfo-dev
 
-Then build mg from the unpacked release tarball:
+On other systems you may have to install ncurses instead, on RHEL,
+CentOS, and Fedora:
+
+    sudo yum install ncurses-devel
+
+or
+
+    sudo dnf install ncurses-devel
+
+On macOS you need the Xcode command line toolls and headers.
+
+     xcode-select --install
+
+Then build Mg from the unpacked release tarball:
 
     ./configure
     make
