@@ -1,4 +1,4 @@
-/*	$OpenBSD: def.h,v 1.154 2016/01/02 10:39:19 lum Exp $	*/
+/*	$OpenBSD: def.h,v 1.156 2018/08/29 07:50:16 reyk Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -474,6 +474,7 @@ int		 ldelete(RSIZE, int);
 int		 ldelnewline(void);
 int		 lreplace(RSIZE, char *);
 char *		 linetostr(const struct line *);
+int		 setcasereplace(int, int);
 
 /* yank.c X */
 
