@@ -1,8 +1,8 @@
 # Written by Joachim Nilsson <troglobit@gmail.com> and put in the public domain.
 SUBDIRS        = src
 dist_man1_MANS = mg.1
-doc_DATA       = README.md ChangeLog.md UNLICENSE tutorial
-EXTRA_DIST     = README.md ChangeLog.md UNLICENSE tutorial
+doc_DATA       = README.md ChangeLog.md UNLICENSE tutorial .mg
+EXTRA_DIST     = README.md ChangeLog.md UNLICENSE tutorial .mg
 
 # lintian --profile debian -i -I --show-overrides ../$PKG.changes
 package:
