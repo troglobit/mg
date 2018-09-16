@@ -3,6 +3,14 @@ Change Log
 
 All relevant changes to the project are documented in this file.
 
+[v3.3][UNRELEASED]
+------------------
+
+### Changes
+- Add set-case-replaced to toggle case-preserving replace on or off.
+  By Reyk Flöter, OpenBSD
+
+
 [v3.2][] - 2018-08-26
 ---------------------
 
