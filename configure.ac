@@ -25,7 +25,6 @@ esac
 
 # Check for library functions
 AC_CHECK_LIB([util], [fparseln])
-#AC_CHECK_FUNCS([futimens])
 
 # Check for usually missing API's, which we can replace
 AC_REPLACE_FUNCS([fparseln futimens reallocarray strlcpy strlcat strtonum])
@@ -75,7 +74,7 @@ AS_IF([test "x$enable_all" = "xno"],
 	enable_notab="no"
 	enable_regexp="no"
 	enable_togglenl="no"
-	with_startup="no")
+	startup="no")
 
 # Enable features
 AS_IF([test "x$enable_size_optimizations" = "xyes"], enable_tiny="yes"
@@ -111,10 +110,9 @@ AS_IF([test "x$enable_regexp" != "xno"], enable_regexp="yes"
 AS_IF([test "x$enable_togglenl" != "xno"], enable_togglenl="yes"
 	AC_DEFINE(TOGGLENL, 1, [Enable toggle-newline-prompt support]))
 
-AS_IF([test "x$with_startup" != "xno"],[
+AS_IF([test "x$startup" != "xno"],[
 	AS_IF([test "x$startup" = "xyes"],[
-		AC_MSG_ERROR([Must supply argument])])
-	]
+		AC_MSG_ERROR([Must supply argument])])]
 	AC_DEFINE_UNQUOTED(STARTUPFILE, "$startup", [Init file to run if ~/.mg is missing]))
 
 # Control build with automake flags
