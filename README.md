@@ -46,12 +46,17 @@ The project is almost completely self hosting, you need a 3rd party
 termcap library, or ncurses, to provide terminal manipulation APIs
 like `setupterm()`, `tgoto()`, and `tputs()`.
 
-On Debian/Ubuntu based systems `libtinfo-dev` can be used:
+On recent Debian/Ubuntu based systems `libtinfo-dev` can be used, on
+older ones you may need to install `libncurses5-dev` instead:
 
     sudo apt install libtinfo-dev
 
-On other systems you may have to install ncurses instead, on RHEL,
-CentOS, and Fedora:
+or
+
+    sudo apt install libncurses5-dev
+
+On other systems you have to install the full ncurses library instead,
+on RHEL, CentOS, and Fedora:
 
     sudo yum install ncurses-devel
 
