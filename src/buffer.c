@@ -1,4 +1,4 @@
-/*	$OpenBSD: buffer.c,v 1.99 2015/09/26 21:51:58 jasper Exp $	*/
+/*	$OpenBSD: buffer.c,v 1.105 2018/12/13 14:59:16 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -24,6 +24,28 @@ static struct buffer  *makelist(void);
 static struct buffer *bnew(const char *);
 
 static int usebufname(const char *);
+
+/* ARGSUSED */
+int
+togglereadonlyall(int f, int n)
+{
+	struct buffer *bp = NULL;
+	int len = 0;
+
+	allbro = !allbro;
+	for (bp = bheadp; bp != NULL; bp = bp->b_bufp) {
+		len = strlen(bp->b_bname);
+		if (bp->b_bname[0] != '*' && bp->b_bname[len - 1] != '*') {
+			if (allbro)
+				bp->b_flag |= BFREADONLY;
+			else
+				bp->b_flag &= ~BFREADONLY;
+		}
+	}
+	curwp->w_rflag |= WFMODE;
+
+	return (TRUE);
+}
 
 /* ARGSUSED */
 int

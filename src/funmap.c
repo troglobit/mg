@@ -1,4 +1,4 @@
-/*	$OpenBSD: funmap.c,v 1.54 2018/08/29 07:50:16 reyk Exp $	*/
+/*	$OpenBSD: funmap.c,v 1.55 2018/12/13 14:59:16 lum Exp $	*/
 
 /* This file is in the public domain */
 
@@ -214,6 +214,7 @@ static struct funmap functnames[] = {
 	{togglenewlineprompt, "toggle-newline-prompt",},
 #endif /* TOGGLENL */
 	{togglereadonly, "toggle-read-only" },
+	{togglereadonlyall, "toggle-read-only-all" },
 	{twiddle, "transpose-chars",},
 	{transposepara, "transpose-paragraphs",},
 	{transposeword, "transpose-words",},
