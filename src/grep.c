@@ -6,7 +6,6 @@
 #include <sys/wait.h>
 
 #include <ctype.h>
-#include <libgen.h>
 #include <limits.h>
 #include <signal.h>
 #include <stdio.h>
