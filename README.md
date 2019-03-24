@@ -136,10 +136,10 @@ Origin and References
 ---------------------
 
 This project is derived from OpenBSD Mg, which is the best (maintained)
-source of the original Micro Emacs.  The intention of this project is to
-track all clones, and unlike the OpenBSD version, enable as much of its
-hidden features as possible using a standard GNU configure script, while
-being friendly to porting to resource constrained systems.
+source of the original Micro Emacs based on mg2a.  The intention of this
+project is to track all clones, and unlike the OpenBSD version, enable
+its hidden features using a standard GNU configure script, while being
+friendly to porting to resource constrained systems.
 
 Currently merged, and continously tracked, clones:
 
@@ -147,6 +147,9 @@ Currently merged, and continously tracked, clones:
 - https://github.com/hboetes/mg (official portable version)
 - https://github.com/ibara/mg (active)
 - https://github.com/scott-parker/mg-openbsd (inactive since 2015)
+- https://github.com/paaguti/mg3a (continuation of Bengt Larsson's mg3a)
+- https://github.com/kisom/kmg (another inactive fork with Go support)
+- https://github.com/jasperla/tinyschemg (OpenBSD mg with tinyscheme)
 
 Please report any bugs and problems with the packaging and porting to
 the GitHub issue tracker <https://github.com/troglobit/mg/issues>
