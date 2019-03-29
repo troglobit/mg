@@ -9,6 +9,15 @@ All relevant changes to the project are documented in this file.
 ### Changes
 - Add set-case-replaced to toggle case-preserving replace on or off.
   By Reyk Flöter, OpenBSD
+- Complement `mg -R` with new function: toggle-read-only-all,
+  by Mark Lumsden
+- Distribute and install example `~/.mg` file in /usr/shared/doc/mg
+
+### Fixes
+- Fix undo in transpose-paragraph, by Mark Lumsden
+- Fix GCC truncation warning in help.c
+- Fix --with-startup=foo and --disable-all configure options
+- Fix #2: Update build instructions for Ubuntu 16.04
 
 
 [v3.2][] - 2018-08-26
