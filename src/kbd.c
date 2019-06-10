@@ -14,6 +14,10 @@
 #include "key.h"
 #include "macro.h"
 
+#ifdef  MGLOG
+#include "log.h"
+#endif
+
 #define METABIT 0x80
 
 #define PROMPTL 80
@@ -150,6 +154,11 @@ doin(void)
 	while ((funct = doscan(curmap, (key.k_chars[key.k_count++] =
 	    getkey(TRUE)), &curmap)) == NULL)
 		/* nothing */;
+
+#ifdef  MGLOG
+	if (!mglog(funct, curmap))
+		ewprintf("Problem with logging");
+#endif
 
 	if (macrodef && macrocount < MAXMACRO)
 		macro[macrocount++].m_funct = funct;

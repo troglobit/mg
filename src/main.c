@@ -20,6 +20,10 @@
 #include "funmap.h"
 #include "macro.h"
 
+#ifdef  MGLOG
+#include "log.h"
+#endif
+
 int		 thisflag;			/* flags, this command	*/
 int		 lastflag;			/* flags, last command	*/
 int		 curgoal;			/* goal column		*/
@@ -85,6 +89,11 @@ main(int argc, char **argv)
 
 	maps_init();		/* Keymaps and modes.		*/
 	funmap_init();		/* Functions.			*/
+
+#ifdef  MGLOG
+	if (!mgloginit())
+		errx(1, "Unable to create logging environment.");
+#endif
 
 	/*
 	 * This is where we initialize standalone extensions that should
