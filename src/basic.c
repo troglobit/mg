@@ -1,4 +1,4 @@
-/*	$OpenBSD: basic.c,v 1.46 2015/09/26 21:51:58 jasper Exp $	*/
+/*	$OpenBSD: basic.c,v 1.49 2019/06/17 11:39:26 lum Exp $	*/
 
 /* This file is in the public domain */
 
@@ -123,7 +123,8 @@ forwchar(int f, int n)
 int
 gotobob(int f, int n)
 {
-	(void) setmark(f, n);
+	if (!curwp->w_markp)
+		(void) setmark(f, n);
 	curwp->w_dotp = bfirstlp(curbp);
 	curwp->w_doto = 0;
 	curwp->w_rflag |= WFFULL;
@@ -149,7 +150,8 @@ gotoeob(int f, int n)
 	int		 ln;
 	struct line	*lp;
 
-	(void) setmark(f, n);
+	if (!curwp->w_markp)
+		(void) setmark(f, n);
 	curwp->w_dotp = blastlp(curbp);
 	curwp->w_doto = llength(curwp->w_dotp);
 	curwp->w_dotline = curwp->w_bufp->b_lines;
