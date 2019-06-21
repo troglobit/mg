@@ -4,8 +4,8 @@ Micro Emacs
 
 <img align="right" src="mg.png" title="mg in action">
 
-Mg is a public domain [Micro Emacs][] derivative.  Created in 1986 based
-on the original MicroEMACS released by Dave Conroy in 1985.
+Mg is a public domain [Micro Emacs][] derivative.  Created in 1986 and
+based on the original MicroEMACS released by Dave Conroy in 1985.
 
 The intention is to be a small, fast, and portable Emacs-like editor for
 users who cannot, or do not want to, run the real Emacs for one reason
@@ -66,7 +66,7 @@ or
 
 On macOS you need the Xcode command line toolls and headers.
 
-     xcode-select --install
+    xcode-select --install
 
 Then build Mg from the unpacked release tarball:
 
@@ -141,7 +141,7 @@ project is to track all clones, and unlike the OpenBSD version, enable
 its hidden features using a standard GNU configure script, while being
 friendly to porting to resource constrained systems.
 
-Currently merged, and continously tracked, clones:
+Merged, and continously tracked, clones:
 
 - http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/mg/ (upstream)
 - https://github.com/hboetes/mg (official portable version)
