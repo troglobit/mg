@@ -157,11 +157,12 @@ ffclose(FILE *ffp, struct buffer *bp)
  * buffer. Return the status.
  */
 int
-ffputbuf(FILE *ffp, struct buffer *bp)
+ffputbuf(FILE *ffp, struct buffer *bp, int eobnl)
 {
-	struct line   *lp, *lpend;
+	struct line	*lp, *lpend;
 
 	lpend = bp->b_headp;
+
 	for (lp = lforw(lpend); lp != lpend; lp = lforw(lp)) {
 		if (fwrite(ltext(lp), 1, llength(lp), ffp) != llength(lp)) {
 			dobeep();
@@ -171,14 +172,9 @@ ffputbuf(FILE *ffp, struct buffer *bp)
 		if (lforw(lp) != lpend)		/* no implied \n on last line */
 			putc('\n', ffp);
 	}
-	/*
-	 * XXX should be variable controlled (once we have variables)
-	 */
-	if (shownlprompt && llength(lback(lpend)) != 0) {
-		if (eyorn("No newline at end of file, add one") == TRUE) {
-			lnewline_at(lback(lpend), llength(lback(lpend)));
-			putc('\n', ffp);
-		}
+	if (eobnl) {
+		lnewline_at(lback(lpend), llength(lback(lpend)));
+		putc('\n', ffp);
 	}
 	return (FIOSUC);
 }
