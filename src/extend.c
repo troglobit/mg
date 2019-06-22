@@ -3,7 +3,7 @@
 /* This file is in the public domain. */
 
 /*
- *	Extended (M-X) commands, rebinding, and	startup file processing.
+ *	Extended (M-x) commands, rebinding, and	startup file processing.
  */
 
 #include <sys/types.h>

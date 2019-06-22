@@ -118,7 +118,7 @@ typedef int	(*PF)(int, int);	/* generally useful type */
  * flag controls the clearing versus appending
  * of data in the kill buffer.
  */
-#define CFCPCN	0x0001		/* Last command was C-P, C-N	 */
+#define CFCPCN	0x0001		/* Last command was C-p or C-n	 */
 #define CFKILL	0x0002		/* Last command was a kill	 */
 #define CFINS	0x0004		/* Last command was self-insert	 */
 
@@ -611,7 +611,7 @@ int		 swapmark(int, int);
 int		 gotoline(int, int);
 int		 setlineno(int);
 
-/* random.c X */
+/* util.c X */
 int		 showcpos(int, int);
 int		 getcolpos(struct mgwin *);
 int		 twiddle(int, int);

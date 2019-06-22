@@ -303,7 +303,7 @@ static struct KEYMAPE (2) listbufmap = {
  * in two parts. The "makelist" routine figures out
  * the text, and puts it in a buffer. "popbuf"
  * then pops the data onto the screen. Bound to
- * "C-X C-B".
+ * "C-x C-b".
  */
 /* ARGSUSED */
 int

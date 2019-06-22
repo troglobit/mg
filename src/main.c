@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.85 2018/12/13 14:59:16 lum Exp $	*/
+/*	$OpenBSD: main.c,v 1.87 2019/06/22 15:38:15 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -59,7 +59,7 @@ main(int argc, char **argv)
 	struct buffer	*bp = NULL;
 
 #ifdef __OpenBSD__
-	if (pledge("stdio rpath wpath cpath fattr getpw tty proc exec", NULL) == -1)
+	if (pledge("stdio rpath wpath cpath fattr chown getpw tty proc exec", NULL) == -1)
 		err(1, "pledge");
 #endif
 
@@ -254,7 +254,7 @@ edinit(struct buffer *bp)
 
 /*
  * Quit command.  If an argument, always quit.  Otherwise confirm if a buffer
- * has been changed and not written out.  Normally bound to "C-X C-C".
+ * has been changed and not written out.  Normally bound to "C-x C-c".
  */
 /* ARGSUSED */
 int

@@ -6,7 +6,7 @@
 
 #define MAXKEY	8			/* maximum number of prefix chars */
 
-struct key {				/* the chacter sequence in a key */
+struct key {				/* the character sequence in a key */
 	int	k_count;		/* number of chars */
 	KCHAR	k_chars[MAXKEY];	/* chars */
 };
