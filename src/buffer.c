@@ -107,7 +107,7 @@ usebuffer(int f, int n)
 		    EFNUL | EFNEW | EFBUF, curbp->b_altb->b_bname);
 
 	if (bufp == NULL)
-		return (FALSE);
+		return (ABORT);
 
 	return (usebufname(bufp));
 }
@@ -750,11 +750,12 @@ popbuf(struct buffer *bp, int flags)
 		while (wp != NULL && wp == curwp)
 			wp = wp->w_wndp;
 	} else {
-		for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
+		for (wp = wheadp; wp != NULL; wp = wp->w_wndp) {
 			if (wp->w_bufp == bp) {
 				wp->w_rflag |= WFFULL | WFFRAME;
 				return (wp);
 			}
+		}
 	}
 
 	if (!wp)
