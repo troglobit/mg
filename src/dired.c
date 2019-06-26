@@ -444,6 +444,7 @@ d_expunge(int f, int n)
 int
 d_copy(int f, int n)
 {
+	struct stat      statbuf;
 	char		 frname[NFILEN], toname[NFILEN], sname[NFILEN];
 	char		*topath, *bufp;
 	int		 ret;
@@ -470,6 +471,19 @@ d_copy(int f, int n)
 		return (FALSE);
 
 	topath = adjustname(toname, TRUE);
+	if (topath && stat(topath, &statbuf) == 0) {
+		if (S_ISDIR(statbuf.st_mode)) {
+			off = snprintf(toname, sizeof(toname), "%s/%s",
+			    topath, sname);
+			if (off < 0 || off >= sizeof(toname) - 1) {
+				dobeep();
+				ewprintf("Directory name too long");
+				return (FALSE);
+			}
+			topath = adjustname(toname, TRUE);
+		}
+	}
+
 	if (topath == NULL)
 		return (FALSE);
 
