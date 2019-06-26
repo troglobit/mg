@@ -727,6 +727,7 @@ void		 ttykeymapinit(void);
 void		 ttykeymaptidy(void);
 
 /* match.c X */
+int		 ask_showmatch(int, int);
 int		 showmatch(int, int);
 
 /* version.c X */
