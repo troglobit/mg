@@ -1,4 +1,4 @@
-/*	$OpenBSD: dired.c,v 1.81 2015/12/11 20:21:23 mmcc Exp $	*/
+/*	$OpenBSD: dired.c,v 1.89 2019/06/27 16:55:08 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -487,6 +487,10 @@ d_copy(int f, int n)
 	if (topath == NULL)
 		return (FALSE);
 
+	if (strcmp(frname, topath) == 0) {
+		ewprintf("Cannot copy to same file: %s", frname);
+		return (TRUE);
+	}
 	ret = (copy(frname, topath) >= 0) ? TRUE : FALSE;
 	if (ret != TRUE)
 		return (ret);
@@ -531,6 +535,10 @@ d_rename(int f, int n)
 	if (topath == NULL)
 		return (FALSE);
 
+	if (strcmp(frname, topath) == 0) {
+		ewprintf("Cannot move to same file: %s", frname);
+		return (TRUE);
+	}
 	ret = (rename(frname, topath) >= 0) ? TRUE : FALSE;
 	if (ret != TRUE)
 		return (ret);
