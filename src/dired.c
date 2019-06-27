@@ -492,6 +492,8 @@ d_copy(int f, int n)
 		return (ret);
 	if ((bp = refreshbuffer(curbp)) == NULL)
 		return (FALSE);
+
+	ewprintf("Copy: 1 file");
 	return (showbuffer(bp, curwp, WFFULL | WFMODE));
 }
 
