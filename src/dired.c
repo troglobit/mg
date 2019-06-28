@@ -405,7 +405,7 @@ d_expunge(int f, int n)
 				curwp->w_dotline = tmp;
 				return (FALSE);
 			case FALSE:
-				if (unlink(fname) < 0) {
+				if (unlink(fname) == -1) {
 					(void)xbasename(sname, fname, NFILEN);
 					dobeep();
 					ewprintf("Could not delete '%s'", sname);
@@ -414,7 +414,7 @@ d_expunge(int f, int n)
 				}
 				break;
 			case TRUE:
-				if (rmdir(fname) < 0) {
+				if (rmdir(fname) == -1) {
 					(void)xbasename(sname, fname, NFILEN);
 					dobeep();
 					ewprintf("Could not delete directory "

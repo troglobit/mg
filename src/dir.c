@@ -152,7 +152,7 @@ do_makedir(char *path)
 		}
 
 		if (mkdir(path, finished ? mode : dir_mode) == 0) {
-			if (mode > 0777 && chmod(path, mode) < 0) {
+			if (mode > 0777 && chmod(path, mode) == -1) {
 				umask(oumask);
 				return (ABORT);
 			}
