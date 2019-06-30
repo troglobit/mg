@@ -47,13 +47,14 @@ termcap library, or ncurses, to provide terminal manipulation APIs
 like `setupterm()`, `tgoto()`, and `tputs()`.
 
 On recent Debian/Ubuntu based systems `libtinfo-dev` can be used, on
-older ones you may need to install `libncurses5-dev` instead:
+older ones the include file `term.h` is missing, so `libncurses-dev`
+must be used instead:
 
     sudo apt install libtinfo-dev
 
 or
 
-    sudo apt install libncurses5-dev
+    sudo apt install libncurses-dev
 
 On other systems you have to install the full ncurses library instead,
 on RHEL, CentOS, and Fedora:
