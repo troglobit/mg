@@ -623,7 +623,7 @@ csexists(const char *cmd)
 			dir[--dlen] = '\0';     /* strip trailing '/' */
 
 		len = snprintf(fname, sizeof(fname), "%s/%s", dir, cmd);
-		if (len == -1 || len >= sizeof(fname)) {
+		if (len < 0 || len >= sizeof(fname)) {
 			dobeep();
 			ewprintf("path too long");
 			goto cleanup;
