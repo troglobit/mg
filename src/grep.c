@@ -1,4 +1,4 @@
-/*	$OpenBSD: grep.c,v 1.43 2015/03/19 21:22:15 bcallah Exp $	*/
+/*	$OpenBSD: grep.c,v 1.48 2019/07/11 18:20:18 lum Exp $	*/
 
 /* This file is in the public domain */
 
@@ -52,11 +52,11 @@ static struct KEYMAPE (1) compilemap = {
 void
 grep_init(void)
 {
-	funmap_add(compile_goto_error, "compile-goto-error");
-	funmap_add(next_error, "next-error");
-	funmap_add(grep, "grep");
-	funmap_add(compile, "compile");
-	funmap_add(gid, "gid");
+	funmap_add(compile_goto_error, "compile-goto-error", 0);
+	funmap_add(next_error, "next-error", 0);
+	funmap_add(grep, "grep", 1);
+	funmap_add(compile, "compile", 0);
+	funmap_add(gid, "gid", 1);
 	maps_add((KEYMAP *)&compilemap, "compile");
 }
 
