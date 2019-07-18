@@ -1,4 +1,4 @@
-/*      $OpenBSD: interpreter.c,v 1.1 2019/07/18 05:57:48 lum Exp $	*/
+/*      $OpenBSD: interpreter.c,v 1.2 2019/07/18 10:50:24 lum Exp $	*/
 /*
  * This file is in the public domain.
  *
@@ -46,6 +46,11 @@
 
 #include "def.h"
 #include "funmap.h"
+
+#ifdef  MGLOG
+#include "kbd.h"
+#include "log.h"
+#endif
 
 static int	 multiarg(char *);
 static int	 isvar(char **, char **, int);
@@ -141,6 +146,10 @@ multiarg(char *funstr)
 	inlist = last = 0;
 
 	for (p = argp; *p != '\0'; p++) {
+#ifdef  MGLOG
+		mglog_execbuf("", excbuf, argbuf, argp, last, inlist, cmdp,
+		    p, contbuf);
+#endif
 		if (foundlst) {
 			foundlst = 0;
 			p--;	/* otherwise 1st arg is missed from list. */
@@ -184,6 +193,10 @@ multiarg(char *funstr)
 					return (dobeep_msg("strlcat error"));
 
 				excline(excbuf);
+#ifdef  MGLOG
+				mglog_execbuf("  ", excbuf, argbuf, argp,
+				    last, inlist, cmdp, p, contbuf);
+#endif
 				*p = ' ';	/* so 'for' loop can continue */
 				if (last) {
 					if (contbuf != NULL) {
@@ -223,7 +236,9 @@ isvar(char **argp, char **tmpbuf, int sizof)
 
 	if (SLIST_EMPTY(&varhead))
 		return (FALSE);
-
+#ifdef  MGLOG
+	mglog_isvar(*tmpbuf, *argp, sizof);
+#endif
 	SLIST_FOREACH(v1, &varhead, entry) {
 		if (strcmp(*argp, v1->name) == 0) {
 			(void)(strlcpy(*tmpbuf, v1->vals, sizof) >= sizof);
