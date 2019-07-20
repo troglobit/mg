@@ -1,4 +1,4 @@
-/*	$OpenBSD: ttykbd.c,v 1.17 2015/03/17 18:08:52 bcallah Exp $	*/
+/*	$OpenBSD: ttykbd.c,v 1.20 2021/02/23 08:10:51 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -90,7 +90,8 @@ ttykeymapinit(void)
 
 	/* Check for $TERM specific .mg startup file */
 	if ((cp = getenv("TERM"))) {
-		if (((cp = startupfile(cp)) != NULL) && (load(cp) != TRUE))
+		if (((cp = startupfile(cp, NULL)) != NULL) &&
+		    (load(cp) != TRUE))
 			ewprintf("Error reading key initialization file");
 	}
 	if (keypad_xmit)

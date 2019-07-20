@@ -1,4 +1,4 @@
-/*	$OpenBSD: fileio.c,v 1.104 2017/05/30 07:05:22 florian Exp $	*/
+/*	$OpenBSD: fileio.c,v 1.107 2021/02/23 08:10:51 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -362,7 +362,7 @@ adjustname(const char *fn, int slashslash)
  * to the startup file name.
  */
 char *
-startupfile(char *suffix)
+startupfile(char *suffix, char *conffile)
 {
 	static char	 file[NFILEN];
 	char		*home;
@@ -371,7 +371,9 @@ startupfile(char *suffix)
 	if ((home = getenv("HOME")) == NULL || *home == '\0')
 		goto nohome;
 
-	if (suffix == NULL) {
+	if (conffile != NULL) {
+		(void)strncpy(file, conffile, NFILEN);
+	} else if (suffix == NULL) {
 		ret = snprintf(file, sizeof(file), _PATH_MG_STARTUP, home);
 		if (ret < 0 || ret >= (int)sizeof(file))
 			return (NULL);
