@@ -1,4 +1,4 @@
-/*      $OpenBSD: interpreter.c,v 1.2 2019/07/18 10:50:24 lum Exp $	*/
+/*      $OpenBSD: interpreter.c,v 1.5 2019/07/20 11:06:33 lum Exp $	*/
 /*
  * This file is in the public domain.
  *
@@ -20,7 +20,7 @@
  * like:
  * 
  * 1. Give multiple arguments to a function that usually would accept only one:
- * (find-fine a.txt b.txt. c.txt)
+ * (find-file a.txt b.txt. c.txt)
  *
  * 2. Define a list:
  * (define myfiles(list d.txt e.txt))
@@ -80,7 +80,7 @@ multiarg(char *funstr)
 	char	 excbuf[BUFSIZE], argbuf[BUFSIZE], *contbuf, tmpbuf[BUFSIZE];
 	char	*cmdp, *argp, *fendp, *endp, *p, *t, *s = " ";
 	int	 singlecmd = 0, spc, numparams, numspc;
-	int	 inlist, foundlst = 0, last, sizof;
+	int	 inlist, foundlst = 0, eolst, rpar, sizof, fin;
 	
 	contbuf = NULL;
 	endp = strrchr(funstr, ')');
@@ -143,36 +143,40 @@ multiarg(char *funstr)
 		return (dobeep_msg("strlcpy error"));
 	argp = argbuf;
 	numspc = spc = 1; /* initially fake a space so we find first argument */
-	inlist = last = 0;
+	inlist = eolst = fin = rpar = 0;
 
-	for (p = argp; *p != '\0'; p++) {
+	for (p = argp; fin == 0; p++) {
 #ifdef  MGLOG
-		mglog_execbuf("", excbuf, argbuf, argp, last, inlist, cmdp,
+		mglog_execbuf("", excbuf, argbuf, argp, eolst, inlist, cmdp,
 		    p, contbuf);
 #endif
 		if (foundlst) {
 			foundlst = 0;
 			p--;	/* otherwise 1st arg is missed from list. */
 		}
-		if (*p == ' ' || *p == '\t' || *p == ')') {
+		if (*p == ')') {
+			rpar = 1;
+			*p = '\0';
+		}
+		if (*p == ' ' || *p == '\t' || *p == '\0') {
 			if (spc == 1)
 				continue;
 			if (spc == 0 && (numspc % numparams == 0)) {
-				if (*p == ')')
-					last = 1;
+				if (*p == '\0')
+					eolst = 1;
 				else
-					last = 0;
+					eolst = 0;
 				*p = '\0'; 	/* terminate arg string */
 				endp = p + 1;			
 				excbuf[0] = '\0';
 				/* Is arg a var? */
 				if (!inlist) {
-					if ((contbuf = strndup(endp, BUFSIZE))
-					    == NULL)
-						return(FALSE);
 					sizof = sizeof(tmpbuf);
 					t = tmpbuf;
 					if (isvar(&argp, &t, sizof)) {
+						if ((contbuf = strndup(endp,
+						    BUFSIZE)) == NULL)
+							return(FALSE);
 						*p = ' ';
 						(void)(strlcpy(argbuf, tmpbuf,
 						    sizof) >= sizof);
@@ -195,22 +199,27 @@ multiarg(char *funstr)
 				excline(excbuf);
 #ifdef  MGLOG
 				mglog_execbuf("  ", excbuf, argbuf, argp,
-				    last, inlist, cmdp, p, contbuf);
+				    eolst, inlist, cmdp, p, contbuf);
 #endif
 				*p = ' ';	/* so 'for' loop can continue */
-				if (last) {
+				if (eolst) {
 					if (contbuf != NULL) {
 						(void)strlcpy(argbuf, contbuf,
 						    sizeof(argbuf));
+						free(contbuf);
 						contbuf = NULL;
 						p = argp = argbuf;
 						foundlst = 1;
 						inlist = 0;
+						if (rpar)
+							fin = 1;
 						continue;
 					}
 					spc = 1;
 					inlist = 0;
 				}
+				if (eolst && rpar)
+					fin = 1;
 			}
 			numspc++;
 			spc = 1;
@@ -259,7 +268,7 @@ foundlist(char *defstr)
 {
 	struct varentry *vt, *v1 = NULL;
 	const char	 e[1] = "e", t[1] = "t";
-	char		*p, *vnamep, *vendp = NULL, *valp;
+	char		*p, *vnamep, *vendp = NULL, *valp, *o;
 	int		 spc;
 
 
@@ -306,7 +315,7 @@ foundlist(char *defstr)
 		return(dobeep_msg("strndup error"));
 	v1->count = 0;
 	vendp = NULL;
-
+	
 	/* initially fake a space so we find first value */
 	spc = 1;
 	/* now loop through values in list value string while counting them */
@@ -316,7 +325,9 @@ foundlist(char *defstr)
 				vendp = p;
 			spc = 1;
 		} else if (*p == ')') {
-			vendp = ++p; /* currently need ')' */
+			o = p - 1;
+			if (*o != ' ' && *o != '\t')
+				vendp = p;
 			break;
 		} else {
 			if (spc == 1)
