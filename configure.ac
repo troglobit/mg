@@ -63,6 +63,10 @@ AC_ARG_WITH(startup,
         AS_HELP_STRING([--with-startup=FILE], [Init file to run at startup if ~/.mg is missing]),
 	[startup=$withval], [startup='no'])
 
+AC_ARG_WITH(mglog,
+	AS_HELP_STRING([--with-mglog], [Debug mg internals to a log file, default ./log/*.log]),
+	[mglog=$withval], [mglog='no'])
+
 # If all features are to be disabled, do that here
 AS_IF([test "x$enable_all" = "xno"],
 	enable_autoexec="no"
@@ -115,6 +119,9 @@ AS_IF([test "x$startup" != "xno"],[
 		AC_MSG_ERROR([Must supply argument])])]
 	AC_DEFINE_UNQUOTED(STARTUPFILE, "$startup", [Init file to run if ~/.mg is missing]))
 
+AS_IF([test "x$mglog" != "xno"],
+	AC_DEFINE_UNQUOTED(MGLOG, "$mglog", [Debug logging of mg internals]))
+
 # Control build with automake flags
 AM_CONDITIONAL(REGEX,    [test "x$enable_regexp"   = "xyes"])
 AM_CONDITIONAL(AUTOEXEC, [test "x$enable_autoexec" = "xyes"])
@@ -124,6 +131,7 @@ AM_CONDITIONAL(CSCOPE,   [test "x$enable_cscope"   = "xyes"])
 AM_CONDITIONAL(CTAGS,    [test "x$enable_ctags"    = "xyes"])
 AM_CONDITIONAL(DIRED,    [test "x$enable_dired"    = "xyes"])
 AM_CONDITIONAL(TINY,     [test "x$enable_tiny"     = "xyes"])
+AM_CONDITIONAL(MGLOG,    [test "x$mglog"          != "xno"])
 
 # Generate all files
 AC_OUTPUT

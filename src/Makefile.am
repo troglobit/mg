@@ -47,3 +47,6 @@ endif
 if REGEX
 mg_SOURCES     += re_search.c
 endif
+if MGLOG
+mg_SOURCES     += log.c log.h
+endif
