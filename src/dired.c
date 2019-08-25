@@ -480,7 +480,7 @@ d_copy(int f, int n)
 		if (S_ISDIR(statbuf.st_mode)) {
 			off = snprintf(toname, sizeof(toname), "%s/%s",
 			    topath, sname);
-			if (off < 0 || off >= sizeof(toname) - 1) {
+			if (off < 0 || off >= (int)sizeof(toname) - 1) {
 				dobeep();
 				ewprintf("Directory name too long");
 				return (FALSE);
