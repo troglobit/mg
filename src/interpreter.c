@@ -335,7 +335,10 @@ foundlist(char *defstr)
 			spc = 0;
 		}
 	}
-	*vendp = '\0';
+
+	if (vendp)
+		*vendp = '\0';
+
 	if ((v1->vals = strndup(valp, BUFSIZE)) == NULL)
 		return(dobeep_msg("strndup error"));
 
