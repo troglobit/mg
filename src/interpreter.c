@@ -269,7 +269,7 @@ static int
 foundlist(char *defstr)
 {
 	struct varentry *vt, *v1 = NULL;
-	const char	 e[1] = "e", t[1] = "t";
+	const char	 e[2] = "e", t[2] = "t";
 	char		*p, *vnamep, *vendp = NULL, *valp, *o;
 	int		 spc;
 
