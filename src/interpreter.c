@@ -139,7 +139,10 @@ multiarg(char *funstr)
 		return (dobeep_msgs("Command takes no arguments: ", cmdp));
 
 	/* now find the first argument */
-	p = fendp + 1;
+	if (fendp)
+		p = fendp + 1;
+	else
+		p = "";
 	p = skipwhite(p);
 	if (strlcpy(argbuf, p, sizeof(argbuf)) >= sizeof(argbuf))
 		return (dobeep_msg("strlcpy error"));
