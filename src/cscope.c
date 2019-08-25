@@ -1,4 +1,4 @@
-/*	$OpenBSD: cscope.c,v 1.15 2016/01/19 11:39:06 sunil Exp $	*/
+/*	$OpenBSD: cscope.c,v 1.18 2019/07/03 03:24:02 deraadt Exp $	*/
 
 /*
  * This file is in the public domain.
@@ -164,10 +164,13 @@ cscreatelist(int f, int n)
 	struct buffer *bp;
 	struct stat sb;
 	FILE *fpipe;
-	char dir[NFILEN], cmd[BUFSIZ], title[BUFSIZ], *line = NULL, *bufp;
-	size_t len = 0;
-	size_t num;
+	char dir[NFILEN], cmd[BUFSIZ], title[BUFSIZ], *line, *bufp;
+	size_t sz;
+	ssize_t len;
 	int clen;
+
+	line = NULL;
+	sz = 0;
 
 	if (getbufcwd(dir, sizeof(dir)) == FALSE)
 		dir[0] = '\0';
@@ -221,13 +224,14 @@ cscreatelist(int f, int n)
 	}
 	addline(bp, title);
 	addline(bp, "");
-	/* All lines are NUL terminated */
-	while ((num = getline(&line, &len, fpipe)) != -1) {
-		line[strcspn(line, "\n")] = 0;
+	while ((len = getline(&line, &sz, fpipe)) != -1) {
+		if (line[len - 1] == '\n')
+			line[len - 1] = '\0';
 		addline(bp, line);
 	}
-	if (len)
-		free(line);
+	free(line);
+	if (ferror(fpipe))
+		ewprintf("Problem reading pipe");
 	pclose(fpipe);
 	return (popbuftop(bp, WNONE));
 }
@@ -397,10 +401,13 @@ do_cscope(int i)
 	struct buffer *bp;
 	FILE *fpipe;
 	char pattern[MAX_TOKEN], cmd[BUFSIZ], title[BUFSIZ];
-	char *p, *buf = NULL;
+	char *p, *buf;
 	int clen, nores = 0;
-	size_t len = 0;
-	size_t num;
+	size_t sz;
+	ssize_t len;
+
+	buf = NULL;
+	sz = 0;
 
 	/* If current buffer isn't a source file just return */
 	if (fnmatch("*.[chy]", curbp->b_fname, 0) != 0) {
@@ -450,15 +457,18 @@ do_cscope(int i)
 	addline(bp, title);
 	addline(bp, "");
 	addline(bp, "-------------------------------------------------------------------------------");
-	/* All lines are NUL terminated */
-	while ((num = getline(&buf, &len, fpipe)) != -1) {
-		buf[strcspn(buf, "\n")] = 0;
-		if (addentry(bp, buf) != TRUE)
+	while ((len = getline(&buf, &sz, fpipe)) != -1) {
+		if (buf[len - 1] == '\n')
+			buf[len - 1] = '\0';
+		if (addentry(bp, buf) != TRUE) {
+			free(buf);
 			return (FALSE);
+		}
 		nores = 1;
-	};
-	if (len)
-		free(buf);
+	}
+	free(buf);
+	if (ferror(fpipe))
+		ewprintf("Problem reading pipe");
 	pclose(fpipe);
 	addline(bp, "-------------------------------------------------------------------------------");
 	if (nores == 0)
