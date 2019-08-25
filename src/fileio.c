@@ -662,6 +662,9 @@ backuptohomedir(int f, int n)
 
 	if (bkupdir == NULL) {
 		p = adjustname(c, TRUE);
+		if (p == NULL)
+			return (FALSE);
+
 		bkupdir = strndup(p, NFILEN);
 		if (bkupdir == NULL)
 			return(FALSE);
