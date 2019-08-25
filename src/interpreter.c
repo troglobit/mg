@@ -122,10 +122,12 @@ multiarg(char *funstr)
 			*fendp = '\0';
 		return(excline(cmdp));
 	}
+
 	if ((fendp = strchr(cmdp, ' ')) == NULL) 
 		fendp = strchr(cmdp, '\t');
+	if (fendp)
+		*fendp = '\0';
 
-	*fendp = '\0';
 	/*
 	 * If no extant mg command found, just return.
 	 */
