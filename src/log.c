@@ -120,7 +120,8 @@ mglog_key(KEYMAP *map)
 		fclose(fd);
 		return (FALSE);
 	}
-	for (pfp = map->map_element->k_funcp; *pfp != '\0'; pfp++)
+
+	for (pfp = map->map_element->k_funcp; *pfp != 0; pfp++)
 		fprintf(fd, "%s ", function_name(*pfp));
 
 	fprintf(fd, "\n\n");
