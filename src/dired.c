@@ -1097,7 +1097,7 @@ d_gotofile(int f, int n)
 		return (FALSE);
 
 	fpth = adjustname(fpath, TRUE);		/* Removes last '/' if	*/
-	if (strlen(fpth) == lenfpath - 1) {	/* directory, hence -1.	*/
+	if (fpth == NULL || strlen(fpth) == lenfpath - 1) {	/* directory, hence -1.	*/
 		ewprintf("No file to find");	/* Current directory given so  */
 		return (TRUE);			/* return at present location. */
 	}
