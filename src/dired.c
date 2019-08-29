@@ -805,7 +805,7 @@ refreshbuffer(struct buffer *bp)
 static int
 d_makename(struct line *lp, char *fn, size_t len)
 {
-	int	 start, nlen;
+	int	 start, nlen, ret;
 	char	*namep;
 
 	if (d_warpdot(lp, &start) == FALSE)
@@ -813,7 +813,8 @@ d_makename(struct line *lp, char *fn, size_t len)
 	namep = &lp->l_text[start];
 	nlen = llength(lp) - start;
 
-	if (snprintf(fn, len, "%s%.*s", curbp->b_fname, nlen, namep) >= len)
+	ret = snprintf(fn, len, "%s%.*s", curbp->b_fname, nlen, namep);
+	if (ret < 0 || ret >= (int)len)
 		return (ABORT); /* Name is too long. */
 
 	/* Return TRUE if the entry is a directory. */
