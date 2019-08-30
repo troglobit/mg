@@ -143,14 +143,14 @@ ttflush(void)
 	if (nobuf == 0)
 		return;
 
-	while ((written = write(fileno(stdout), buf, nobuf)) != nobuf) {
+	while ((written = write(fileno(stdout), buf, nobuf)) != (ssize_t)nobuf) {
 		if (written == -1) {
 			if (errno == EINTR)
 				continue;
 			panic("ttflush write failed");
 		}
 		buf += written;
-		nobuf -= written;
+		nobuf -= (size_t)written;
 	}
 	nobuf = 0;
 }
