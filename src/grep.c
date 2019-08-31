@@ -179,7 +179,6 @@ compile_mode(const char *name, const char *command)
 	FILE	*fpipe;
 	char	*buf = NULL;
 	size_t	 len = 0;
-	size_t   num;
 	int	 ret, n, status;
 	char	 cwd[NFILEN], qcmd[NFILEN];
 	char	 timestr[NTIME];
@@ -212,20 +211,19 @@ compile_mode(const char *name, const char *command)
 		return (NULL);
 	}
 
-	/*
-	 * We use getline() to make mg more portable across UNIX distributions.
-	 * It's not as flexible as fgetln() but it works for us.
-	 */
-	while ((num = getline(&buf, &len, fpipe)) != -1) {
-		buf[strcspn(buf, "\n")] = 0;
+	while (getline(&buf, &len, fpipe) != -1) {
+		if (buf[len - 1] == '\n')
+			buf[len - 1] = '\0';
 		addline(bp, buf);
 	}
-	if (len)
+	if (buf)
 		free(buf);
 	ret = pclose(fpipe);
+
 	t = time(NULL);
 	strftime(timestr, sizeof(timestr), "%a %b %e %T %Y", localtime(&t));
 	addline(bp, "");
+
 	if (WIFEXITED(ret)) {
 		status = WEXITSTATUS(ret);
 		if (status == 0)
