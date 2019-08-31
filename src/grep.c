@@ -145,7 +145,7 @@ gid(int f, int n)
 			break;
 	}
 	/* Fill the symbol in cprompt[] */
-	for (j = 0; j < sizeof(cprompt) - 1 && i < llength(curwp->w_dotp);
+	for (j = 0; j < (int)sizeof(cprompt) - 1 && i < llength(curwp->w_dotp);
 	    j++, i++) {
 		c = lgetc(curwp->w_dotp, i);
 		if (!isalnum(c) && c != '_')
@@ -160,7 +160,7 @@ gid(int f, int n)
 	else if (bufp[0] == '\0')
 		return (FALSE);
 	len = snprintf(command, sizeof(command), "gid %s", cprompt);
-	if (len < 0 || len >= sizeof(command))
+	if (len < 0 || len >= (int)sizeof(command))
 		return (FALSE);
 
 	if ((bp = compile_mode("*gid*", command)) == NULL)
@@ -186,7 +186,7 @@ compile_mode(const char *name, const char *command)
 	time_t	 t;
 
 	n = snprintf(qcmd, sizeof(qcmd), "%s 2>&1", command);
-	if (n < 0 || n >= sizeof(qcmd))
+	if (n < 0 || n >= (int)sizeof(qcmd))
 		return (NULL);
 
 	bp = bfind(name, TRUE);
