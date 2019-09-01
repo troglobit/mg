@@ -183,8 +183,7 @@ multiarg(char *funstr)
 						    BUFSIZE)) == NULL)
 							return(FALSE);
 						*p = ' ';
-						(void)(strlcpy(argbuf, tmpbuf,
-						    sizof) >= sizof);
+						strlcpy(argbuf, tmpbuf, sizof);
 						p = argp = argbuf;
 						spc = 1;
 						foundlst = inlist = 1;
@@ -209,7 +208,7 @@ multiarg(char *funstr)
 				*p = ' ';	/* so 'for' loop can continue */
 				if (eolst) {
 					if (contbuf != NULL) {
-						(void)strlcpy(argbuf, contbuf,
+						strlcpy(argbuf, contbuf,
 						    sizeof(argbuf));
 						free(contbuf);
 						contbuf = NULL;
@@ -255,7 +254,7 @@ isvar(char **argp, char **tmpbuf, int sizof)
 #endif
 	SLIST_FOREACH(v1, &varhead, entry) {
 		if (strcmp(*argp, v1->name) == 0) {
-			(void)(strlcpy(*tmpbuf, v1->vals, sizof) >= sizof);
+			strlcpy(*tmpbuf, v1->vals, sizof);
 			return (TRUE);
 		}
 	}
