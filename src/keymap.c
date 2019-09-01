@@ -514,7 +514,7 @@ static struct KEYMAPE (1) overwmap = {
 /*
  * The basic (root) keyboard map
  */
-struct maps_s	fundamental_mode = { (KEYMAP *)&fundmap, "fundamental" };
+struct maps_s	fundamental_mode = { (KEYMAP *)&fundmap, "fundamental", NULL };
 
 /*
  * give names to the maps, for use by help etc. If the map is to be bindable,
@@ -526,17 +526,17 @@ struct maps_s	fundamental_mode = { (KEYMAP *)&fundmap, "fundamental" };
  */
 
 static struct maps_s map_table[] = {
-	{(KEYMAP *) &fillmap, "fill",},
-	{(KEYMAP *) &indntmap, "indent",},
+	{(KEYMAP *) &fillmap, "fill", NULL},
+	{(KEYMAP *) &indntmap, "indent", NULL},
 #ifdef NOTAB
-	{(KEYMAP *) &notabmap, "notab",},
+	{(KEYMAP *) &notabmap, "notab", NULL},
 #endif /* NOTAB */
-	{(KEYMAP *) &overwmap, "overwrite",},
-	{(KEYMAP *) &metamap, "esc prefix",},
-	{(KEYMAP *) &cXmap, "c-x prefix",},
-	{(KEYMAP *) &cX4map, "c-x 4 prefix",},
-	{(KEYMAP *) &helpmap, "help",},
-	{NULL, NULL}
+	{(KEYMAP *) &overwmap, "overwrite", NULL},
+	{(KEYMAP *) &metamap, "esc prefix", NULL},
+	{(KEYMAP *) &cXmap, "c-x prefix", NULL},
+	{(KEYMAP *) &cX4map, "c-x 4 prefix", NULL},
+	{(KEYMAP *) &helpmap, "help", NULL},
+	{NULL, NULL, NULL}
 };
 
 struct maps_s *maps;
