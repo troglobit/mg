@@ -321,7 +321,7 @@ dobind(KEYMAP *curmap, const char *p, int unbind)
 	KEYMAP	*pref_map = NULL;
 	PF	 funct;
 	char	 bprompt[80], *bufp, *pep;
-	int	 c, s, n;
+	int	 c, s;
 
 	if (macrodef) {
 		/*
@@ -342,6 +342,8 @@ dobind(KEYMAP *curmap, const char *p, int unbind)
 		(void)doscan(curmap, c = maclcur->l_text[s], NULL);
 		maclcur = maclcur->l_fp;
 	} else {
+		size_t	 n;
+
 		n = strlcpy(bprompt, p, sizeof(bprompt));
 		if (n >= sizeof(bprompt))
 			n = sizeof(bprompt) - 1;

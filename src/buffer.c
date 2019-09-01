@@ -377,7 +377,7 @@ makelist(void)
 		    w - 5,		/* four chars already written */
 		    w - 5,		/* four chars already written */
 		    bp->b_bname,	/* buffer name */
-		    strlen(bp->b_bname) < w - 5 ? ' ' : '$', /* truncated? */
+		    (int)strlen(bp->b_bname) < w - 5 ? ' ' : '$', /* truncated? */
 		    nbytes,		/* buffer size */
 		    w - 7,		/* seven chars already written */
 		    bp->b_fname) == FALSE)
@@ -499,7 +499,7 @@ anycb(int f)
 		if (*(bp->b_fname) != '\0' && (bp->b_flag & BFCHG) != 0) {
 			ret = snprintf(pbuf, sizeof(pbuf), "Save file %s",
 			    bp->b_fname);
-			if (ret < 0 || ret >= sizeof(pbuf)) {
+			if (ret < 0 || ret >= (int)sizeof(pbuf)) {
 				dobeep();
 				ewprintf("Error: filename too long!");
 				return (UERROR);

@@ -28,8 +28,9 @@ int
 desckey(int f, int n)
 {
 	KEYMAP	*curmap;
+	size_t	 num;
 	PF	 funct;
-	int	 c, m, i, num;
+	int	 c, m, i;
 	char	*pep;
 	char	 dprompt[80];
 

@@ -200,7 +200,7 @@ cscreatelist(int f, int n)
 	}
 
 	clen = snprintf(cmd, sizeof(cmd), "cscope-indexer -v %s", dir);
-	if (clen < 0 || clen >= sizeof(cmd))
+	if (clen < 0 || clen >= (int)sizeof(cmd))
 		return (FALSE);
 
 	if ((fpipe = popen(cmd, "r")) == NULL) {
@@ -218,7 +218,7 @@ cscreatelist(int f, int n)
 
 	clen = snprintf(title, sizeof(title), "%s%s",
 	    "Creating cscope file list 'cscope.files' in: ", dir);
-	if (clen < 0 || clen >= sizeof(title)) {
+	if (clen < 0 || clen >= (int)sizeof(title)) {
 		pclose(fpipe);
 		return (FALSE);
 	}
@@ -433,7 +433,7 @@ do_cscope(int i)
 	csflush();
 	clen = snprintf(cmd, sizeof(cmd), "cscope -L -%d %s 2>/dev/null",
 	    i, pattern);
-	if (clen < 0 || clen >= sizeof(cmd))
+	if (clen < 0 || clen >= (int)sizeof(cmd))
 		return (FALSE);
 
 	if ((fpipe = popen(cmd, "r")) == NULL) {
@@ -450,7 +450,7 @@ do_cscope(int i)
 	bp->b_flag |= BFREADONLY;
 
 	clen = snprintf(title, sizeof(title), "%s%s", csprompt[i], pattern);
-	if (clen < 0 || clen >= sizeof(title)) {
+	if (clen < 0 || clen >= (int)sizeof(title)) {
 		pclose(fpipe);
 		return (FALSE);
 	}
@@ -633,7 +633,7 @@ csexists(const char *cmd)
 			dir[--dlen] = '\0';     /* strip trailing '/' */
 
 		len = snprintf(fname, sizeof(fname), "%s/%s", dir, cmd);
-		if (len < 0 || len >= sizeof(fname)) {
+		if (len < 0 || len >= (int)sizeof(fname)) {
 			dobeep();
 			ewprintf("path too long");
 			goto cleanup;

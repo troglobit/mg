@@ -852,7 +852,7 @@ modeline(struct mgwin *wp, int modelinecolor)
 		len = snprintf(sl, sizeof(sl), "--L%d", wp->w_dotline);
 	else if (colnos)
 		len = snprintf(sl, sizeof(sl), "--C%d", getcolpos(wp));
-	if ((linenos || colnos) && len < sizeof(sl) && len != -1)
+	if ((linenos || colnos) && len < (int)sizeof(sl) && len != -1)
 		n += vtputs(sl);
 
 	while (n < ncol) {			/* Pad out.		 */

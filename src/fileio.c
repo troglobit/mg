@@ -353,11 +353,11 @@ startupfile(char *suffix)
 
 	if (suffix == NULL) {
 		ret = snprintf(file, sizeof(file), _PATH_MG_STARTUP, home);
-		if (ret < 0 || ret >= sizeof(file))
+		if (ret < 0 || ret >= (int)sizeof(file))
 			return (NULL);
 	} else {
 		ret = snprintf(file, sizeof(file), _PATH_MG_TERM, home, suffix);
-		if (ret < 0 || ret >= sizeof(file))
+		if (ret < 0 || ret >= (int)sizeof(file))
 			return (NULL);
 	}
 
@@ -539,7 +539,7 @@ make_file_list(char *buf)
 			statbuf.st_mode = 0;
 			ret = snprintf(statname, sizeof(statname), "%s/%s",
 			    dir, dent->d_name);
-			if (ret < 0 || ret > sizeof(statname) - 1)
+			if (ret < 0 || ret > (int)sizeof(statname) - 1)
 				continue;
 			if (stat(statname, &statbuf) < 0)
 				continue;
@@ -554,7 +554,7 @@ make_file_list(char *buf)
 		}
 		ret = snprintf(fl_name, sizeof(fl_name),
 		    "%s%s%s", prefixx, dent->d_name, isdir ? "/" : "");
-		if (ret < 0 || ret >= sizeof(fl_name)) {
+		if (ret < 0 || ret >= (int)sizeof(fl_name)) {
 			free(current);
 			continue;
 		}
