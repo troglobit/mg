@@ -1,4 +1,4 @@
-/*	$OpenBSD: help.c,v 1.34 2012/04/12 04:47:59 lum Exp $	*/
+/*	$OpenBSD: help.c,v 1.35 2015/03/19 21:22:15 bcallah Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -16,6 +16,8 @@
 #include "kbd.h"
 #include "key.h"
 #include "macro.h"
+
+#define KEYNAMESZ	6 /* max is "C-SPC" */
 
 const char *hlp = "C-h q  toggle quick help  |  C-h t  show tutorial  |  C-h b  show key bindings";
 
@@ -131,7 +133,7 @@ static int
 showall(struct buffer *bp, KEYMAP *map, char *prefix)
 {
 	KEYMAP	*newmap;
-	char	 buf[10], keybuf[16];
+	char	 buf[MAXKEY*KEYNAMESZ + 1], keybuf[KEYNAMESZ];
 	PF	 fun;
 	int	 c;
 
@@ -143,13 +145,13 @@ showall(struct buffer *bp, KEYMAP *map, char *prefix)
 		fun = doscan(map, c, &newmap);
 		if (fun == rescan || fun == selfinsert)
 			continue;
-		getkeyname(buf, sizeof(buf), c);
-		(void)snprintf(keybuf, sizeof(keybuf), "%s%s ", prefix, buf);
+		getkeyname(keybuf, sizeof(keybuf), c);
+		(void)snprintf(buf, sizeof(buf), "%s%s ", prefix, keybuf);
 		if (fun == NULL) {
-			if (showall(bp, newmap, keybuf) == FALSE)
+			if (showall(bp, newmap, buf) == FALSE)
 				return (FALSE);
 		} else {
-			if (addlinef(bp, "%-16s%s", keybuf,
+			if (addlinef(bp, "%-16s%s", buf,
 				    function_name(fun)) == FALSE)
 				return (FALSE);
 		}
