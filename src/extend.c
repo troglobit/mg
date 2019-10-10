@@ -802,7 +802,9 @@ excline(char *line)
 						 * split into two statements
 						 * due to bug in OSK cpp
 						 */
-						c = CHARMASK(*++argp);
+						if (*++argp == '\\')
+							++argp;
+						c = CHARMASK(*argp);
 						c = ISLOWER(c) ?
 						    CCHR(TOUPPER(c)) : CCHR(c);
 						break;
