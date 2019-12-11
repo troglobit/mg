@@ -409,7 +409,7 @@ searchpat(char *pat)
 	dotline = 1;
 	lp = lforw(curbp->b_headp);
 	while (lp != curbp->b_headp) {
-		if (ltext(lp) != NULL && plen <= llength(lp) &&
+		if (ltext(lp) != NULL && (int)plen <= llength(lp) &&
 		    (strncmp(pat, ltext(lp), plen) == 0)) {
 			curwp->w_doto = 0;
 			curwp->w_dotp = lp;

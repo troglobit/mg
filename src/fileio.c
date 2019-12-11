@@ -164,7 +164,7 @@ ffputbuf(FILE *ffp, struct buffer *bp, int eobnl)
 	lpend = bp->b_headp;
 
 	for (lp = lforw(lpend); lp != lpend; lp = lforw(lp)) {
-		if (fwrite(ltext(lp), 1, llength(lp), ffp) != llength(lp)) {
+		if ((int)fwrite(ltext(lp), 1, llength(lp), ffp) != llength(lp)) {
 			dobeep();
 			ewprintf("Write I/O error");
 			return (FIOERR);
