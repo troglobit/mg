@@ -3,8 +3,8 @@ Change Log
 
 All relevant changes to the project are documented in this file.
 
-[v3.3][UNRELEASED]
-------------------
+[v3.3][] - 2019-12-11
+---------------------
 
 ### Changes
 - Initial support for scheme-like scriptiing functionality to `~/.mg`,
@@ -171,7 +171,8 @@ set as Mg3a.
 	functions.  Some simply marked as "don't care"
   - Fix missing initialization of stack variables
 
-[UNRELEASED]: https://github.com/troglobit/mg/compare/v3.2...HEAD
+[UNRELEASED]: https://github.com/troglobit/mg/compare/v3.3...HEAD
+[v3.3]:       https://github.com/troglobit/mg/compare/v3.2...v3.3
 [v3.2]:       https://github.com/troglobit/mg/compare/v3.1...v3.2
 [v3.1]:       https://github.com/troglobit/mg/compare/v3.0.2...v3.1
 [v3.0.2]:     https://github.com/troglobit/mg/compare/v3.0.1..v3.0.2
