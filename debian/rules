@@ -9,9 +9,9 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 # Install the ".mg" example config manually, as debhelper can't rename
 override_dh_auto_install:
 	dh_auto_install
+	-rm -f debian/mg/usr/share/doc/mg/.mg
 	-rm -f debian/mg/usr/share/doc/mg/README
 	-rm -f debian/mg/usr/share/doc/mg/UNLICENSE
-	install -D -m444 .mg debian/mg/usr/share/doc/mg/examples/dot_mg
 
 override_dh_installchangelogs:
 	dh_installchangelogs ChangeLog.md

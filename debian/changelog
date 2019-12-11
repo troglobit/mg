@@ -1,3 +1,20 @@
+mg (3.3) unstable; urgency=medium
+
+  * Collect 1+ year of upstream OpenBSD changes
+  * New functions:
+    + set-case-replaced
+    + toggle-read-only-all
+    + dired-goto-file
+  * Initial support for scheme-like scriptiing functionality in ~/.mg
+  * Fixes:
+    + Undo in transpose-paragraph
+    + Fixes to various GCC 8 compiler warnings
+    + The switch-to-buffer (C-x b) doesn't cancel properly if C-g is pressed
+    + Always display correct file name in minibuffer
+    + Allow fns with >0 param receive and process when eval from startup file
+
+ -- Joachim Nilsson <troglobit@gmail.com>  Wed, 11 Dec 2019 21:26:59 +0100
+
 mg (3.2) unstable; urgency=medium
 
   * New upstream source, https://github.com/troglobit/mg/, and release
