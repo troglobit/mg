@@ -7,17 +7,30 @@ All relevant changes to the project are documented in this file.
 ------------------
 
 ### Changes
-- Add set-case-replaced to toggle case-preserving replace on or off.
-  By Reyk Flöter, OpenBSD
-- Complement `mg -R` with new function: toggle-read-only-all,
+- Initial support for scheme-like scriptiing functionality to `~/.mg`,
   by Mark Lumsden
-- Distribute and install example `~/.mg` file in /usr/shared/doc/mg
+- Add `set-case-replaced` to toggle case-preserving replace on or off.
+  By Reyk Flöter, OpenBSD
+- Complement `mg -R` with new function: `toggle-read-only-all`,
+  by Mark Lumsden
+- Distribute and install example `~/.mg` file in `/usr/shared/doc/mg`
+- Improved internal support for debugging mg, by Mark Lumsden
+- Add `dired-revert` to the dired funmap, by Mark Lumsden
+- Display an error message if trying to copy or rename a file to itself,
+  by Mark Lumsden
+- Add `dired-goto-file`, by Mark Lumsden
 
 ### Fixes
 - Fix undo in transpose-paragraph, by Mark Lumsden
 - Fix GCC truncation warning in help.c
-- Fix --with-startup=foo and --disable-all configure options
+- Fixes to various GCC 8 compiler warnings, by Joachim Nilsson
+- Fix `--with-startup=foo` and `--disable-all` configure options
 - Fix #2: Update build instructions for Ubuntu 16.04
+- Fix switch-to-buffer (`C-x b`) doesn't cancel properly if `C-g` is
+  pressed, by Mark Lumsden
+- Fix to always display correct file name in minibuffer, by Mark Lumsden
+- Fix to allow fns with >0 param receive and process when eval from
+  startup file, by Mark Lumsden
 
 
 [v3.2][] - 2018-08-26
