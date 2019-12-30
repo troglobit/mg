@@ -25,26 +25,24 @@ the spirit of Mg -- to be small, fast, and portable.
 Supported Platforms
 -------------------
 
-This project has been extensively tested on Debian GNU/Linux, Ubuntu,
-CentOS, Fedora, Alpine Linux, FreeBSD, NetBSD, OpenBSD, DragonFly BSD,
-Apple macOS >= 10.10, Cygwin, as well as a few embedded Linux systems.
+This project tracks the upstream OpenBSD Mg but also caters to other
+sources of patches and new features.  It has been extensively tested on
+Debian GNU/Linux, Ubuntu, CentOS, Fedora, Alpine Linux, FreeBSD, NetBSD,
+OpenBSD, DragonFly BSD, Apple macOS >= 10.10, Cygwin, as well as a few
+embedded Linux systems.
 
 > **Note**: the official [portable Mg][] project, used by Debian and
 > other GNU/Linux distributions, is maintained by Han Boetes.  Unlike
-> this project, which is stand-alone, it uses [libbsd][] to maintain
-> portability and follows the OpenBSD version very closely.
+> this project, which is stand-alone, Boetes relies on [libbsd][] to
+> maintain portability and follows the OpenBSD version very closely.
 
 
 Building
 --------
 
-This project maintains a set of patches on top of OpenBSD Mg, one of
-which is a standard GNU configure script to simplify building on various
-UNIX systems, as well as cross compilation to different targets.
-
-The project is almost completely self hosting, you need a 3rd party
-termcap library, or ncurses, to provide terminal manipulation APIs
-like `setupterm()`, `tgoto()`, and `tputs()`.
+This project is almost completely self hosting, you only need a termcap
+library, like ncurses, to provide the terminal APIs `setupterm()`,
+`tgoto()`, and `tputs()`.
 
 On recent Debian/Ubuntu based systems `libtinfo-dev` can be used, on
 older ones the include file `term.h` is missing, so `libncurses-dev`
