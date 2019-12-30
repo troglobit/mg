@@ -13,8 +13,8 @@ or another.  Compatibility with GNU Emacs is key for Mg, separating it
 from other [ErsatzEmacs][] clones, because there should never be any
 reason to learn more than one Emacs flavor.
 
-Download the latest release, configure + make and you're done! =>
-[Mg v3.3](https://github.com/troglobit/mg/releases/download/v3.3/mg-3.3.tar.gz)
+> Latest release, [Mg v3.3](https://github.com/troglobit/mg/releases/download/v3.3/mg-3.3.tar.gz),
+> configure + make and you're done!
 
 The size constraints and target audience pose challenging limitations on
 the feature set of Mg.  It is not scriptable or extensible like a true
