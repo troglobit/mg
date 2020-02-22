@@ -1,5 +1,6 @@
 # Written by Joachim Nilsson <troglobit@gmail.com> and put in the public domain.
 AC_INIT([Mg], [3.3], [https://github.com/troglobit/mg/issues], [mg])
+AC_CONFIG_AUX_DIR(aux)
 AM_INIT_AUTOMAKE([1.11 foreign])
 AM_SILENT_RULES([yes])
 
