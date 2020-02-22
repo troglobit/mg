@@ -3,6 +3,14 @@ Change Log
 
 All relevant changes to the project are documented in this file.
 
+[v3.4][UNRELEASED]
+------------------
+
+### Fixes
+- Duplicate definitions of global variables in def.h, found by GCC-10.
+  Patched by Ulrich Mueller of Gentoo, via OpenBSD and Han Boetes
+
+
 [v3.3][] - 2019-12-11
 ---------------------
 
