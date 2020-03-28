@@ -1,3 +1,10 @@
+mg2a (3.4) stable; urgency=medium
+
+  * New name so it does not conflict with the default mg package in Debian
+    and its derivatives.
+
+ -- Joachim Nilsson <troglobit@gmail.com>  Sat, 28 Mar 2020 16:41:53 +0100
+
 mg (3.3) unstable; urgency=medium
 
   * Collect 1+ year of upstream OpenBSD changes

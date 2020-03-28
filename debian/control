@@ -1,4 +1,4 @@
-Source: mg
+Source: mg2a
 Section: editors
 Priority: optional
 Maintainer: Joachim Nilsson <troglobit@gmail.com>
@@ -8,9 +8,12 @@ Homepage: https://github.com/troglobit/mg/
 Vcs-Git: https://github.com/troglobit/mg.git
 Vcs-Browser: https://github.com/troglobit/mg.git
 
-Package: mg
+Package: mg2a
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}
+Conflicts: mg
+Replaces: mg
+Provides: mg
 Provides: editor
 Description: public domain Micro Emacs derivative
  This program is intended to be a small, fast, and portable
@@ -27,3 +30,7 @@ Description: public domain Micro Emacs derivative
    * ng-cjk, ng-cjk-canna and ng-latin;
    * qemacs and qemacs-nox; and
    * zile
+ .
+ This version of mg is called mg2a to not conflict with the default
+ Debian/Ubuntu version.  It comes with slightly more features and has
+ fewer dependencies.

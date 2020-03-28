@@ -15,10 +15,10 @@ include /usr/share/dpkg/default.mk  # provides DEB_VERSION
 # Install the ".mg" example config manually, as debhelper can't rename
 override_dh_auto_install:
 	dh_auto_install
-	-rm -f debian/mg/usr/share/doc/mg/.mg
-	-rm -f debian/mg/usr/share/doc/mg/README
-	-rm -f debian/mg/usr/share/doc/mg/UNLICENSE
-	-rm -f debian/mg/usr/share/doc/mg/ChangeLog.md
+	-rm -f debian/mg2a/usr/share/doc/mg2a/.mg
+	-rm -f debian/mg2a/usr/share/doc/mg2a/README
+	-rm -f debian/mg2a/usr/share/doc/mg2a/UNLICENSE
+	-rm -f debian/mg2a/usr/share/doc/mg2a/ChangeLog.md
 
 override_dh_installchangelogs:
 	dh_installchangelogs ChangeLog.md
