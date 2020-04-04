@@ -14,8 +14,7 @@ from other [ErsatzEmacs][] clones, because there should never be any
 reason to learn more than one Emacs flavor.
 
 > [Latest release](https://github.com/troglobit/mg/releases/latest), use
-> the versioned tarball, avoid GitHub generated links, then unpack and
-> build with: `./configure && make` -- you're done! :-)
+> the versioned tarball, avoid GitHub generated links!
 
 The size constraints and target audience pose challenging limitations on
 the feature set of Mg.  It is not scriptable or extensible like a true
