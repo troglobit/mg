@@ -13,8 +13,9 @@ or another.  Compatibility with GNU Emacs is key for Mg, separating it
 from other [ErsatzEmacs][] clones, because there should never be any
 reason to learn more than one Emacs flavor.
 
-> Latest release, [Mg v3.3](https://github.com/troglobit/mg/releases/download/v3.3/mg-3.3.tar.gz),
-> configure + make and you're done!
+> [Latest release](https://github.com/troglobit/mg/releases/latest), use
+> the versioned tarball, avoid GitHub generated links, then unpack and
+> build with: `./configure && make` -- you're done! :-)
 
 The size constraints and target audience pose challenging limitations on
 the feature set of Mg.  It is not scriptable or extensible like a true
@@ -37,7 +38,7 @@ embedded Linux systems.
 > **Note**: the official [portable Mg][] project, used by Debian and
 > other GNU/Linux distributions, is maintained by Han Boetes.  Unlike
 > this project, which is stand-alone, Boetes relies on [libbsd][] to
-> maintain portability and follows the OpenBSD version very closely.
+> maintain portability.
 
 
 Building
@@ -129,7 +130,7 @@ goes something like this:
 * May  8, 2016: First import from OpenBSD 5.9 to [GitHub][]
 * May 15, 2016: First major release from GitHub
 * Jul 22, 2018: Second major release from GitHub, now standalone!
-* Aug 26, 2018: Third major release from GitHub, now portable!
+* Aug 26, 2018: Third major release from GitHub, now fully portable!
 
 See the source distribution for the list of [AUTHORS][].
 
