@@ -517,7 +517,6 @@ pipeio(const char* const path, char* const argv[], char* const text, int len,
     struct buffer *outbp)
 {
 	int s[2], ret;
-	char *err;
 	pid_t pid;
 
 	if (socketpair(AF_UNIX, SOCK_STREAM, PF_UNSPEC, s) == -1) {
@@ -544,8 +543,7 @@ pipeio(const char* const path, char* const argv[], char* const text, int len,
 			_exit(1);
 
 		execv(path, argv);
-		err = strerror(errno);
-		(void)write(s[1], err, strlen(err));
+		fprintf(stderr, "Failed execv(): %s", strerror(errno));
 		_exit(1);
 	default:
 		/* Parent process */
