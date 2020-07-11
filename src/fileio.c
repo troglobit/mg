@@ -135,7 +135,8 @@ ffwopen(FILE ** ffp, const char *fn, struct buffer *bp)
 	 */
 	if (bp && bp->b_fi.fi_mode) {
 		fchmod(fd, bp->b_fi.fi_mode & 07777);
-		fchown(fd, bp->b_fi.fi_uid, bp->b_fi.fi_gid);
+		if (fchown(fd, bp->b_fi.fi_uid, bp->b_fi.fi_gid) && errno != EPERM)
+			ewprintf("Cannot set owner : %s", strerror(errno));
 	}
 	return (FIOSUC);
 }
