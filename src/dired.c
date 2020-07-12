@@ -1081,7 +1081,6 @@ int
 d_gotofile(int f, int n)
 {
 	struct line	*lp, *nlp;
-	struct buffer   *curbp;
 	size_t		 lenfpath;
 	char		 fpath[NFILEN], fname[NFILEN];
 	char		*p, *fpth, *fnp = NULL;
