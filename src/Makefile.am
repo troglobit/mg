@@ -13,7 +13,7 @@ mg_SOURCES       = basic.c bell.c buffer.c cinfo.c dir.c display.c echo.c 	\
 mg_SOURCES      += queue.h tree.h
 mg_SOURCES      += extensions.c
 
-mg_CFLAGS        = -D_GNU_SOURCE
+mg_CFLAGS        = -D_GNU_SOURCE -W -Wall -Wextra -Wno-unused-parameter
 if TINY
 mg_CFLAGS       += -fomit-frame-pointer -fdata-sections -ffunction-sections	\
 		   -fno-stack-protector -fno-asynchronous-unwind-tables		\
