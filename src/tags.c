@@ -1,4 +1,4 @@
-/*	$OpenBSD: tags.c,v 1.15 2017/05/30 07:05:22 florian Exp $	*/
+/*	$OpenBSD: tags.c,v 1.16 2017/08/06 04:39:45 bcallah Exp $	*/
 
 /*
  * This file is in the public domain.
