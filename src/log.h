@@ -6,7 +6,7 @@
  * Specifically for mg logging functionality.
  *
  */
-int	 mglog(PF, KEYMAP *);
+int	 mglog(PF, void *);
 int	 mgloginit(void);
 int	 mglog_execbuf(	const char* const,
 			const char* const,

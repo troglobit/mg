@@ -70,7 +70,7 @@ char     	*mglogpath_interpreter;
 int		 mgloglevel;
 
 int
-mglog(PF funct, KEYMAP *map)
+mglog(PF funct, void *map)
 {
 	if(!mglog_lines(funct))
 		ewprintf("Problem logging lines");
