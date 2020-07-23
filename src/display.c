@@ -828,6 +828,21 @@ modeline(struct mgwin *wp, int modelinecolor)
 		vtputc(' ');
 		++n;
 	}
+
+	if (linenos && colnos)
+		len = snprintf(sl, sizeof(sl), "(%d,%d)", wp->w_dotline, getcolpos(wp));
+	else if (linenos)
+		len = snprintf(sl, sizeof(sl), "L%d", wp->w_dotline);
+	else if (colnos)
+		len = snprintf(sl, sizeof(sl), "C%d", getcolpos(wp));
+	if ((linenos || colnos) && len < (int)sizeof(sl) && len != -1)
+		n += vtputs(sl);
+
+	while (n < 53) {			/* Pad out with blanks.	 */
+		vtputc(' ');
+		++n;
+	}
+
 	vtputc('(');
 	++n;
 	for (md = 0; ; ) {
@@ -844,16 +859,6 @@ modeline(struct mgwin *wp, int modelinecolor)
 		n += vtputs("-gwd");
 	vtputc(')');
 	++n;
-
-	if (linenos && colnos)
-		len = snprintf(sl, sizeof(sl), "--L%d--C%d", wp->w_dotline,
-		    getcolpos(wp));
-	else if (linenos)
-		len = snprintf(sl, sizeof(sl), "--L%d", wp->w_dotline);
-	else if (colnos)
-		len = snprintf(sl, sizeof(sl), "--C%d", getcolpos(wp));
-	if ((linenos || colnos) && len < (int)sizeof(sl) && len != -1)
-		n += vtputs(sl);
 
 	while (n < ncol) {			/* Pad out.		 */
 		vtputc('-');
