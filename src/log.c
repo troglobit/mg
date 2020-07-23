@@ -95,6 +95,8 @@ mglog_key(KEYMAP *map)
 	if(stat(mglogpath_key, &sb))
 		 return (FALSE);
 	fd = fopen(mglogpath_key, "a");
+	if (!fd)
+		return (FALSE);
 
 	if (ISWORD(*key.k_chars)) {
 		if (fprintf(fd, "k_count:%d k_chars:%hd\tchr:%c\t", key.k_count,
@@ -140,6 +142,8 @@ mglog_window(void)
 	if(stat(mglogpath_window, &sb))
 		return (FALSE);
 	fd = fopen(mglogpath_window, "a");
+	if (!fd)
+		return (FALSE);
 
 	for (wp = wheadp, i = 0; wp != NULL; wp = wp->w_wndp, ++i) {
 		if (fprintf(fd,
@@ -186,6 +190,8 @@ mglog_undo(void)
 	if(stat(mglogpath_undo, &sb))
 		return (FALSE);
 	fd = fopen(mglogpath_undo, "a");
+	if (!fd)
+		return (FALSE);
 	
 	/*
 	 * From undo_dump()
@@ -245,8 +251,10 @@ mglog_lines(PF funct)
 
 	if(stat(mglogpath_lines, &sb))
 		return (FALSE);
-
 	fd = fopen(mglogpath_lines, "a");
+	if (!fd)
+		return (FALSE);
+
 	if (fprintf(fd, "%s\n", function_name(funct)) == -1) {
 		fclose(fd);
 		return (FALSE);
@@ -309,6 +317,8 @@ mglog_isvar(
 	FILE		*fd;
 
 	fd = fopen(mglogpath_interpreter, "a");
+	if (!fd)
+		return (FALSE);
 
 	if (fprintf(fd, " argbuf:%s,argp:%s,sizof:%d<\n",
 	    argbuf,
@@ -341,6 +351,8 @@ mglog_execbuf(
 	FILE		*fd;
 
 	fd = fopen(mglogpath_interpreter, "a");
+	if (!fd)
+		return (FALSE);
 
 	if (fprintf(fd, "%sexcbuf:%s,argbuf:%s,argp:%s,last:%d,inlist:%d,"\
 	    "cmdp:%s,p:%s,contbuf:%s<\n",
@@ -456,6 +468,8 @@ mglog_?(void)
 
 	if(stat(mglogpath_?, &sb))
 	fd = fopen(mglogpath_?, "a");
+	if (!fd)
+		return (FALSE);
 
 	if (fprintf(fd, "%?", ??) == -1) {
 		fclose(fd);
