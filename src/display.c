@@ -90,7 +90,7 @@ struct video	  blanks;		/* Blank line image.		 */
 struct score *score;			/* [NROW * NROW] */
 
 static int	 linenos = TRUE;
-static int	 colnos = FALSE;
+static int	 colnos  = TRUE;
 
 /* Is macro recording enabled? */
 extern int macrodef;
