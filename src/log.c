@@ -67,6 +67,7 @@ char		*mglogpath_undo;
 char		*mglogpath_window;
 char		*mglogpath_key;
 char     	*mglogpath_interpreter;
+char		*mglogpath_misc;
 int		 mgloglevel;
 
 int
@@ -374,6 +375,34 @@ mglog_execbuf(
 }
 
 /*
+ * Misc. logging for various subsystems
+ */
+int
+mglog_misc(
+	const char *fmt,
+	...
+)
+{
+	FILE		*fd;
+	va_list		ap;
+	int		rc;
+
+	fd = fopen(mglogpath_misc, "a");
+	if (!fd)
+		return (FALSE);
+
+	va_start(ap, fmt);
+	rc = vfprintf(fd, fmt, ap);
+	va_end(ap);
+	fclose(fd);
+
+	if (rc < 0)
+		return (FALSE);
+
+	return (TRUE);
+}
+
+/*
  * Make sure logging to log files can happen.
  */
 int
@@ -382,7 +411,7 @@ mgloginit(void)
 	struct stat	 sb;
 	mode_t           dir_mode, f_mode, oumask;
 	char		*mglogfile_lines, *mglogfile_undo, *mglogfile_window;
-	char		*mglogfile_key, *mglogfile_interpreter;
+	char		*mglogfile_key, *mglogfile_interpreter, *mglogfile_misc;
 
 	mglogdir = "./log/";
 	mglogfile_lines = "line.log";
@@ -390,6 +419,7 @@ mgloginit(void)
 	mglogfile_window = "window.log";
 	mglogfile_key = "key.log";
 	mglogfile_interpreter = "interpreter.log";
+	mglogfile_misc = "misc.log";
 
 	/* 
 	 * Change mgloglevel for desired level of logging.
@@ -421,6 +451,9 @@ mgloginit(void)
 		return (FALSE);
 	mglogpath_interpreter = mglogfiles_create(mglogfile_interpreter);
 	if (mglogpath_interpreter == NULL)
+		return (FALSE);
+	mglogpath_misc = mglogfiles_create(mglogfile_misc);
+	if (mglogpath_misc == NULL)
 		return (FALSE);
 
 	return (TRUE);
