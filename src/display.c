@@ -827,6 +827,7 @@ modeline(struct mgwin *wp, int modelinecolor)
 		n += vtputs("  ");
 	}
 
+	while (n < 27) {			/* Pad out with blanks.	 */
 		vtputc(' ');
 		++n;
 	}
@@ -840,7 +841,7 @@ modeline(struct mgwin *wp, int modelinecolor)
 	if ((linenos || colnos) && len < (int)sizeof(sl) && len != -1)
 		n += vtputs(sl);
 
-	while (n < 53) {			/* Pad out with blanks.	 */
+	while (n < 49) {			/* Pad out with blanks.	 */
 		vtputc(' ');
 		++n;
 	}
