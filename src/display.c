@@ -832,11 +832,11 @@ modeline(struct mgwin *wp, int modelinecolor)
 	}
 
 	if (linenos && colnos)
-		len = snprintf(sl, sizeof(sl), "(%d,%d)", wp->w_dotline, getcolpos(wp));
+		len = snprintf(sl, sizeof(sl), "(%d,%d)  ", wp->w_dotline, getcolpos(wp));
 	else if (linenos)
-		len = snprintf(sl, sizeof(sl), "L%d", wp->w_dotline);
+		len = snprintf(sl, sizeof(sl), "L%d  ", wp->w_dotline);
 	else if (colnos)
-		len = snprintf(sl, sizeof(sl), "C%d", getcolpos(wp));
+		len = snprintf(sl, sizeof(sl), "C%d  ", getcolpos(wp));
 	if ((linenos || colnos) && len < (int)sizeof(sl) && len != -1)
 		n += vtputs(sl);
 
