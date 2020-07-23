@@ -24,8 +24,8 @@ int	 mglog_isvar(	const char* const,
 			const int
 			);
 
-char 			*mglogpath_lines;
-char 			*mglogpath_undo;
-char 			*mglogpath_window;
-char 			*mglogpath_key;
-char			*mglogpath_interpreter;
+extern char 		*mglogpath_lines;
+extern char 		*mglogpath_undo;
+extern char 		*mglogpath_window;
+extern char 		*mglogpath_key;
+extern char		*mglogpath_interpreter;

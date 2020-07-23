@@ -62,11 +62,11 @@ static int	 mglog_window(void);
 static int	 mglog_key(KEYMAP *map);
 
 char		*mglogdir;
-extern char	*mglogpath_lines;
-extern char	*mglogpath_undo;
-extern char	*mglogpath_window;
-extern char	*mglogpath_key;
-extern char     *mglogpath_interpreter;
+char		*mglogpath_lines;
+char		*mglogpath_undo;
+char		*mglogpath_window;
+char		*mglogpath_key;
+char     	*mglogpath_interpreter;
 int		 mgloglevel;
 
 int
