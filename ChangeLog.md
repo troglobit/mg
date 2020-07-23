@@ -6,9 +6,22 @@ All relevant changes to the project are documented in this file.
 [v3.4][UNRELEASED]
 ------------------
 
+### Changes
+- Sync with OpenBSD:
+  - Update all $OpenBSD: id$ strings
+  - Fix -Wshadow warnings
+  - Fix missing return value checks
+- Rename Debian package: mg -> mg2a, provides mg
+
 ### Fixes
 - Duplicate definitions of global variables in def.h, found by GCC-10.
   Patched by Ulrich Mueller of Gentoo, via OpenBSD and Han Boetes
+- Avoid NULL deref in regexec when searching for empty lines, from OpenBSD
+  by Hiltjo Posthuma
+- Prevent segfault with query-replace-regex replacing ^, from OpenBSD
+  by Mark Williamson
+- Avoid running out of memory with query-replace-regex ^, from OpenBSD
+  by Mark Williamson
 
 
 [v3.3][] - 2019-12-11
