@@ -849,14 +849,14 @@ modeline(struct mgwin *wp, int modelinecolor)
 		n += vtputs(bp->b_modes[md]->p_name);
 		if (++md > bp->b_nmodes)
 			break;
-		vtputc('-');
+		vtputc(' ');
 		++n;
 	}
 	/* XXX These should eventually move to a real mode */
 	if (macrodef == TRUE)
-		n += vtputs("-def");
+		n += vtputs(" def");
 	if (globalwd())
-		n += vtputs("-gwd");
+		n += vtputs(" gwd");
 	vtputc(')');
 	++n;
 
