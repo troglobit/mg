@@ -11,9 +11,18 @@ All relevant changes to the project are documented in this file.
   - Update all $OpenBSD: id$ strings
   - Fix -Wshadow warnings
   - Fix missing return value checks
+- Modeline changes to mimic GNU Emacs
+  - Drop `Mg:`, similar to yur3i/mg/commit/@84ce23b
+  - Use space instead of dash `-` as separator, same as @yur3i
+  - Hard code std encoding and UNIX end-of-line mode
+  - Show (line,column) and place before buffer modes
+  - Upper case for each mode listed
+- Enable column-number-mode by default
+- Add new internal `mglog_misc()` debug API
 - Rename Debian package: mg -> mg2a, provides mg
 
 ### Fixes
+- Check return value from all `fopen()` calls in internal log API
 - Duplicate definitions of global variables in def.h, found by GCC-10.
   Patched by Ulrich Mueller of Gentoo, via OpenBSD and Han Boetes
 - Avoid NULL deref in regexec when searching for empty lines, from OpenBSD
