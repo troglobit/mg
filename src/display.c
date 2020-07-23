@@ -861,7 +861,7 @@ modeline(struct mgwin *wp, int modelinecolor)
 	++n;
 
 	while (n < ncol) {			/* Pad out.		 */
-		vtputc('-');
+		vtputc(' ');
 		++n;
 	}
 }
