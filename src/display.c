@@ -849,7 +849,8 @@ modeline(struct mgwin *wp, int modelinecolor)
 	vtputc('(');
 	++n;
 	for (md = 0; ; ) {
-		n += vtputs(bp->b_modes[md]->p_name);
+		vtputc(toupper(bp->b_modes[md]->p_name[0]));
+		n += vtputs(&bp->b_modes[md]->p_name[1]) + 1;
 		if (++md > bp->b_nmodes)
 			break;
 		vtputc(' ');
