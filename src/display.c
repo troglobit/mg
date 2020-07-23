@@ -804,8 +804,8 @@ modeline(struct mgwin *wp, int modelinecolor)
 	vscreen[n]->v_flag |= (VFCHG | VFHBAD);	/* Recompute, display.	 */
 	vtmove(n, 0);				/* Seek to right line.	 */
 	bp = wp->w_bufp;
-	vtputc('-');
-	vtputc('-');
+	vtputc('-');				/* Encoding in GNU Emacs */
+	vtputc(':');				/* End-of-lline style    */
 	if ((bp->b_flag & BFREADONLY) != 0) {
 		vtputc('%');
 		if ((bp->b_flag & BFCHG) != 0)
