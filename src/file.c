@@ -200,7 +200,7 @@ readin(char *fname)
 {
 	struct mgwin	*wp;
 	struct stat	 statbuf;
-	int	 status, i, ro = FALSE;
+	int	 status, ro = FALSE;
 #ifdef ENABLE_AUTOEXEC
 	PF	*ael;
 #endif
@@ -231,6 +231,8 @@ readin(char *fname)
 	 * Call auto-executing function if we need to.
 	 */
 	if ((ael = find_autoexec(fname)) != NULL) {
+		int i;
+
 		for (i = 0; ael[i] != NULL; i++)
 			(*ael[i])(0, 1);
 		free(ael);
