@@ -50,3 +50,10 @@ endif
 if MGLOG
 mg_SOURCES     += log.c log.h
 endif
+
+#
+# Building w/o terminfo/termcap/curses/ncurses
+#
+if NOCURSES
+mg_SOURCES     += ansi.c ansi.h
+endif

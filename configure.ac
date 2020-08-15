@@ -31,20 +31,6 @@ AC_CHECK_LIB([util], [fparseln])
 AC_REPLACE_FUNCS([fparseln futimens reallocarray strlcpy strlcat strtonum])
 AC_CONFIG_LIBOBJ_DIR([lib])
 
-# Check for a termcap compatible library
-AC_CHECK_LIB(termcap, tgoto, , [
-	AC_CHECK_LIB(tinfo, tgoto, , [
-		AC_CHECK_LIB(curses, tgoto, , [
-			AC_CHECK_LIB(ncurses, tgoto, , [
-				AC_MSG_ERROR([Cannot find a termcap capable library, try installing Ncurses.])])
-			])
-		])
-	])
-
-# We want term.h, not termcap.h, because cookies ...
-AC_CHECK_HEADERS(term.h, , [
-	AC_MSG_ERROR([Cannot find required header file term.h, try installing Ncurses.])])
-
 # Check for configured features
 AC_ARG_ENABLE(size-optimizations,
 	AS_HELP_STRING([--enable-size-optimizations], [Optimize for size, try real hard]))
@@ -67,6 +53,29 @@ AC_ARG_WITH(startup,
 AC_ARG_WITH(mglog,
 	AS_HELP_STRING([--with-mglog], [Debug mg internals to a log file, default ./log/*.log]),
 	[mglog=$withval], [mglog='no'])
+
+AC_ARG_WITH(curses,
+     AS_HELP_STRING([--without-curses], [Build without curses/termcap, default: enabled]),
+     [with_curses=$withval], [with_curses='yes'])
+
+# Check for a termcap compatible library
+AS_IF([test "x$with_curses" = "xyes" -o "x$with_curses" = "xauto"], [
+	AC_CHECK_LIB(termcap, tgoto, , [
+		AC_CHECK_LIB(tinfo, tgoto, , [
+			AC_CHECK_LIB(curses, tgoto, , [
+				AC_CHECK_LIB(ncurses, tgoto, , [
+					AC_MSG_ERROR([Cannot find a termcap capable library, try installing Ncurses.])])
+			])
+		])
+	])
+
+	# We want term.h, not termcap.h, because cookies ...
+	AC_CHECK_HEADERS(term.h, , [
+		AC_MSG_ERROR([Cannot find required header file term.h, try installing Ncurses.])])
+	],[
+	AC_DEFINE([WITHOUT_CURSES], [1], [Set when built without curses/ncurses])
+])
+
 
 # If all features are to be disabled, do that here
 AS_IF([test "x$enable_all" = "xno"],
@@ -133,6 +142,7 @@ AM_CONDITIONAL(CTAGS,    [test "x$enable_ctags"    = "xyes"])
 AM_CONDITIONAL(DIRED,    [test "x$enable_dired"    = "xyes"])
 AM_CONDITIONAL(TINY,     [test "x$enable_tiny"     = "xyes"])
 AM_CONDITIONAL(MGLOG,    [test "x$mglog"          != "xno"])
+AM_CONDITIONAL(NOCURSES, [test "x$with_curses"    == "xno"])
 
 # Generate all files
 AC_OUTPUT

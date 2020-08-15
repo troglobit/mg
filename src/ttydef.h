@@ -9,10 +9,9 @@
 #ifndef TTYDEF_H
 #define TTYDEF_H
 
+#include "config.h"
 #include <termios.h>
-#include <term.h>
 
-#define STANDOUT_GLITCH		/* possible standout glitch	 */
 #define	putpad(str, num)	tputs(str, num, ttputc)
 
 /*
@@ -24,6 +23,14 @@
  */
 #ifndef TCSASOFT
 #define TCSASOFT 0
+#endif
+
+#ifndef WITHOUT_CURSES
+#include <term.h>
+#define STANDOUT_GLITCH		/* possible standout glitch	 */
+#else
+#include "ansi.h"
+#undef  STANDOUT_GLITCH		/* never, messes up modeline	 */
 #endif
 
 #endif /* TTYDEF_H */
