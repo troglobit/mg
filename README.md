@@ -44,9 +44,14 @@ embedded Linux systems.
 Building
 --------
 
-This project is almost completely self hosting, you only need a termcap
-library, like ncurses, to provide the terminal APIs `setupterm()`,
+This project is completely self hosting.  However, by default you need a
+termcap library, like ncurses, to provide the APIs like `setupterm()`,
 `tgoto()`, and `tputs()`.
+
+See below for how to build without ncurses.
+
+
+### With termcap/terminfo/curses
 
 On recent Debian/Ubuntu based systems `libtinfo-dev` can be used, on
 older ones the include file `term.h` is missing, so `libncurses-dev`
@@ -77,6 +82,17 @@ Then build Mg from the unpacked release tarball:
     make
     sudo make install
 
+
+### Without curses, completely stand-alone
+
+    make clean
+    ./configure --without-curses
+	make
+	sudo make install
+
+
+### Building from GIT
+
 Users who checked out the source from GitHub must run `./autogen.sh`
 first to create the configure script.  This requires GNU autotools to be
 installed on the build system.
@@ -99,6 +115,8 @@ with the official Mg.  By default, all below features are enabled:
     --disable-all        Disable all optional features
     [..]
     --with-startup=FILE  Init file to run at startup if ~/.mg is missing
+    --without-curses     Build without curses/termcap, default: enabled
+
 
 To build the smallest possible mg, with many features removed:
 
