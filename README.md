@@ -1,11 +1,12 @@
-Micro Emacs
-===========
+Micro (GNU) Emacs
+=================
 [![License Badge][]][License] [![Travis Status][]][Travis] [![Coverity Status]][Coverity Scan]
 
 <img align="right" src="mg.png" title="mg in action">
 
 Mg is a public domain [Micro Emacs][] derivative.  Created in 1986 and
-based on the original MicroEMACS released by Dave Conroy in 1985.
+based on the original [MicroEMACS][] released by Dave Conroy in 1985.
+The name was disputed early on by the FSF, so today it goes by 'mg'.
 
 The intention is to be a small, fast, and portable Emacs-like editor for
 users who cannot, or do not want to, run the real Emacs for one reason
@@ -157,6 +158,7 @@ Please report any bugs and problems with the packaging and porting to
 the GitHub issue tracker <https://github.com/troglobit/mg/issues>
 
 [Micro Emacs]:     https://www.emacswiki.org/emacs/MicroEmacs
+[MicroEMACS]:      https://github.com/troglobit/MicroEMACS
 [ErsatzEmacs]:     https://www.emacswiki.org/emacs/ErsatzEmacs
 [portable Mg]:     https://github.com/hboetes/mg
 [libbsd]:          https://libbsd.freedesktop.org/wiki/
