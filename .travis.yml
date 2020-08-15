@@ -37,9 +37,13 @@ addons:
 # Custom build script for the time being, no "make test" yet
 script:
   - ./autogen.sh
-  - ./configure --prefix=/tmp/mg
+  - ./configure
+  - make clean
+  - make -j5
+  - ./configure --prefix=/tmp/mg --without-curses
   - make clean
   - make -j5
   - make install-strip
   - ls -lR /tmp/mg
+  - ldd /tmp/mg
   - /tmp/mg/bin/mg -h
