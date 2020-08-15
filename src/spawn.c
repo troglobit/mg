@@ -9,9 +9,8 @@
 
 #include <signal.h>
 #include <stdio.h>
-#include <term.h>
-#include <termios.h>
 
+#include "ttydef.h"
 #include "def.h"
 
 /*

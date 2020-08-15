@@ -11,8 +11,8 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <term.h>
 
+#include "ttydef.h"
 #include "def.h"
 #include "kbd.h"
 

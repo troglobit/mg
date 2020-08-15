@@ -32,8 +32,8 @@
 #include <sys/time.h>
 #include <signal.h>
 #include <stdio.h>
-#include <term.h>
 
+#include "ttydef.h"
 #include "def.h"
 
 static int	 charcost(const char *);

@@ -21,10 +21,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <term.h>
-#include <termios.h>
 #include <unistd.h>
 
+#include "ttydef.h"
 #include "def.h"
 
 #define NOBUF	512			/* Output buffer size. */

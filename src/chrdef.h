@@ -72,3 +72,6 @@
 #define	K1D		285
 #define	K1E		286
 #define	K1F		287
+
+#define	KFIRST		K00
+#define	KLAST		K00
