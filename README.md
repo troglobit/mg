@@ -115,6 +115,7 @@ with the official Mg.  By default, all below features are enabled:
     --disable-all        Disable all optional features
     [..]
     --with-startup=FILE  Init file to run at startup if ~/.mg is missing
+    --with-mglog         Enable debugging to log file, default: ./log/*.log
     --without-curses     Build without curses/termcap, default: enabled
 
 

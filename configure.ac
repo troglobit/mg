@@ -51,7 +51,7 @@ AC_ARG_WITH(startup,
 	[startup=$withval], [startup='no'])
 
 AC_ARG_WITH(mglog,
-	AS_HELP_STRING([--with-mglog], [Debug mg internals to a log file, default ./log/*.log]),
+	AS_HELP_STRING([--with-mglog], [Enable debugging to log file, default: ./log/*.log]),
 	[mglog=$withval], [mglog='no'])
 
 AC_ARG_WITH(curses,
