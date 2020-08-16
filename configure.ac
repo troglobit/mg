@@ -47,8 +47,8 @@ AC_ARG_ENABLE(togglenl, AS_HELP_STRING([--disable-togglenl], [Disable toggle-new
 AC_ARG_ENABLE(all,      AS_HELP_STRING([--disable-all],      [Disable all optional features]))
 
 AC_ARG_WITH(startup,
-        AS_HELP_STRING([--with-startup=FILE], [Init file to run at startup if ~/.mg is missing]),
-	[startup=$withval], [startup='no'])
+        AS_HELP_STRING([--with-startup=FILE], [If ~/.mg is missing, default: $sysconfdir/mg]),
+	[startup=$withval], [startup="$sysconfdir/mg"])
 
 AC_ARG_WITH(mglog,
 	AS_HELP_STRING([--with-mglog], [Enable debugging to log file, default: ./log/*.log]),
