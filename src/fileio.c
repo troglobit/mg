@@ -370,7 +370,7 @@ nohome:
 		if (ret < 0 || ret >= sizeof(file))
 			return (NULL);
 	} else {
-		ret = snprintf(file, sizeof(file), "%s%s", STARTUPFILE,
+		ret = snprintf(file, sizeof(file), "%s-%s", STARTUPFILE,
 		    suffix);
 		if (ret < 0 || ret >= sizeof(file))
 			return (NULL);
