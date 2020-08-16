@@ -63,19 +63,20 @@ AS_IF([test "x$with_curses" = "xyes" -o "x$with_curses" = "xauto"], [
 	AC_CHECK_LIB(termcap, tgoto, , [
 		AC_CHECK_LIB(tinfo, tgoto, , [
 			AC_CHECK_LIB(curses, tgoto, , [
-				AC_CHECK_LIB(ncurses, tgoto, , [
-					AC_MSG_ERROR([Cannot find a termcap capable library, try installing Ncurses.])])
+				AC_CHECK_LIB(ncurses, tgoto,, [have_tcap=no])
 			])
 		])
 	])
+])
 
-	# We want term.h, not termcap.h, because cookies ...
+AS_IF([test "x$with_curses" != "xno" -a "x$have_tcap" != "xno" ], [
+	# A termcap lib with tgoto() exists, now check for term.h, not
+	# termcap.h, because cookies ...
 	AC_CHECK_HEADERS(term.h, , [
-		AC_MSG_ERROR([Cannot find required header file term.h, try installing Ncurses.])])
+		AC_MSG_ERROR([Cannot find term.h, install Ncurses, or build --without-curses])])
 	],[
 	AC_DEFINE([WITHOUT_CURSES], [1], [Set when built without curses/ncurses])
 ])
-
 
 # If all features are to be disabled, do that here
 AS_IF([test "x$enable_all" = "xno"],
