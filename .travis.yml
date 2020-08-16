@@ -6,10 +6,10 @@ language: c
 sudo: false
 
 # Build on both Linux and macOS
+# - windows
 os:
  - linux
  - osx
- - windows
 
 # Verify on macOS X 10.11 -- https://docs.travis-ci.com/user/reference/osx/
 osx_image: xcode7.3
