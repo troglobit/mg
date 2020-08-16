@@ -367,18 +367,18 @@ nohome:
 #ifdef STARTUPFILE
 	if (suffix == NULL) {
 		ret = snprintf(file, sizeof(file), "%s", STARTUPFILE);
-		if (ret < 0 || ret >= sizeof(file))
+		if (ret < 0 || ret >= (int)sizeof(file))
 			return (NULL);
 	} else {
 		ret = snprintf(file, sizeof(file), "%s-%s", STARTUPFILE,
 		    suffix);
-		if (ret < 0 || ret >= sizeof(file))
+		if (ret < 0 || ret >= (int)sizeof(file))
 			return (NULL);
 	}
 
 	if (access(file, R_OK) == 0)
 		return (file);
-#endif /* STARTUPFILE */
+#endif
 	return (NULL);
 }
 
