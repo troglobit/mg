@@ -79,6 +79,7 @@ script:
   - ./configure --prefix=/tmp/mg --without-curses
   - make clean
   - make -j5
+  - make distcheck
   - make install-strip
   - ls -lR /tmp/mg
   - ldd /tmp/mg/bin/mg || otool -L /tmp/mg/bin/mg
