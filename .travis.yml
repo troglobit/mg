@@ -45,5 +45,5 @@ script:
   - make -j5
   - make install-strip
   - ls -lR /tmp/mg
-  - ldd /tmp/mg
+  - ldd /tmp/mg/bin/mg
   - /tmp/mg/bin/mg -h
