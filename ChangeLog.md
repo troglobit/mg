@@ -6,7 +6,13 @@ All relevant changes to the project are documented in this file.
 [v3.4][UNRELEASED]
 ------------------
 
+Most important news is the new modeline and support for building
+and running without Ncurses, or termcap/terminfo!
+
 ### Changes
+- Support for building without termcap/terminfo/ncurses.  This
+  feature will be welcome for embedded systems, and others who
+  cannot, or do not want to, bundle the complete ncurses
 - Sync with OpenBSD:
   - Update all $OpenBSD: id$ strings
   - Fix -Wshadow warnings
