@@ -149,3 +149,40 @@ AM_CONDITIONAL(NOCURSES, [test "x$with_curses"    == "xno"])
 
 # Generate all files
 AC_OUTPUT
+
+# Expand directories for configuration summary, unexpanded defaults:
+# sysconfdir  => ${prefix}/etc
+# runstatedir => ${localstatedir}/run
+AS_IF([test "x$prefix" = "x" ],	[PREFIX="/"], [PREFIX=`eval echo $prefix`])
+SYSCONFDIR=`eval echo $sysconfdir`
+STARTUP=`eval echo $startup`
+
+
+cat <<EOF
+
+------------------ Summary ------------------
+ $PACKAGE_NAME version $PACKAGE_VERSION
+  Prefix.........: $PREFIX
+  Sysconfdir.....: $SYSCONFDIR
+  Fallback ~/.mg.: $STARTUP
+  C Compiler.....: $CC $CFLAGS $CPPFLAGS $LDFLAGS $LIBS
+  Size optimize..: $enable_tiny $tiny_help
+  Termcap/curses.: $with_curses
+
+ Optional features:
+  autoexec.......: $enable_autoexec
+  cmode.-........: $enable_cmode
+  compile mode...: $enable_compiöe
+  cscope.........: $enable_cscope
+  ctags..........: $enable_ctags
+  dired..........: $enable_dired
+  regexp.........: $enable_regexp
+
+------------- Compiler version --------------
+$($CC --version || true)
+---------------------------------------------
+
+Check the above options and compile with:
+ ${MAKE-make}
+
+EOF
