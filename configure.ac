@@ -92,7 +92,9 @@ AS_IF([test "x$enable_all" = "xno"],
 	startup="no")
 
 # Enable features
-AS_IF([test "x$enable_size_optimizations" = "xyes"], enable_tiny="yes"
+AS_IF([test "x$enable_size_optimizations" = "xyes"],
+	enable_tiny="yes"
+	tiny_help="(try upx for reducing size even more)"
 	CFLAGS="-g -Os"
 	AC_DEFINE(TINY, 1, [Enable extreme size optimizations]),
 	enable_tiny="no")
