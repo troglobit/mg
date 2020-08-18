@@ -1,0 +1,6 @@
+*.o
+.deps/
+config.h
+config.h.in
+stamp-h1
+mg
