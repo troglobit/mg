@@ -1,12 +1,21 @@
 Micro (GNU) Emacs
 =================
 [![License Badge][]][License] [![Travis Status][]][Travis] [![Coverity Status]][Coverity Scan]
-
 <img align="right" src="mg.png" title="mg in action">
 
-Mg is a public domain [Micro Emacs][] derivative.  Created in 1986 and
-based on the original [MicroEMACS][] released by Dave Conroy in 1985.
-The name was disputed early on by the FSF, so today it goes by 'mg'.
+* [About](#about)
+* [Building](#building)
+* [History](#history)
+* [Refs](#origin-and-references)
+
+
+About
+-----
+
+Mg is a public domain [Micro Emacs][] derivative created in 1986, based
+on the original [MicroEMACS][] v30 released by Dave Conroy in 1985.  The
+name, "Micro GNU Emacs", was disputed early on by the FSF, so today it
+simply goes by 'mg'.
 
 The intention is to be a small, fast, and portable Emacs-like editor for
 users who cannot, or do not want to, run the real Emacs for one reason
@@ -14,8 +23,8 @@ or another.  Compatibility with GNU Emacs is key for Mg, separating it
 from other [ErsatzEmacs][] clones, because there should never be any
 reason to learn more than one Emacs flavor.
 
-> [Latest release](https://github.com/troglobit/mg/releases/latest), use
-> the versioned tarball, avoid GitHub generated links!
+> Try the [latest release](https://github.com/troglobit/mg/releases/latest),
+> use the versioned tarball, avoid GitHub generated links!
 
 The size constraints and target audience pose challenging limitations on
 the feature set of Mg.  It is not scriptable or extensible like a true
@@ -24,21 +33,6 @@ available.
 
 Feature patches are of course most welcome, as long as they remain in
 the spirit of Mg -- to be small, fast, and portable.
-
-
-Supported Platforms
--------------------
-
-This project tracks the upstream OpenBSD Mg but also caters to other
-sources of patches and new features.  It has been extensively tested on
-Debian GNU/Linux, Ubuntu, CentOS, Fedora, Alpine Linux, FreeBSD, NetBSD,
-OpenBSD, DragonFly BSD, Apple macOS >= 10.10, Cygwin, as well as a few
-embedded Linux systems.
-
-> **Note**: the official [portable Mg][] project, used by Debian and
-> other GNU/Linux distributions, is maintained by Han Boetes.  Unlike
-> this project, which is stand-alone, Boetes relies on [libbsd][] to
-> maintain portability.
 
 
 Building
@@ -150,6 +144,7 @@ goes something like this:
 * May 15, 2016: First major release from GitHub
 * Jul 22, 2018: Second major release from GitHub, now standalone!
 * Aug 26, 2018: Third major release from GitHub, now fully portable!
+* Xxx YY, 2020: Fourth major release from GitHub, builds w/o Ncurses!
 
 See the source distribution for the list of [AUTHORS][].
 
@@ -159,9 +154,15 @@ Origin and References
 
 This project is derived from OpenBSD Mg, which is the best (maintained)
 source of the original Micro Emacs based on mg2a.  The intention of this
-project is to track all clones, and unlike the OpenBSD version, enable
-its hidden features using a standard GNU configure script, while being
-friendly to porting to resource constrained systems.
+project is to develop new usability features, track all other Mg clones,
+and unlike the upstream OpenBSD version, enable hidden features using a
+standard GNU configure script, all while remaining friendly to porting
+to resource constrained systems.
+
+This project has been extensively tested on Debian GNU/Linux, Ubuntu,
+CentOS, Fedora, Alpine Linux, FreeBSD, NetBSD, OpenBSD, DragonFly BSD,
+Apple macOS >= 10.10, Cygwin, as well as a few embedded Linux systems
+using musl libc and uClibc-ng.
 
 Merged, and continously tracked, clones:
 
@@ -172,6 +173,11 @@ Merged, and continously tracked, clones:
 - https://github.com/paaguti/mg3a (continuation of Bengt Larsson's mg3a)
 - https://github.com/kisom/kmg (another inactive fork with Go support)
 - https://github.com/jasperla/tinyschemg (OpenBSD mg with tinyscheme)
+
+> **Note**: the official [portable Mg][] project, used by Debian and
+> other GNU/Linux distributions, is maintained by Han Boetes.  Unlike
+> this project, which is stand-alone, Boetes relies on [libbsd][] to
+> maintain portability.
 
 Please report any bugs and problems with the packaging and porting to
 the GitHub issue tracker <https://github.com/troglobit/mg/issues>
