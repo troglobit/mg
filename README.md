@@ -2,22 +2,23 @@ Micro (GNU) Emacs
 =================
 [![License Badge][]][License] [![Travis Status][]][Travis] [![Coverity Status]][Coverity Scan]
 <img align="right" src="mg.png" title="mg in action">
+
 Contents
 --------
 
 * [Introduction](#introduction)
 * [Building](#building)
 * [History](#history)
-* [Origin & Refs](#origin-and-references)
+* [Origin & References](#origin--references)
 
 
 Introduction
 ------------
 
-Mg is a public domain [Micro Emacs][] derivative created in 1986, based
-on the original [MicroEMACS][] v30 released by Dave Conroy in 1985.  The
-name, "Micro GNU Emacs", was disputed early on by the FSF, so today it
-simply goes by 'mg'.
+Mg is a public domain [Micro Emacs][] created in 1986, based on the
+original [MicroEMACS][] v30 released by Dave Conroy in 1985.  The name,
+"Micro GNU Emacs", was disputed early on by the FSF, so today it simply
+goes by 'mg'.
 
 The intention is to be a small, fast, and portable Emacs-like editor for
 users who cannot, or do not want to, run the real Emacs for one reason
@@ -26,25 +27,25 @@ from other [ErsatzEmacs][] clones, because there should never be any
 reason to learn more than one Emacs flavor.
 
 > Try the [latest release](https://github.com/troglobit/mg/releases/latest),
-> use the versioned tarball, avoid GitHub generated links!
+> use the tarball with a version in the name, avoid GitHub generated links!
 
 The size constraints and target audience pose challenging limitations on
 the feature set of Mg.  It is not scriptable or extensible like a true
-Emacs, although a startup file is supported, and not all features are
-available.
+Emacs, although a startup file is supported, and certainly not all
+features are available.
 
-Feature patches are of course most welcome, as long as they remain in
-the spirit of Mg -- to be small, fast, and portable.
+Feature patches are most welcome, as long as they remain in the spirit
+of Mg -- small, fast, and portable.
 
 
 Building
 --------
 
 This project is completely self hosting.  However, by default you need a
-termcap library, like ncurses, to provide the APIs like `setupterm()`,
+termcap library, like [Ncurses][], to provide APIs like: `setupterm()`,
 `tgoto()`, and `tputs()`.
 
-See below for how to build without ncurses.
+See below for how to build without Ncurses.
 
 
 ### With termcap/terminfo/curses
@@ -59,7 +60,7 @@ or
 
     sudo apt install libncurses-dev
 
-On other systems you have to install the full ncurses library instead,
+On other systems you have to install the full Ncurses library instead,
 on RHEL, CentOS, and Fedora:
 
     sudo yum install ncurses-devel
@@ -146,20 +147,20 @@ goes something like this:
 * May 15, 2016: First major release from GitHub
 * Jul 22, 2018: Second major release from GitHub, now standalone!
 * Aug 26, 2018: Third major release from GitHub, now fully portable!
-* Xxx YY, 2020: Fourth major release from GitHub, builds w/o Ncurses!
+* Xxx YY, 2020: Fourth major release from GitHub, build w/o [Ncurses][]!
 
 See the source distribution for the list of [AUTHORS][].
 
 
-Origin and References
----------------------
+Origin & References
+-------------------
 
 This project is derived from OpenBSD Mg, which is the best (maintained)
-source of the original Micro Emacs based on mg2a.  The intention of this
-project is to develop new usability features, track all other Mg clones,
-and unlike the upstream OpenBSD version, enable hidden features using a
-standard GNU configure script, all while remaining friendly to porting
-to resource constrained systems.
+source of the original Micro Emacs based on mg2a. The intention of this
+project is to develop *new usability features*, track as many other Mg
+clones as possible, and, unlike the upstream OpenBSD version, enable
+hidden features using a standard GNU configure script, while remaining
+friendly to porting to resource constrained systems.
 
 This project has been extensively tested on Debian GNU/Linux, Ubuntu,
 CentOS, Fedora, Alpine Linux, FreeBSD, NetBSD, OpenBSD, DragonFly BSD,
@@ -189,6 +190,7 @@ the GitHub issue tracker <https://github.com/troglobit/mg/issues>
 [ErsatzEmacs]:     https://www.emacswiki.org/emacs/ErsatzEmacs
 [portable Mg]:     https://github.com/hboetes/mg
 [libbsd]:          https://libbsd.freedesktop.org/wiki/
+[Ncurses]:         https://invisible-island.net/ncurses/
 [GitHub]:          https://github.com/troglobit/mg
 [AUTHORS]:         https://github.com/troglobit/mg/blob/master/AUTHORS
 [Joachim Nilsson]: http://troglobit.com
