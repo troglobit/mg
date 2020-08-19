@@ -172,7 +172,7 @@ cat <<EOF
  Optional features:
   autoexec.......: $enable_autoexec
   cmode.-........: $enable_cmode
-  compile mode...: $enable_compiöe
+  compile mode...: $enable_compile
   cscope.........: $enable_cscope
   ctags..........: $enable_ctags
   dired..........: $enable_dired
