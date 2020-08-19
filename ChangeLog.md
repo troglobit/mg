@@ -13,6 +13,7 @@ and running without Ncurses, or termcap/terminfo!
 - Support for building without termcap/terminfo/ncurses.  This
   feature will be welcome for embedded systems, and others who
   cannot, or do not want to, bundle the complete ncurses
+- Support for `C-h t` to access the Mg tutorial
 - Sync with OpenBSD:
   - Update all $OpenBSD: id$ strings
   - Fix -Wshadow warnings
