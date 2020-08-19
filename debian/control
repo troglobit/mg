@@ -13,7 +13,6 @@ Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Conflicts: mg
 Replaces: mg
-Provides: mg
 Provides: editor
 Description: public domain Micro Emacs derivative
  This program is intended to be a small, fast, and portable
