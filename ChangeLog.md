@@ -44,7 +44,7 @@ and running without Ncurses, or termcap/terminfo!
 ---------------------
 
 ### Changes
-- Initial support for scheme-like scriptiing functionality to `~/.mg`,
+- Initial support for scheme-like scripting functionality to `~/.mg`,
   by Mark Lumsden
 - Add `set-case-replaced` to toggle case-preserving replace on or off.
   By Reyk Flöter, OpenBSD
