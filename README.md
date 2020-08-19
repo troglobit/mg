@@ -193,7 +193,6 @@ the GitHub issue tracker <https://github.com/troglobit/mg/issues>
 [Ncurses]:         https://invisible-island.net/ncurses/
 [GitHub]:          https://github.com/troglobit/mg
 [AUTHORS]:         https://github.com/troglobit/mg/blob/master/AUTHORS
-[Joachim Nilsson]: http://troglobit.com
 [License]:         http://unlicense.org/
 [License Badge]:   https://img.shields.io/badge/license-Unlicense-blue.svg
 [Travis]:          https://travis-ci.org/troglobit/mg
