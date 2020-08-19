@@ -652,6 +652,7 @@ int		 desckey(int, int);
 int		 wallchart(int, int);
 int		 help_help(int, int);
 int		 apropos_command(int, int);
+int		 tutorial(int, int);
 
 /* paragraph.c X */
 int		 gotobop(int, int);

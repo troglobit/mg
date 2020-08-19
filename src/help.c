@@ -162,7 +162,7 @@ help_help(int f, int n)
 
 	if ((kp = name_map("help")) == NULL)
 		return (FALSE);
-	ewprintf("a b c: ");
+	ewprintf("a b c t: ");
 	do {
 		funct = doscan(kp, getkey(FALSE), NULL);
 	} while (funct == NULL || funct == help_help);
@@ -206,6 +206,33 @@ apropos_command(int f, int n)
 	}
 	free_file_list(fnames);
 	return (popbuftop(bp, WNONE));
+}
+
+/*
+ * This function tries to locate the 'tutorial' file, opens a buffer
+ * and displays it in a pop-up buffer.
+ */
+int
+tutorial(int f, int n)
+{
+	struct buffer	*bp;
+
+	bp = bfind("*tutorial*", TRUE);
+	if (bclear(bp) != TRUE) {
+		return (FALSE);
+	}
+	bp->b_flag |= BFREADONLY;
+
+	curbp = bp;
+	if (showbuffer(bp, curwp, WFFULL) != TRUE)
+		return (FALSE);
+
+	if (readin(DOCDIR "/tutorial") == FALSE) {
+		ewprintf("Sorry, cannot find the tutorial on this system.");
+		return (FALSE);
+	}
+
+	return (TRUE);
 }
 
 static int

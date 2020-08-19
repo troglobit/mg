@@ -27,7 +27,24 @@ static PF cHcG[] = {
 static PF cHa[] = {
 	apropos_command,	/* a */
 	wallchart,		/* b */
-	desckey			/* c */
+	desckey,		/* c */
+	rescan,			/* d */
+	rescan,			/* e */
+	rescan,			/* f */
+	rescan,			/* g */
+	rescan,			/* h */
+	rescan,			/* i */
+	rescan,			/* j */
+	rescan,			/* k */
+	rescan,			/* l */
+	rescan,			/* m */
+	rescan,			/* n */
+	rescan,			/* o */
+	rescan,			/* p */
+	rescan,			/* q */
+	rescan,			/* r */
+	rescan,			/* s */
+	tutorial,		/* t */
 };
 
 struct KEYMAPE (2) helpmap = {
@@ -39,7 +56,7 @@ struct KEYMAPE (2) helpmap = {
 			CCHR('G'), CCHR('H'), cHcG, NULL
 		},
 		{
-			'a', 'c', cHa, NULL
+			'a', 't', cHa, NULL
 		}
 	}
 };

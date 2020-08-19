@@ -155,6 +155,7 @@ AC_OUTPUT
 # runstatedir => ${localstatedir}/run
 AS_IF([test "x$prefix" = "x" ],	[PREFIX="/"], [PREFIX=`eval echo $prefix`])
 SYSCONFDIR=`eval echo $sysconfdir`
+DOCDIR=`eval echo $docdir`
 STARTUP=`eval echo $startup`
 
 
@@ -164,6 +165,7 @@ cat <<EOF
  $PACKAGE_NAME version $PACKAGE_VERSION
   Prefix.........: $PREFIX
   Sysconfdir.....: $SYSCONFDIR
+  Docdir.........: $DOCDIR
   Fallback ~/.mg.: $STARTUP
   C Compiler.....: $CC $CFLAGS $CPPFLAGS $LDFLAGS $LIBS
   Size optimize..: $enable_tiny $tiny_help
