@@ -9,6 +9,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "def.h"
 #include "funmap.h"
@@ -216,6 +217,7 @@ int
 tutorial(int f, int n)
 {
 	struct buffer	*bp;
+	char		*fn;
 
 	bp = bfind("*tutorial*", TRUE);
 	if (bclear(bp) != TRUE) {
@@ -227,12 +229,16 @@ tutorial(int f, int n)
 	if (showbuffer(bp, curwp, WFFULL) != TRUE)
 		return (FALSE);
 
-	if (readin(DOCDIR "/tutorial") == FALSE) {
-		ewprintf("Sorry, cannot find the tutorial on this system.");
-		return (FALSE);
+	fn = DOCDIR "/tutorial.gz";
+	if (access(fn, R_OK) == -1) {
+		fn = DOCDIR "/tutorial";
+		if (access(fn, R_OK) == -1) {
+			ewprintf("Sorry, cannot find the tutorial on this system.");
+			return (FALSE);
+		}
 	}
 
-	return (TRUE);
+	return readin(fn);
 }
 
 static int
