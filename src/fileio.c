@@ -34,8 +34,13 @@
 #define DEFFILEMODE 0666
 #endif
 
+#ifndef GUNZIP
+#define GUNZIP "gunzip -c"
+#endif
+
 static char *bkuplocation(const char *);
 static int   bkupleavetmp(const char *);
+static int   isgzip(const char *);
 
 static char *bkupdir;
 static int   leavetmp = 0;	/* 1 = leave any '~' files in tmp dir */
@@ -46,7 +51,22 @@ static int   leavetmp = 0;	/* 1 = leave any '~' files in tmp dir */
 int
 ffropen(FILE ** ffp, const char *fn, struct buffer *bp)
 {
+	if (isgzip(fn)) {
+		char cmd[strlen(fn) + sizeof(GUNZIP) + 2];
+
+                sprintf(cmd, "%s %s", GUNZIP, fn);
+                if ((*ffp = popen(cmd, "r")) == NULL)
+			goto filerr;
+
+		ffstat(*ffp, bp);
+		if (bp)
+			bp->b_flag = BFIGNDIRTY;
+
+		return (FIOGZIP);
+	}
+
 	if ((*ffp = fopen(fn, "r")) == NULL) {
+	filerr:
 		if (errno == ENOENT)
 			return (FIOFNF);
 		return (FIOERR);
@@ -606,6 +626,22 @@ fchecktime(struct buffer *bp)
 
 	return (TRUE);
 
+}
+
+/*
+ * Check if ends with .gz
+ */
+static int
+isgzip(const char *fn)
+{
+        size_t len;
+
+        len = strlen(fn);
+        if (len > 4 && !strcmp(&fn[len - 3], ".gz")) {
+                return 1;
+        }
+
+        return 0;
 }
 
 /*

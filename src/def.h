@@ -130,7 +130,8 @@ typedef int	(*PF)(int, int);	/* generally useful type */
 #define FIOEOF	2		/* End of file.			 */
 #define FIOERR	3		/* Error.			 */
 #define FIOLONG 4		/* long line partially read	 */
-#define FIODIR 5		/* File is a directory		 */
+#define FIODIR  5		/* File is a directory		 */
+#define FIOGZIP 6		/* File is gzipped (read-only)   */
 
 /*
  * Display colors.

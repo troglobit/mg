@@ -309,6 +309,7 @@ insertfile(char *fname, char *newname, int replacebuf)
 	struct line	*olp;			/* line we started at */
 	struct mgwin	*wp;
 	int	 nbytes, s, nline = 0, siz, x, x2;
+	int	 pipe = 0;		/* File read from pipe */
 	int	 opos;			/* offset we started at */
 	int	 oline;			/* original line number */
         FILE    *ffp;
@@ -366,6 +367,8 @@ insertfile(char *fname, char *newname, int replacebuf)
 		ewprintf("Cannot insert: file is a directory, %s", fname);
 		goto cleanup;
 #endif /* ENABLE_DIRED */
+	} else if (s == FIOGZIP) {
+		pipe = 1;
 	} else {
 		(void)xdirname(bp->b_cwd, fname, sizeof(bp->b_cwd));
 		(void)strlcat(bp->b_cwd, "/", sizeof(bp->b_cwd));
@@ -444,7 +447,11 @@ retry:
 	}
 endoffile:
 	/* ignore errors */
-	(void)ffclose(ffp, NULL);
+	if (pipe)
+		(void)pclose(ffp);
+	else
+		(void)ffclose(ffp, NULL);
+
 	/* don't zap an error */
 	if (s == FIOEOF) {
 		if (nline == 1)
@@ -506,6 +513,8 @@ out:		lp2 = NULL;
 	bp->b_lines += nline;
 cleanup:
 	undo_enable(FFRAND, x);
+	if (pipe)
+		bp->b_flag |= BFREADONLY;
 
 	/* return FALSE if error */
 	return (s != FIOERR);
