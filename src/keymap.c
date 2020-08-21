@@ -19,9 +19,18 @@
  * initial keymap declarations, deepest first
  */
 
-static PF cHcG[] = {
+static PF cHcQ[] = {
 	ctrlg,			/* ^G */
-	help_help		/* ^H */
+	help_help,		/* ^H */
+	rescan,			/* ^I */
+	rescan,			/* ^J */
+	rescan,			/* ^K */
+	rescan,			/* ^L */
+	rescan,			/* ^M */
+	rescan,			/* ^N */
+	rescan,			/* ^O */
+	rescan,			/* ^P */
+	quickhelp,		/* ^Q */
 };
 
 static PF cHa[] = {
@@ -41,7 +50,7 @@ static PF cHa[] = {
 	rescan,			/* n */
 	rescan,			/* o */
 	rescan,			/* p */
-	rescan,			/* q */
+	quickhelp,		/* q */
 	rescan,			/* r */
 	rescan,			/* s */
 	tutorial,		/* t */
@@ -53,7 +62,7 @@ struct KEYMAPE (2) helpmap = {
 	rescan,
 	{
 		{
-			CCHR('G'), CCHR('H'), cHcG, NULL
+			CCHR('G'), CCHR('Q'), cHcQ, NULL
 		},
 		{
 			'a', 't', cHa, NULL

@@ -17,6 +17,8 @@
 #include "key.h"
 #include "macro.h"
 
+const char *hlp = "C-h q  toggle quick help  |  C-h t  show tutorial  |  C-h b  show key bindings";
+
 static int	showall(struct buffer *, KEYMAP *, char *);
 static int	findbind(KEYMAP *, PF, char *, size_t);
 
@@ -163,7 +165,7 @@ help_help(int f, int n)
 
 	if ((kp = name_map("help")) == NULL)
 		return (FALSE);
-	ewprintf("a b c t: ");
+	ewprintf("a b c t q: ");
 	do {
 		funct = doscan(kp, getkey(FALSE), NULL);
 	} while (funct == NULL || funct == help_help);
@@ -207,6 +209,54 @@ apropos_command(int f, int n)
 	}
 	free_file_list(fnames);
 	return (popbuftop(bp, WNONE));
+}
+
+/*
+ * Show quick help to get started with Mg
+ */
+int
+quickhelp(int f, int n)
+{
+	struct buffer	*bp;
+	int		 rc;
+
+	/* If already displayed, toggle off */
+	bp = bfind("*quick*", FALSE);
+	if (bp) {
+		killbuffer(bp);
+		onlywind(f, n);
+		return (TRUE);
+	}
+
+	/* Create new */
+	bp = bfind("*quick*", TRUE);
+	if (bclear(bp) != TRUE)
+		return (FALSE);
+	bp->b_flag |= BFREADONLY;
+
+	addline(bp, "FILE             BUFFER          WINDOW           MARK/KILL       MISC");
+	addline(bp, "C-x C-c  exit    C-x C-k close   C-0   only other C-space  mark   C-_ undo");
+	addline(bp, "C-x C-f  find    C-x k   other   C-1   only this  C-w      wipe   C-s search");
+	addline(bp, "C-x C-s  save    C-x C-b list    C-2   split two  C-k      close  C-r r-search");
+	addline(bp, "C-x s    all     C-x b   switch  C-x ^ enlarge    C-y      yank   M-% replace");
+	addline(bp, "C-x i    insert  C-x g   goto ln C-x o other win  C-x C-x  swap   M-q reformat");
+	addline(bp, "______________________________________________________________________________");
+	addlinef(bp, "%s", hlp);
+
+	rc = popbuftop(bp, WNONE);
+	if (rc == TRUE) {
+		int n;
+
+		prevwind(0, 0);
+
+		/* Attempt to shkrink window to size fo quick help */
+		n = curwp->w_ntrows - 8;
+		shrinkwind(FFRAND, n);
+
+		prevwind(0, 0);
+	}
+
+	return rc;
 }
 
 /*

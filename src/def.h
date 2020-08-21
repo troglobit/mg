@@ -649,10 +649,12 @@ int		 excline(char *);
 char		*skipwhite(char *);
 
 /* help.c X */
+const char	*hlp;
 int		 desckey(int, int);
 int		 wallchart(int, int);
 int		 help_help(int, int);
 int		 apropos_command(int, int);
+int		 quickhelp(int, int);
 int		 tutorial(int, int);
 
 /* paragraph.c X */

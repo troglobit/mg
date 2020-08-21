@@ -200,6 +200,8 @@ notnum:
 	if (nfiles > 2)
 		listbuffers(0, 1);
 
+	ewprintf("%s", hlp);
+
 	/* fake last flags */
 	thisflag = 0;
 	for (;;) {
