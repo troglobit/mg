@@ -182,6 +182,7 @@ static struct funmap functnames[] = {
 #ifdef REGEX
 	{re_queryrepl, "query-replace-regexp", 1, NULL},
 #endif /* REGEX */
+	{quickhelp, "quick-help", 0, NULL},
 	{quote, "quoted-insert", 1, NULL},
 #ifdef REGEX
 	{re_searchagain, "re-search-again", 0, NULL},
@@ -236,6 +237,7 @@ static struct funmap functnames[] = {
 	{twiddle, "transpose-chars", 0, NULL},
 	{transposepara, "transpose-paragraphs", 0, NULL},
 	{transposeword, "transpose-words", 0, NULL},
+	{tutorial, "tutorial", 0, NULL},
 	{undo, "undo", 0, NULL},
 	{undo_add_boundary, "undo-boundary", 0, NULL},
 	{undo_boundary_enable, "undo-boundary-toggle", 0, NULL},
