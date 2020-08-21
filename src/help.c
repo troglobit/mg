@@ -266,7 +266,7 @@ quickhelp(int f, int n)
 int
 tutorial(int f, int n)
 {
-	struct buffer	*bp;
+	struct buffer	*bp, *oldbp = curbp;
 	char		*fn;
 
 	bp = bfind("*tutorial*", TRUE);
@@ -276,19 +276,26 @@ tutorial(int f, int n)
 	bp->b_flag |= BFREADONLY;
 
 	curbp = bp;
-	if (showbuffer(bp, curwp, WFFULL) != TRUE)
+	if (showbuffer(bp, curwp, WFFULL) != TRUE) {
+	fail:
+		killbuffer(bp);
+		curbp = oldbp;
 		return (FALSE);
+	}
 
 	fn = DOCDIR "/tutorial.gz";
 	if (access(fn, R_OK) == -1) {
 		fn = DOCDIR "/tutorial";
 		if (access(fn, R_OK) == -1) {
 			ewprintf("Sorry, cannot find the tutorial on this system.");
-			return (FALSE);
+			goto fail;
 		}
 	}
 
-	return readin(fn);
+	if (readin(fn) != TRUE)
+		goto fail;
+
+	return (TRUE);
 }
 
 static int
