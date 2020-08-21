@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "ttydef.h"
 #include "def.h"
@@ -91,6 +92,7 @@ struct score *score;			/* [NROW * NROW] */
 
 static int	 linenos = TRUE;
 static int	 colnos  = TRUE;
+static int	 timesh  = FALSE;
 
 /* Is macro recording enabled? */
 extern int macrodef;
@@ -121,6 +123,19 @@ colnotoggle(int f, int n)
 		colnos = n > 0;
 	else
 		colnos = !colnos;
+
+	sgarbf = TRUE;
+
+	return (TRUE);
+}
+
+int
+timetoggle(int f, int n)
+{
+	if (f & FFARG)
+		timesh = n > 0;
+	else
+		timesh = !timesh;
 
 	sgarbf = TRUE;
 
@@ -865,6 +880,16 @@ modeline(struct mgwin *wp, int modelinecolor)
 		n += vtputs(" gwd");
 	vtputc(')');
 	++n;
+
+	/* Show time/date/mail */
+	if (timesh) {
+		char buf[20];
+		time_t now;
+
+		now = time(NULL);
+		strftime(buf, sizeof(buf), "  %H:%M", localtime(&now));
+		n += vtputs(buf);
+	}
 
 	while (n < ncol) {			/* Pad out.		 */
 		vtputc(' ');

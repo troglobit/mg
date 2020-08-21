@@ -513,6 +513,7 @@ void		 vttidy(void);
 void		 update(int);
 int		 linenotoggle(int, int);
 int		 colnotoggle(int, int);
+int		 timetoggle(int, int);
 
 /* echo.c X */
 void		 eerase(void);
