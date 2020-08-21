@@ -14,6 +14,14 @@ and running without Ncurses, or termcap/terminfo!
   feature will be welcome for embedded systems, and others who
   cannot, or do not want to, bundle the complete ncurses
 - Support for `C-h t` to access the Mg tutorial
+- Support for `C-h q` to toggle `*quick*` help buffer
+- New default key bindings for cursor movement, from GNU Emacs:
+  - C-up    backward-paragraph
+  - C-down  forward-paragraph
+  - C-left  backward-word, also M-left
+  - C-right forward-word, also M-right
+  - C-PgUp  beginning-of-buffer
+  - C-PgDn  end-of-buffer
 - Sync with OpenBSD:
   - Update all $OpenBSD: id$ strings
   - Fix -Wshadow warnings
@@ -24,6 +32,7 @@ and running without Ncurses, or termcap/terminfo!
   - Hard code std encoding and UNIX end-of-line mode
   - Show (line,column) and place before buffer modes
   - Upper case for each mode listed
+  - New `display-time-mode`, toggle current time in modeline
 - Enable column-number-mode by default
 - Add new internal `mglog_misc()` debug API
 - Rename Debian package: mg -> mg2a, provides mg
