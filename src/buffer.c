@@ -252,6 +252,7 @@ killbuffer(struct buffer *bp)
 
 	free(bp->b_bname);			/* Release name block	 */
 	free(bp);				/* Release buffer block */
+	eerase();
 	return (TRUE);
 }
 
@@ -694,6 +695,7 @@ showbuffer(struct buffer *bp, struct mgwin *wp, int flags)
 				break;
 			}
 	wp->w_rflag |= WFMODE | flags;
+	eerase();
 	return (TRUE);
 }
 

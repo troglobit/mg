@@ -35,6 +35,8 @@ and running without Ncurses, or termcap/terminfo!
   - New `display-time-mode`, toggle current time in modeline
 - Enable column-number-mode by default
 - Add new internal `mglog_misc()` debug API
+- Clear status line after killing/switching buffer by name, fixes
+  lingering prompt after said action
 - Rename Debian package: mg -> mg2a, provides mg
 
 ### Fixes

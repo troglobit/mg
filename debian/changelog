@@ -8,6 +8,8 @@ mg2a (3.4) stable; urgency=medium
     and its derivatives.
   * Support for loading Mg tutorial using C-h t
   * Support for toggling quick help using C-h q
+  * Clear status line after killing/switching buffer by name, fixes
+    lingering prompt after said action
   * New modeline to mimic GNU Emacs, with optional new `display-time-mode`
   * Column number mode always enabled
   * New default key bindings for cursor movement: C-up, C-down, C-left,
