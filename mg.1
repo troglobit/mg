@@ -128,11 +128,11 @@ where the Meta key may be either a special key on the keyboard
 or the ALT key; otherwise ESC followed by the key X works as well.
 .Pp
 .Bl -tag -width xxxxxxxxxxxx -offset indent -compact
-.It C-SPC
+.It C-@, C-SPC
 set-mark-command
-.It C-a
+.It C-a, Home
 beginning-of-line
-.It C-b
+.It C-b, Left
 backward-char
 .It C-c s c
 cscope-find-functions-calling-this-function
@@ -152,11 +152,11 @@ cscope-prev-symbol
 cscope-find-this-symbol
 .It C-c s t
 cscope-find-this-text-string
-.It C-d
+.It C-d, Delete
 delete-char
-.It C-e
+.It C-e, End
 end-of-line
-.It C-f
+.It C-f, Right
 forward-char
 .It C-g
 keyboard-quit
@@ -168,6 +168,10 @@ apropos
 describe-bindings
 .It C-h c
 describe-key-briefly
+.It C-h t
+tutorial
+.It C-h q
+quick-help
 .It C-j
 newline-and-indent
 .It C-k
@@ -176,11 +180,11 @@ kill-line
 recenter
 .It RET
 newline
-.It C-n
+.It C-n, Down
 next-line
 .It C-o
 open-line
-.It C-p
+.It C-p, Up
 previous-line
 .It C-q
 quoted-insert
@@ -288,21 +292,21 @@ find-tag
 pop-tag-mark
 .It M-%
 query-replace
-.It M-<
+.It M-<, C-PgUp
 beginning-of-buffer
-.It M->
+.It M->, C-PgDn
 end-of-buffer
 .It M-\e
 delete-horizontal-space
 .It M-^
 join-line
-.It M-b
+.It M-b, C-left, M-left
 backward-word
 .It M-c
 capitalize-word
 .It M-d
 kill-word
-.It M-f
+.It M-f, C-right, M-right
 forward-word
 .It M-h
 mark-paragraph
@@ -326,11 +330,11 @@ scroll-down
 copy-region-as-kill
 .It M-x
 execute-extended-command
-.It M-{
+.It M-{, C-down
 backward-paragraph
 .It M-|
 shell-command-on-region
-.It M-}
+.It M-}, C-up
 forward-paragraph
 .It M-~
 not-modified
@@ -769,6 +773,8 @@ Display current (global) working directory in the status area.
 .It query-replace
 Query Replace.
 Search and replace strings selectively, prompting after each match.
+.It quick-help
+Toggle quick help buffer.
 .It replace-string
 Replace string globally without individual prompting.
 .It query-replace-regexp
@@ -923,6 +929,10 @@ be moved
 paragraphs forward.
 .It transpose-words
 Transpose adjacent words.
+.It tutorial
+Bring up
+.Nm
+tutorial, if available on system.
 .It undo
 Undo the most recent action.
 If invoked again without an intervening command,
