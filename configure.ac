@@ -20,6 +20,9 @@ case $host_os in
         LIBS="$LIBS -L/usr/lib/priv"
         CPPFLAGS="$CPPFLAGS -I/usr/include/priv/ncurses"
         ;;
+    *netbsd*)
+        CPPFLAGS="$CPPFLAGS -D_OPENBSD_SOURCE"
+        ;;
     *)
         ;;
 esac
