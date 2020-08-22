@@ -7,6 +7,7 @@ Contents
 --------
 
 * [Introduction](#introduction)
+* [Usage](#usage)
 * [Building](#building)
 * [History](#history)
 * [Origin & References](#origin--references)
@@ -15,10 +16,10 @@ Contents
 Introduction
 ------------
 
-Mg is a [Micro Emacs][] clone created in 1986, based on the original
+Mg is a [Micro Emacs][] clone created in 1987, based on the original
 [MicroEMACS][] v30 released by Dave Conroy in 1985.  The name, "Micro
 GNU Emacs", was disputed early on by the FSF, so today it simply goes by
-'mg'.  This software is fully free and in public domain.
+`mg`.  This software is fully free and in public domain.
 
 The intention is to be a small, fast, and portable Emacs-like editor for
 users who cannot, or do not want to, run the real Emacs for one reason
@@ -148,7 +149,7 @@ History
 The history is long and intertwined with other MicroEMACS spin-offs but
 goes something like this:
 
-* Nov 16, 1986: First release to mod.sources
+* Nov 15, 1985: MicroEMACS v30 released to mod.sources by Dave G. Conroy
 * Mar  3, 1987: First Release (mg1a) via comp.sources.unix
 * May 26, 1988: Second release: (mg2a) via comp.sources.misc
 * Jan 26, 1992: Linux port released by Charles Hedrick. This version
@@ -156,11 +157,12 @@ goes something like this:
   repositories.
 * Feb 25, 2000: First import into the OpenBSD tree, where it is
   currently maintained with contributions from many others.
-* May  8, 2016: First import from OpenBSD 5.9 to [GitHub][]
-* May 15, 2016: First major release from GitHub
-* Jul 22, 2018: Second major release from GitHub, now standalone!
-* Aug 26, 2018: Third major release from GitHub, now fully portable!
-* Xxx YY, 2020: Fourth major release from GitHub, build w/o [Ncurses][]!
+* May  8, 2016: Import from OpenBSD 5.9 to [GitHub][]
+* May 15, 2016: Mg v3.0, first port back to Linux, by Joachim Wiberg
+* Jul 22, 2018: Mg v3.1, removed libite dependency, by Joachim Wiberg
+* Aug 26, 2018: Mg v3.2, now fully portable¹, by Joachim Wiberg
+* Dec 11, 2019: Mg v3.3, misc fixes and new features from OpenBSD
+* Aug 23, 2020: Mg v3.4, build w/o [Ncurses][], by Joachim Wiberg
 
 See the source distribution for the list of [AUTHORS][].
 
