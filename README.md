@@ -15,10 +15,10 @@ Contents
 Introduction
 ------------
 
-Mg is a public domain [Micro Emacs][] created in 1986, based on the
-original [MicroEMACS][] v30 released by Dave Conroy in 1985.  The name,
-"Micro GNU Emacs", was disputed early on by the FSF, so today it simply
-goes by 'mg'.
+Mg is a [Micro Emacs][] clone created in 1986, based on the original
+[MicroEMACS][] v30 released by Dave Conroy in 1985.  The name, "Micro
+GNU Emacs", was disputed early on by the FSF, so today it simply goes by
+'mg'.  This software is fully free and in public domain.
 
 The intention is to be a small, fast, and portable Emacs-like editor for
 users who cannot, or do not want to, run the real Emacs for one reason
@@ -29,13 +29,26 @@ reason to learn more than one Emacs flavor.
 > Try the [latest release](https://github.com/troglobit/mg/releases/latest),
 > use the tarball with a version in the name, avoid GitHub generated links!
 
-The size constraints and target audience pose challenging limitations on
-the feature set of Mg.  It is not scriptable or extensible like a true
-Emacs, although a startup file is supported, and certainly not all
-features are available.
 
-Feature patches are most welcome, as long as they remain in the spirit
-of Mg -- small, fast, and portable.
+Usage
+-----
+
+When Emacs was born keyboards had a `Meta` key.  Accessing functions
+with `Meta` combinations today is usually the same as holding down the
+`Alt` key, or tapping `Esc` once.
+
+Other editors use short forms like `Ctrl-V` or `^V`, in Emacs this is
+written `C-v`.  Some usage examples:
+
+| **Key** | **Short** | **Example** | **Description**                       |
+|---------|-----------|-------------|---------------------------------------|
+| Meta    | M-        | M-x         | Hold down `Alt` and tap `x`           |
+| Ctrl    | C-        | C-g         | Hold down `Ctrl` and tap `g`          |
+| Ctrl    | C-        | C-x C-c     | Hold down `Ctrl` then tap `x` and `c` |
+
+To access the built-in Quick Help, press `C-h q`, meaning: hold down
+`Ctrl` and tap `h`, then release `Ctrl` and tap `q`.  The `-` has a
+meaning, as you can see.
 
 
 Building
