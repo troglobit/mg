@@ -83,7 +83,7 @@ or
 
     sudo dnf install ncurses-devel
 
-On macOS you need the Xcode command line toolls and headers.
+On macOS you need the Xcode command line tools and headers:
 
     xcode-select --install
 
