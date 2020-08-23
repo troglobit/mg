@@ -162,8 +162,8 @@ goes something like this:
 * Jul 22, 2018: Mg v3.1, removed libite dependency, by Joachim Wiberg
 * Aug 26, 2018: Mg v3.2, now fully portable¹, by Joachim Wiberg
 * Dec 11, 2019: Mg v3.3, misc fixes and new features from OpenBSD
-* Aug 23, 2020: Mg v3.4, new modeline, quick-help, and auto-detect
-  termcap/[Ncurses][], by Joachim Wiberg
+* Aug 23, 2020: Mg v3.4, new modeline, quick-help, support for gzipped
+  files, and building without termcap/[Ncurses][], by Joachim Wiberg
 
 See the source distribution for the list of [AUTHORS][].
 
@@ -184,7 +184,7 @@ friendly to porting to resource constrained systems.  New features:
 * Tutorial accessible using `C-h t`
 * Support for Ctrl-cursor + Ctrl-PgUp/PgDn like Emacs
 * Support for `M-x no-tab-mode` and `M-x version`
-* ...
+* Support for opening gzipped text files in read-only mode
 
 ¹) This project has been extensively tested on Debian GNU/Linux, Ubuntu,
 CentOS, Fedora, Alpine Linux, FreeBSD, NetBSD, OpenBSD, DragonFly BSD,
