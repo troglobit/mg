@@ -185,7 +185,7 @@ friendly to porting to resource constrained systems.  New features:
 * Support for `M-x no-tab-mode` and `M-x version`
 * ...
 
-This project has been extensively tested on Debian GNU/Linux, Ubuntu,
+¹) This project has been extensively tested on Debian GNU/Linux, Ubuntu,
 CentOS, Fedora, Alpine Linux, FreeBSD, NetBSD, OpenBSD, DragonFly BSD,
 Apple macOS >= 10.10, Cygwin, as well as a few embedded Linux systems
 using musl libc and uClibc-ng.
