@@ -220,7 +220,8 @@ set as Mg3a.
 	functions.  Some simply marked as "don't care"
   - Fix missing initialization of stack variables
 
-[UNRELEASED]: https://github.com/troglobit/mg/compare/v3.3...HEAD
+[UNRELEASED]: https://github.com/troglobit/mg/compare/v3.4...HEAD
+[v3.4]:       https://github.com/troglobit/mg/compare/v3.3...v3.4
 [v3.3]:       https://github.com/troglobit/mg/compare/v3.2...v3.3
 [v3.2]:       https://github.com/troglobit/mg/compare/v3.1...v3.2
 [v3.1]:       https://github.com/troglobit/mg/compare/v3.0.2...v3.1
