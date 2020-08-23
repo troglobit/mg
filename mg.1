@@ -1,7 +1,7 @@
 .\"	$OpenBSD: mg.1,v 1.118 2019/11/08 19:54:40 solene Exp $
 .\" This file is in the public domain.
 .\"
-.Dd $Mdocdate: November 8 2019 $
+.Dd $Mdocdate: August 23 2020 $
 .Dt MG 1
 .Os
 .Sh NAME
@@ -119,8 +119,16 @@ supports navigating source code using cscope.
 However,
 .Nm
 requires cscope and cscope-indexer executables to be present in
-.Ev PATH
+.Ev $PATH
 for it to work.
+.Sh GZIP
+.Nm
+is capable of opening gzipped text files, e.g.
+.Pa foo.txt.gz
+in read-only mode.  To do so it relies on the
+.Nm gunzip
+program being present in
+.Ev $PATH .
 .Sh DEFAULT KEY BINDINGS
 Normal editing commands are very similar to GNU Emacs.
 In the following examples, C-x means Control-x, and M-x means Meta-x,
@@ -1080,9 +1088,9 @@ Close the current dired buffer.
 There are two configuration files,
 .Pa .mg
 and
-.Pa .mg-TERM .
+.Pa .mg-$TERM .
 Here,
-.Ev TERM
+.Ev $TERM
 represents the name of the terminal type; e.g. if the terminal type
 is set to
 .Dq vt100 ,
@@ -1114,7 +1122,7 @@ as the first character of a line.
 .Bl -tag -width /usr/share/doc/mg/tutorial -compact
 .It Pa ~/.mg
 normal startup file
-.It Pa ~/.mg-TERM
+.It Pa ~/.mg-$TERM
 terminal-specific startup file
 .It Pa ~/.mg.d
 alternative backup file location
