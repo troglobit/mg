@@ -3,8 +3,8 @@ Change Log
 
 All relevant changes to the project are documented in this file.
 
-[v3.4][UNRELEASED]
-------------------
+[v3.4][] - 2020-08-23
+---------------------
 
 Most important news is the new modeline and support for building
 and running without Ncurses, or termcap/terminfo!
@@ -13,6 +13,7 @@ and running without Ncurses, or termcap/terminfo!
 - Support for building without termcap/terminfo/ncurses.  This
   feature will be welcome for embedded systems, and others who
   cannot, or do not want to, bundle the complete ncurses
+- Support for opening `.gz` text files, as read-only
 - Support for `C-h t` to access the Mg tutorial
 - Support for `C-h q` to toggle `*quick*` help buffer
 - New default key bindings for cursor movement, from GNU Emacs:
