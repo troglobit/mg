@@ -127,7 +127,7 @@ with the official Mg.  By default, all below features are enabled:
     [..]
     --with-startup=FILE  Init file to run at startup if ~/.mg is missing
     --with-mglog         Enable debugging to log file, default: ./log/*.log
-    --without-curses     Build without curses/termcap, default: enabled
+    --without-curses     Build without curses/termcap, default: auto
 
 
 To build the smallest possible mg, with many features removed:
