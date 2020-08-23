@@ -175,7 +175,15 @@ source of the original Micro Emacs based on mg2a. The intention of this
 project is to develop *new usability features*, track as many other Mg
 clones as possible, and, unlike the upstream OpenBSD version, enable
 hidden features using a standard GNU configure script, while remaining
-friendly to porting to resource constrained systems.
+friendly to porting to resource constrained systems.  New features:
+
+* Emacs-like modeline with `(row,col)` and new `display-time-mode`
+* Support for building without curses, using termios + escape seq.
+* Built-in `*quick*` help using `C-h q`
+* Tutorial accessible using `C-h t`
+* Support for Ctrl-cursor + Ctrl-PgUp/PgDn like Emacs
+* Support for `M-x no-tab-mode` and `M-x version`
+* ...
 
 This project has been extensively tested on Debian GNU/Linux, Ubuntu,
 CentOS, Fedora, Alpine Linux, FreeBSD, NetBSD, OpenBSD, DragonFly BSD,
@@ -184,13 +192,13 @@ using musl libc and uClibc-ng.
 
 Merged, and continously tracked, clones:
 
-- http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/mg/ (upstream)
-- https://github.com/hboetes/mg (official portable version)
-- https://github.com/ibara/mg (active)
-- https://github.com/scott-parker/mg-openbsd (inactive since 2015)
-- https://github.com/paaguti/mg3a (continuation of Bengt Larsson's mg3a)
-- https://github.com/kisom/kmg (another inactive fork with Go support)
-- https://github.com/jasperla/tinyschemg (OpenBSD mg with tinyscheme)
+* http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/mg/ (upstream)
+* https://github.com/hboetes/mg (official portable version)
+* https://github.com/ibara/mg (active)
+* https://github.com/scott-parker/mg-openbsd (inactive since 2015)
+* https://github.com/paaguti/mg3a (continuation of Bengt Larsson's mg3a)
+* https://github.com/kisom/kmg (another inactive fork with Go support)
+* https://github.com/jasperla/tinyschemg (OpenBSD mg with tinyscheme)
 
 > **Note**: the official [portable Mg][] project, used by Debian and
 > other GNU/Linux distributions, is maintained by Han Boetes.  Unlike
