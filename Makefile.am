@@ -1,4 +1,4 @@
-# Written by Joachim Nilsson <troglobit@gmail.com> and put in the public domain.
+# Written by Joachim Wiberg <troglobit@gmail.com> and put in the public domain.
 SUBDIRS        = src
 dist_man1_MANS = mg.1
 doc_DATA       = README.md ChangeLog.md UNLICENSE tutorial .mg

@@ -1,6 +1,6 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: mg
-Upstream-Contact: Joachim Nilsson <troglobit@gmail.com>
+Upstream-Contact: Joachim Wiberg <troglobit@gmail.com>
 Source: https://github.com/troglobit/mg/
 
 Files: *
