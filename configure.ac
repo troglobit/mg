@@ -73,7 +73,7 @@ AS_IF([test "x$with_curses" = "xyes" -o "x$with_curses" = "xauto"], [
 ])
 
 AS_IF([test "x$with_curses" != "xno"], [
-	AS_IF([test -a "x$have_tcap" = "xno" ], [
+	AS_IF([test "x$have_tcap" = "xno" ], [
 		with_curses="no (not installed)"
 		AC_DEFINE([WITHOUT_CURSES], [1], [Set when built without curses/ncurses])
 	])
