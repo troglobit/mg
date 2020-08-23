@@ -162,7 +162,8 @@ goes something like this:
 * Jul 22, 2018: Mg v3.1, removed libite dependency, by Joachim Wiberg
 * Aug 26, 2018: Mg v3.2, now fully portable¹, by Joachim Wiberg
 * Dec 11, 2019: Mg v3.3, misc fixes and new features from OpenBSD
-* Aug 23, 2020: Mg v3.4, build w/o [Ncurses][], by Joachim Wiberg
+* Aug 23, 2020: Mg v3.4, new modeline, quick-help, and auto-detect
+  termcap/[Ncurses][], by Joachim Wiberg
 
 See the source distribution for the list of [AUTHORS][].
 
