@@ -58,7 +58,7 @@ AC_ARG_WITH(mglog,
 	[mglog=$withval], [mglog='no'])
 
 AC_ARG_WITH(curses,
-     AS_HELP_STRING([--without-curses], [Build without curses/termcap, default: enabled]),
+     AS_HELP_STRING([--without-curses], [Build without curses/termcap, default: auto]),
      [with_curses=$withval], [with_curses='yes'])
 
 # Check for a termcap compatible library
