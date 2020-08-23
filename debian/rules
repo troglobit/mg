@@ -1,7 +1,6 @@
 #!/usr/bin/make -f
 export DH_VERBOSE=1
 export DEB_BUILD_MAINT_OPTIONS  = hardening=+all
-export DEB_CFLAGS_MAINT_APPEND  = -W -Wall -Wextra -O3
 export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
 
 NUMJOBS = $(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
@@ -15,10 +14,7 @@ include /usr/share/dpkg/default.mk  # provides DEB_VERSION
 # Install the ".mg" example config manually, as debhelper can't rename
 override_dh_auto_install:
 	dh_auto_install
-	-rm -f debian/mg2a/usr/share/doc/mg2a/.mg
-	-rm -f debian/mg2a/usr/share/doc/mg2a/README
-	-rm -f debian/mg2a/usr/share/doc/mg2a/UNLICENSE
-	-rm -f debian/mg2a/usr/share/doc/mg2a/ChangeLog.md
+	-rm -rf debian/mg2a/usr/share/doc/mg
 
 override_dh_installchangelogs:
 	dh_installchangelogs ChangeLog.md
