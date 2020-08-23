@@ -74,7 +74,8 @@ AS_IF([test "x$with_curses" = "xyes" -o "x$with_curses" = "xauto"], [
 
 AS_IF([test "x$with_curses" != "xno"], [
 	AS_IF([test "x$have_tcap" = "xno" ], [
-		with_curses="no (not installed)"
+		with_curses="no"
+		curses_status="(not installed)"
 		AC_DEFINE([WITHOUT_CURSES], [1], [Fallback since termcap/curses are not installed])
 	], [
 		# A termcap lib with tgoto() exists, now check for term.h, not
@@ -153,7 +154,7 @@ AM_CONDITIONAL(CTAGS,    [test "x$enable_ctags"    = "xyes"])
 AM_CONDITIONAL(DIRED,    [test "x$enable_dired"    = "xyes"])
 AM_CONDITIONAL(TINY,     [test "x$enable_tiny"     = "xyes"])
 AM_CONDITIONAL(MGLOG,    [test "x$mglog"          != "xno"])
-AM_CONDITIONAL(NOCURSES, [test "x$with_curses"    == "xno"])
+AM_CONDITIONAL(NOCURSES, [test "x$with_curses"     = "xno"])
 
 # Generate all files
 AC_OUTPUT
@@ -177,7 +178,7 @@ cat <<EOF
   Fallback ~/.mg.: $STARTUP
   C Compiler.....: $CC $CFLAGS $CPPFLAGS $LDFLAGS $LIBS
   Size optimize..: $enable_tiny $tiny_help
-  Termcap/curses.: $with_curses
+  Termcap/curses.: $with_curses $curses_status
 
  Optional features:
   autoexec.......: $enable_autoexec
