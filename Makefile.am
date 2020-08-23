@@ -29,9 +29,8 @@ release-hook:
 		echo;									\
 	fi
 
-# lintian --profile debian -i -I --show-overrides ../$PKG.changes
-package build-deb:
-	@dpkg-buildpackage -uc -us -B
+package:
+	@debuild -uc -us -B --lintian-opts --profile debian -i -I --show-overrides
 
 ## Target to run when building a release
 release: release-hook distcheck package md5-dist
@@ -43,6 +42,6 @@ release: release-hook distcheck package md5-dist
 		printf "%-32s Distribution tarball\n" $$file;			\
 		printf "%-32s " $$file.md5; cat ../$$file.md5 | cut -f1 -d' ';	\
 	done
-	@for file in `cd ..; ls $(PACKAGE)_$(VERSION)*`; do			\
+	@for file in `cd ..; ls mg2a_$(VERSION)*`; do				\
 		printf "%-32s Debian/Ubuntu package\n" $$file;			\
 	done
