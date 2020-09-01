@@ -10,11 +10,17 @@ include /usr/share/dpkg/default.mk  # provides DEB_VERSION
 %:
 	dh $@
 
+override_dh_auto_configure:
+	dh_auto_configure -- --docdir=/usr/share/doc/mg2a
+
 # Prune OpenBSD README and UNLICESE file, copyright file is canon
 # Install the ".mg" example config manually, as debhelper can't rename
 override_dh_auto_install:
 	dh_auto_install
-	-rm -rf debian/mg2a/usr/share/doc/mg
+	-rm -f debian/mg2a/usr/share/doc/mg2a/.mg
+	-rm -f debian/mg2a/usr/share/doc/mg2a/README
+	-rm -f debian/mg2a/usr/share/doc/mg2a/UNLICENSE
+	-rm -f debian/mg2a/usr/share/doc/mg2a/ChangeLog.md
 
 override_dh_installchangelogs:
 	dh_installchangelogs ChangeLog.md
