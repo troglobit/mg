@@ -650,7 +650,7 @@ int		 excline(char *);
 char		*skipwhite(char *);
 
 /* help.c X */
-const char	*hlp;
+extern const char	*hlp;
 int		 desckey(int, int);
 int		 wallchart(int, int);
 int		 help_help(int, int);
