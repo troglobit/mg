@@ -26,6 +26,7 @@ case $host_os in
     *solaris*)
 	LIBS="-lsocket -lnsl"
 	CPPFLAGS="-DBSD_COMP -D__EXTENSIONS__"
+	AC_PREFIX_DEFAULT([/opt])
 	;;
     *)
         ;;
