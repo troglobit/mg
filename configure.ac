@@ -68,10 +68,10 @@ AC_ARG_WITH(curses,
 
 # Check for a termcap compatible library
 AS_IF([test "x$with_curses" = "xyes" -o "x$with_curses" = "xauto"], [
-	AC_CHECK_LIB(termcap, tgoto, , [
-		AC_CHECK_LIB(tinfo, tgoto, , [
-			AC_CHECK_LIB(curses, tgoto, , [
-				AC_CHECK_LIB(ncurses, tgoto,, [have_tcap=no])
+	AC_CHECK_LIB(ncurses, tgoto, , [
+		AC_CHECK_LIB(curses, tgoto, , [
+			AC_CHECK_LIB(tinfo, tgoto, , [
+				AC_CHECK_LIB(termcap, tgoto,, [have_tcap=no])
 			])
 		])
 	])
@@ -84,9 +84,13 @@ AS_IF([test "x$with_curses" != "xno"], [
 		AC_DEFINE([WITHOUT_CURSES], [1], [Fallback since termcap/curses are not installed])
 	], [
 		# A termcap lib with tgoto() exists, now check for term.h, not
-		# termcap.h, because cookies ...
-		AC_CHECK_HEADERS(term.h,, [
-			AC_MSG_ERROR([Cannot find term.h, install Ncurses, or build --without-curses])])
+		# termcap.h, because reasons ... on Solaris we need to check for
+		# ncurses/curses.h first, because term.h is not standalone.
+	        AC_CHECK_HEADERS([ncurses/curses.h],, [
+			AC_CHECK_HEADERS([term.h],, [
+				AC_MSG_ERROR([Cannot find term.h, install Ncurses, or build --without-curses])
+			])
+		])
 	])
 ], [
 	AC_DEFINE([WITHOUT_CURSES], [1], [Set when built without curses/ncurses])

@@ -26,7 +26,12 @@
 #endif
 
 #ifndef WITHOUT_CURSES
+#ifndef HAVE_NCURSES_CURSES_H
 #include <term.h>
+#else
+#include <ncurses/curses.h>
+#include <ncurses/term.h>
+#endif
 #define STANDOUT_GLITCH		/* possible standout glitch	 */
 #else
 #include "ansi.h"
