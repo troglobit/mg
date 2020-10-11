@@ -28,6 +28,11 @@
 # endif
 #endif
 
+#ifdef __sun
+#include	<strings.h>
+#include	<unistd.h>
+#endif
+
 #include	<signal.h>
 #include	<sys/stat.h>
 
