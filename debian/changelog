@@ -1,3 +1,11 @@
+mg2a (3.5) unstable; urgency=medium
+
+  * Fix regression; status line cleared when trying to open a file.
+    Caused by a fix to clear status line after kill/switch by name.
+    Original fix redesigned to handle both cases.
+
+ -- Joachim Wiberg <troglobit@gmail.com>  Sun, 11 Oct 2020 10:19:39 +0200
+
 mg2a (3.4) stable; urgency=medium
 
   * Sync with OpenBSD

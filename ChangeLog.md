@@ -3,6 +3,18 @@ Change Log
 
 All relevant changes to the project are documented in this file.
 
+[v3.5][UNRELEASED]
+------------------
+
+### Changes
+- Add support for Solaris/Illumos based UNIX systems.  Tested on OmniOS
+
+### Fixes
+- Fix regression; lost path in status line while trying to open a file.  
+  Caused by a fix introduced in v3.4 to clear the status line on kill or
+  switch buffer by name.  A new fix has been made to handle both cases.
+
+
 [v3.4][] - 2020-08-23
 ---------------------
 
@@ -221,6 +233,7 @@ set as Mg3a.
   - Fix missing initialization of stack variables
 
 [UNRELEASED]: https://github.com/troglobit/mg/compare/v3.4...HEAD
+[v3.5]:       https://github.com/troglobit/mg/compare/v3.4...v3.5
 [v3.4]:       https://github.com/troglobit/mg/compare/v3.3...v3.4
 [v3.3]:       https://github.com/troglobit/mg/compare/v3.2...v3.3
 [v3.2]:       https://github.com/troglobit/mg/compare/v3.1...v3.2
