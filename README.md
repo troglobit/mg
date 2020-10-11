@@ -187,9 +187,10 @@ friendly to porting to resource constrained systems.  New features:
 * Support for opening gzipped text files in read-only mode
 
 ¹) This project has been extensively tested on Debian GNU/Linux, Ubuntu,
-CentOS, Fedora, Alpine Linux, FreeBSD, NetBSD, OpenBSD, DragonFly BSD,
-Apple macOS >= 10.10, Cygwin, MSYS2, as well as a few embedded Linux
-systems using musl libc and uClibc-ng.
+CentOS, Fedora, Alpine Linux, Solaris/Illumos based systems like OmniOS,
+FreeBSD, NetBSD, OpenBSD, DragonFly BSD, Apple macOS >= 10.10, Cygwin,
+MSYS2, as well as a few embedded Linux systems using musl libc and
+uClibc-ng.
 
 Merged, and continously tracked, clones:
 
