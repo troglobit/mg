@@ -102,7 +102,15 @@ int setupterm(const char *term, int filedes, int *errret)
 	/* Adjust output channel */
 	tcgetattr(filedes, &ostate);		/* save old state */
 	nstate = ostate;			/* get base of new state */
+#ifndef cfmakeraw
+	nstate.c_iflag &= ~(IMAXBEL|IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL|IXON);
+	nstate.c_oflag &= ~OPOST;
+	nstate.c_lflag &= ~(ECHO|ECHONL|ICANON|ISIG|IEXTEN);
+	nstate.c_cflag &= ~(CSIZE|PARENB);
+	nstate.c_cflag |= CS8;
+#else
 	cfmakeraw(&nstate);
+#endif
 	tcsetattr(filedes, TCSADRAIN, &nstate);	/* set mode */
 
 	/* Query size of terminal by first trying to position cursor */
