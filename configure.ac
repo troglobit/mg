@@ -23,6 +23,10 @@ case $host_os in
     *netbsd*)
         CPPFLAGS="$CPPFLAGS -D_OPENBSD_SOURCE"
         ;;
+    *solaris*)
+	LIBS="-lsocket -lnsl"
+	CPPFLAGS="-DBSD_COMP -D__EXTENSIONS__"
+	;;
     *)
         ;;
 esac
