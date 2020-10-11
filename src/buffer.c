@@ -73,6 +73,7 @@ int
 usebufname(const char *bufp)
 {
 	struct buffer *bp = NULL;
+	int rc;
 
 	if (bufp == NULL) {
 		if ((bp = bfind("*scratch*", TRUE)) == NULL)
@@ -84,7 +85,10 @@ usebufname(const char *bufp)
 
 	/* and put it in current window */
 	curbp = bp;
-	return (showbuffer(bp, curwp, WFFRAME | WFFULL));
+	rc = showbuffer(bp, curwp, WFFRAME | WFFULL);
+	eerase();
+
+	return rc;
 }
 
 /*
@@ -158,8 +162,9 @@ poptobuffer(int f, int n)
 int
 killbuffer_cmd(int f, int n)
 {
-	struct buffer *bp;
 	char    bufn[NBUFN], *bufp;
+	struct buffer *bp;
+	int rc;
 
 	if (f & FFRAND) /* dired mode 'q' */
 		bp = curbp;
@@ -170,7 +175,10 @@ killbuffer_cmd(int f, int n)
 		bp = curbp;
 	else if ((bp = bfind(bufn, FALSE)) == NULL)
 		return (FALSE);
-	return (killbuffer(bp));
+	rc = killbuffer(bp);
+	eerase();
+
+	return rc;
 }
 
 int
@@ -252,7 +260,7 @@ killbuffer(struct buffer *bp)
 
 	free(bp->b_bname);			/* Release name block	 */
 	free(bp);				/* Release buffer block */
-	eerase();
+
 	return (TRUE);
 }
 
@@ -695,7 +703,7 @@ showbuffer(struct buffer *bp, struct mgwin *wp, int flags)
 				break;
 			}
 	wp->w_rflag |= WFMODE | flags;
-	eerase();
+
 	return (TRUE);
 }
 
