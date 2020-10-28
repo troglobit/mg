@@ -3,7 +3,7 @@ Section: editors
 Priority: optional
 Maintainer: Joachim Wiberg <troglobit@gmail.com>
 Build-Depends: debhelper (>= 10), libncurses-dev
-Standards-Version: 4.1.0
+Standards-Version: 4.3.0
 Homepage: https://github.com/troglobit/mg/
 Vcs-Git: https://github.com/troglobit/mg.git
 Vcs-Browser: https://github.com/troglobit/mg.git
