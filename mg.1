@@ -1,7 +1,7 @@
-.\"	$OpenBSD: mg.1,v 1.118 2019/11/08 19:54:40 solene Exp $
+.\"	$OpenBSD: mg.1,v 1.119 2021/02/23 08:10:51 lum Exp $
 .\" This file is in the public domain.
 .\"
-.Dd $Mdocdate: August 23 2020 $
+.Dd $Mdocdate: February 23 2021 $
 .Dt MG 1
 .Os
 .Sh NAME
@@ -11,6 +11,7 @@
 .Nm mg
 .Op Fl hnR
 .Op Fl f Ar mode
+.Op Fl u Ar file
 .Op + Ns Ar number
 .Op Ar
 .Sh DESCRIPTION
@@ -48,6 +49,11 @@ arguments on the command line, including the
 scratch buffer and all files.
 .It Fl h
 Show usage text and exit.
+.It Fl u Ar file
+Use
+.Ar file
+as the startup file, instead of the default
+.Pa ~/.mg .
 .It Fl n
 Turn off backup file generation.
 .It Fl R
