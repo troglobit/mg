@@ -1,4 +1,4 @@
-/*	$OpenBSD: basic.c,v 1.49 2019/06/17 11:39:26 lum Exp $	*/
+/*	$OpenBSD: basic.c,v 1.50 2021/02/27 13:24:52 lum Exp $	*/
 
 /* This file is in the public domain */
 
@@ -53,10 +53,9 @@ backchar(int f, int n)
 	while (n--) {
 		if (curwp->w_doto == 0) {
 			if ((lp = lback(curwp->w_dotp)) == curbp->b_headp) {
-				if (!(f & FFRAND)) {
-					dobeep();
-					ewprintf("Beginning of buffer");
-				}
+				if (!(f & FFRAND))
+					(void)dobeep_msg("Beginning "
+					    "of buffer");
 				return (FALSE);
 			}
 			curwp->w_dotp = lp;
@@ -100,10 +99,8 @@ forwchar(int f, int n)
 			curwp->w_dotp = lforw(curwp->w_dotp);
 			if (curwp->w_dotp == curbp->b_headp) {
 				curwp->w_dotp = lback(curwp->w_dotp);
-				if (!(f & FFRAND)) {
-					dobeep();
-					ewprintf("End of buffer");
-				}
+				if (!(f & FFRAND))
+					(void)dobeep_msg("End of buffer");
 				return (FALSE);
 			}
 			curwp->w_doto = 0;
@@ -193,10 +190,8 @@ forwline(int f, int n)
 	if (n < 0)
 		return (backline(f | FFRAND, -n));
 	if ((dlp = curwp->w_dotp) == curbp->b_headp) {
-		if (!(f & FFRAND)) {
-			dobeep();
-			ewprintf("End of buffer");
-		}
+		if (!(f & FFRAND))
+			(void)dobeep_msg("End of buffer");
 		return(TRUE);
 	}
 	if ((lastflag & CFCPCN) == 0)	/* Fix goal. */
@@ -210,10 +205,8 @@ forwline(int f, int n)
 			curwp->w_dotp = lback(dlp);
 			curwp->w_doto = llength(curwp->w_dotp);
 			curwp->w_rflag |= WFMOVE;
-			if (!(f & FFRAND)) {
-				dobeep();
-				ewprintf("End of buffer");
-			}
+			if (!(f & FFRAND))
+				(void)dobeep_msg("End of buffer");
 			return (TRUE);
 		}
 		curwp->w_dotline++;
@@ -245,20 +238,16 @@ backline(int f, int n)
 	thisflag |= CFCPCN;
 	dlp = curwp->w_dotp;
 	if (lback(dlp) == curbp->b_headp)  {
-		if (!(f & FFRAND)) {
-			dobeep();
-			ewprintf("Beginning of buffer");
-		}
+		if (!(f & FFRAND))
+			(void)dobeep_msg("Beginning of buffer");
 		return(TRUE);
 	}
 	while (n-- && lback(dlp) != curbp->b_headp) {
 		dlp = lback(dlp);
 		curwp->w_dotline--;
 	}
-	if (n > 0 && !(f & FFRAND)) {
-		dobeep();
-		ewprintf("Beginning of buffer");
-	}
+	if (n > 0 && !(f & FFRAND))
+		(void)dobeep_msg("Beginning of buffer");
 	curwp->w_dotp = dlp;
 	curwp->w_doto = getgoal(dlp);
 	curwp->w_rflag |= WFMOVE;
@@ -337,11 +326,9 @@ forwpage(int f, int n)
 	lp = curwp->w_linep;
 	while (n--)
 		if ((lp = lforw(lp)) == curbp->b_headp) {
-			dobeep();
-			ewprintf("End of buffer");
+			(void)dobeep_msg("End of buffer");
 			return(TRUE);
 		}
-
 	curwp->w_linep = lp;
 	curwp->w_rflag |= WFFULL;
 
@@ -385,10 +372,9 @@ backpage(int f, int n)
 	while (n-- && lback(lp) != curbp->b_headp) {
 		lp = lback(lp);
 	}
-	if (lp == curwp->w_linep) {
-		dobeep();
-		ewprintf("Beginning of buffer");
-	}
+	if (lp == curwp->w_linep)
+		(void)dobeep_msg("Beginning of buffer");
+
 	curwp->w_linep = lp;
 	curwp->w_rflag |= WFFULL;
 
@@ -446,11 +432,9 @@ pagenext(int f, int n)
 {
 	struct mgwin *wp;
 
-	if (wheadp->w_wndp == NULL) {
-		dobeep();
-		ewprintf("No other window");
-		return (FALSE);
-	}
+	if (wheadp->w_wndp == NULL)
+		return(dobeep_msg("No other window"));
+
 	wp = curwp;
 	(void) nextwind(f, n);
 	(void) forwpage(f, n);
@@ -513,11 +497,9 @@ swapmark(int f, int n)
 	struct line  *odotp;
 	int odoto, odotline;
 
-	if (curwp->w_markp == NULL) {
-		dobeep();
-		ewprintf("No mark in this window");
-		return (FALSE);
-	}
+	if (curwp->w_markp == NULL)
+		return(dobeep_msg("No mark in this window"));
+
 	odotp = curwp->w_dotp;
 	odoto = curwp->w_doto;
 	odotline = curwp->w_dotline;
@@ -552,11 +534,8 @@ gotoline(int f, int n)
 		if (bufp[0] == '\0')
 			return (ABORT);
 		n = (int)strtonum(buf, INT_MIN, INT_MAX, &err);
-		if (err) {
-			dobeep();
-			ewprintf("Line number %s", err);
-			return (FALSE);
-		}
+		if (err)
+			return(dobeep_msgs("Line number %s", err));
 	}
 	return(setlineno(n));
 }
