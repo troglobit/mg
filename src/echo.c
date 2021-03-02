@@ -1,4 +1,4 @@
-/*	$OpenBSD: echo.c,v 1.67 2021/03/01 10:51:14 lum Exp $	*/
+/*	$OpenBSD: echo.c,v 1.68 2021/03/02 15:03:35 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -345,8 +345,8 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 				}
 				if (!dynbuf && (size_t)(epos + 1) >= nbuf) {
 					dobeep();
-					ewprintf("Line too long");
-					return (emptyval);
+					ewprintf("Line too long. Press Control-g to escape.");
+					goto skipkey;
 				}
 				if (buf == NULL)
 					goto memfail;
@@ -528,8 +528,8 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 			}
 			if (!dynbuf && (size_t)(epos + 1) >= nbuf) {
 				dobeep();
-				ewprintf("Line too long");
-				return (emptyval);
+				ewprintf("Line too long. Press Control-g to escape.");
+				goto skipkey;
 			}
 			for (i = epos; i > cpos; i--)
 				buf[i] = buf[i - 1];
@@ -543,6 +543,9 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 			ttmove(rr, cc);
 			ttflush();
 		}
+
+skipkey:	/* ignore key press */
+;
 	}
 done:
 	if (cwin == TRUE) {
