@@ -1,4 +1,4 @@
-/*	$OpenBSD: dired.c,v 1.93 2019/07/11 18:20:18 lum Exp $	*/
+/*	$OpenBSD: dired.c,v 1.96 2021/02/26 07:21:23 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -510,6 +510,7 @@ d_copy(int f, int n)
 int
 d_rename(int f, int n)
 {
+	struct stat      statbuf;
 	char		 frname[NFILEN], toname[NFILEN];
 	char		*topath, *bufp;
 	int		 ret;
@@ -537,6 +538,18 @@ d_rename(int f, int n)
 		return (FALSE);
 
 	topath = adjustname(toname, TRUE);
+	if (stat(topath, &statbuf) == 0) {
+		if (S_ISDIR(statbuf.st_mode)) {
+			ret = snprintf(toname, sizeof(toname), "%s/%s",
+			    topath, sname);
+			if (ret < 0 || ret >= sizeof(toname) - 1) {
+				dobeep();
+				ewprintf("Directory name too long");
+				return (FALSE);
+			}
+			topath = adjustname(toname, TRUE);
+		}
+	}
 	if (topath == NULL)
 		return (FALSE);
 
@@ -549,6 +562,8 @@ d_rename(int f, int n)
 		return (ret);
 	if ((bp = refreshbuffer(curbp)) == NULL)
 		return (FALSE);
+
+	ewprintf("Move: 1 file");
 	return (showbuffer(bp, curwp, WFFULL | WFMODE));
 }
 
