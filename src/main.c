@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.88 2021/02/23 08:10:51 lum Exp $	*/
+/*	$OpenBSD: main.c,v 1.89 2021/03/20 09:00:49 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <termios.h>
 #include <unistd.h>
 
 #include "def.h"
@@ -32,6 +33,7 @@ int		 doaudiblebell;			/* audible bell toggle	*/
 int		 dovisiblebell;			/* visible bell toggle	*/
 int		 dblspace;			/* sentence end #spaces	*/
 int		 allbro;			/* all buffs read-only	*/
+int		 batch;				/* for regress tests	*/
 struct buffer	*curbp;				/* current buffer	*/
 struct buffer	*bheadp;			/* BUFFER list head	*/
 struct mgwin	*curwp;				/* current window	*/
@@ -39,14 +41,14 @@ struct mgwin	*wheadp;			/* MGWIN listhead	*/
 char		 pat[NPAT];			/* pattern		*/
 
 static void	 edinit(struct buffer *);
-
-extern void     closetags(void);
+static void	 pty_init(void);
+extern void	 closetags(void);
 
 static __dead void
 usage(int code)
 {
-	fprintf(stderr, "usage: %s [-hnR] [-f mode] [-u file] [+number] "
-	    "[file ...]\n",
+	fprintf(stderr, "usage: %s [-hnR] [-b file] [-f mode] [-u file] "
+	    "[+number] [file ...]\n",
 	    PACKAGE_NAME);
 	exit(code);
 }
@@ -55,6 +57,7 @@ int
 main(int argc, char **argv)
 {
 	char		*cp, *conffile = NULL, *init_fcn_name = NULL;
+	char		*batchfile = NULL;
 	PF		 init_fcn = NULL;
 	int	 	 o, i, nfiles;
 	int	  	 nobackups = 0;
@@ -65,8 +68,12 @@ main(int argc, char **argv)
 		err(1, "pledge");
 #endif
 
-	while ((o = getopt(argc, argv, "hnRf:u:")) != -1)
+	while ((o = getopt(argc, argv, "hnRb:f:u:")) != -1)
 		switch (o) {
+		case 'b':
+			batch = 1;
+			batchfile = optarg;
+			break;
 		case 'R':
 			allbro = 1;
 			break;
@@ -89,6 +96,22 @@ main(int argc, char **argv)
 			usage(1);
 			break;
 		}
+
+	if (batch && (conffile != NULL)) {
+                fprintf(stderr, "%s: -b and -u are mutually exclusive.\n",
+                    PACKAGE_NAME);
+                exit(1);
+	}
+	if (batch) {
+		pty_init();
+		conffile = batchfile;
+	}
+	if (conffile != NULL && access(conffile, R_OK) != 0) {
+                fprintf(stderr, "%s: Problem with file: %s\n", PACKAGE_NAME,
+		    conffile);
+                exit(1);
+	}
+
 	argc -= optind;
 	argv += optind;
 
@@ -143,6 +166,9 @@ main(int argc, char **argv)
 	/* user startup file. */
 	if ((cp = startupfile(NULL, conffile)) != NULL)
 		(void)load(cp);
+
+	if (batch)
+		return (0);
 
 	/*
 	 * Now ensure any default buffer modes from the startup file are
@@ -259,6 +285,26 @@ edinit(struct buffer *bp)
 	wp->w_linep = wp->w_dotp = bp->b_headp;
 	wp->w_ntrows = nrow - 2;		/* 2 = mode, echo.	 */
 	wp->w_rflag = WFMODE | WFFULL;		/* Full.		 */
+}
+
+/*
+ * Create pty for batch mode.
+ */
+static void
+pty_init(void)
+{
+	struct winsize	 ws;
+	int		 master;
+	int		 slave;
+
+	memset(&ws, 0, sizeof(ws));
+	ws.ws_col = 80,
+	ws.ws_row = 24;
+	
+	openpty(&master, &slave, NULL, NULL, &ws);
+	login_tty(slave);
+
+	return;
 }
 
 /*
