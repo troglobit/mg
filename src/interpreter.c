@@ -1,4 +1,4 @@
-/*      $OpenBSD: interpreter.c,v 1.10 2021/03/20 19:39:30 lum Exp $	*/
+/*      $OpenBSD: interpreter.c,v 1.11 2021/03/21 12:56:16 lum Exp $	*/
 /*
  * This file is in the public domain.
  *
@@ -20,13 +20,13 @@
  * like:
  * 
  * 1. Give multiple arguments to a function that usually would accept only one:
- * (find-file a.txt b.txt. c.txt)
+ * (find-file "a.txt" "b.txt" "c.txt")
  *
  * 2. Define a single value variable:
- * (define myfile d.txt)
+ * (define myfile "d.txt")
  *
  * 3. Define a list:
- * (define myfiles(list e.txt f.txt))
+ * (define myfiles(list "e.txt" "f.txt"))
  *
  * 4. Use the previously defined variable or list:
  * (find-file myfiles)
@@ -35,10 +35,12 @@
  * 1. multiline parsing - currently only single lines supported.
  * 2. parsing for '(' and ')' throughout whole string and evaluate correctly.
  * 3. conditional execution.
- * 4. deal with quotes around a string: "x x"
- * 5. oh so many things....
+ * 4. deal with special characters in a string: "x\" x" etc
+ * 5. do symbol names need more complex regex patterns? A-Za-z- at the moment. 
+ * 6. oh so many things....
  * [...]
  * n. implement user definable functions.
+ * 
  */
 #include <regex.h>
 #include <signal.h>
@@ -94,8 +96,9 @@ foundparen(char *funstr)
 	char		*p, *valp, *endp = NULL, *regs;
 	char		 expbuf[BUFSIZE], tmpbuf[BUFSIZE];
 	int     	 ret, pctr, fndstart, expctr, blkid, fndchr, fndend;
+	int		 inquote;
 
-	pctr = fndstart = expctr = fndchr = fndend = 0;
+	pctr = fndstart = expctr = fndchr = fndend = inquote = 0;
 	blkid = 1;
 	/*
 	 * Check for blocks of code with opening and closing ().
@@ -115,7 +118,8 @@ foundparen(char *funstr)
 		return(dobeep_msg("Empty lists not supported at moment"));
 	regs = "[(]+[\t ]*[(]+";
         if (doregex(regs, funstr))
-		return(dobeep_msg("Multiple left parantheses found"));
+		return(dobeep_msg("Multiple consecutive left parantheses "\
+		    "found."));
 	/*
 	 * load expressions into a list called 'expentry', to be processd
 	 * when all are obtained.
@@ -130,11 +134,16 @@ foundparen(char *funstr)
 				else
 					*endp = '\0';
 				e1->par2 = 1;
-	                        if ((e1->exp = strndup(valp, BUFSIZE)) == NULL)
+	                        if ((e1->exp = strndup(valp, BUFSIZE)) ==
+				    NULL) {
+					cleanup();
         	                        return(dobeep_msg("strndup error"));
+				}
 			}
-			if ((e1 = malloc(sizeof(struct expentry))) == NULL)
+			if ((e1 = malloc(sizeof(struct expentry))) == NULL) {
+				cleanup();
                                	return (dobeep_msg("malloc Error"));
+			}
                        	SLIST_INSERT_HEAD(&exphead, e1, eentry);
 			e1->exp = NULL;
                        	e1->expctr = ++expctr;
@@ -146,18 +155,31 @@ foundparen(char *funstr)
 			endp = NULL;
 			pctr++;
 		} else if (*p == ')') {
+			if (inquote == 1) {
+				cleanup();
+				return(dobeep_msg("Opening and closing quote "\
+				    "char error"));
+			}
 			if (endp == NULL)
 				*p = '\0';
 			else
 				*endp = '\0';
-			if ((e1->exp = strndup(valp, BUFSIZE)) == NULL)
+			if ((e1->exp = strndup(valp, BUFSIZE)) == NULL) {
+				cleanup();
 				return(dobeep_msg("strndup error"));
+			}
 			fndstart = 0;
 			pctr--;
 		} else if (*p != ' ' && *p != '\t') {
 			if (fndchr == 0) {
 				valp = p;
 				fndchr = 1;
+			}
+			if (*p == '"') {
+				if (inquote == 0)
+					inquote = 1;
+				else
+					inquote = 0;
 			}
 			fndend = 0;
 			endp = NULL;
@@ -166,18 +188,23 @@ foundparen(char *funstr)
 			fndend = 1;
 			endp = p;
 		} else if (*p == '\t') /* need to check not between "" */
-			*p = ' ';
+			if (inquote == 0)
+				*p = ' ';
 		if (pctr == 0)
 			blkid++;
 		p++;
 	}
-	expbuf[0] = tmpbuf[0] = '\0';
 
+	if (pctr != 0) {
+		cleanup();
+		return(dobeep_msg("Opening and closing parentheses error"));
+	}
 	/*
 	 * Join expressions together for the moment, to progess.
 	 * This needs to be totally redone and
 	 * iterate in-to-out, evaluating as we go. Eventually.
 	 */
+	expbuf[0] = tmpbuf[0] = '\0';
 	SLIST_FOREACH(e1, &exphead, eentry) {
 		if (strlcpy(tmpbuf, expbuf, sizeof(tmpbuf)) >= sizeof(tmpbuf))
 			return (dobeep_msg("strlcpy error"));
@@ -194,19 +221,20 @@ foundparen(char *funstr)
 		mglog_misc("exp|%s|\n", e1->exp);
 #endif
 	}
-	if (pctr != 0) {
-		clearexp();
-		return(dobeep_msg("Opening and closing parentheses error"));
-	}
 	
 	ret = parseexp(expbuf);
-	clearexp();
+	if (ret == FALSE)
+		cleanup();
+	else
+		clearexp();	/* leave lists but remove expressions */
 
 	return (ret);
 }
 
 /*
- * At the moment, only paring list defines. Much more to do.
+ * At the moment, only parsing list defines. Much more to do.
+ * Also only use basic chars for symbol names like ones found in
+ * mg functions.
  */
 static int
 parseexp(char *funstr)
@@ -215,19 +243,19 @@ parseexp(char *funstr)
 
         /* Does the line have a list 'define' like: */
         /* (define alist(list 1 2 3 4)) */
-        regs = "^define[ ]+.*[ ]+list[ ]+.*[ ]*";
+        regs = "^define[ ]+[A-Za-z-]+[ ]+list[ ]+.*[ ]*";
         if (doregex(regs, funstr))
                 return(foundvar(funstr));
 
         /* Does the line have a incorrect variable 'define' like: */
         /* (define i y z) */
-        regs = "^define[ ]+.*[ ]+.*[ ]+.*$";
+        regs = "^define[ ]+[A-Za-z-]+[ ]+.*[ ]+.*$";
         if (doregex(regs, funstr))
                 return(dobeep_msg("Invalid use of define."));
 
         /* Does the line have a single variable 'define' like: */
         /* (define i 0) */
-        regs = "^define[ ]+.*[ ]+.*$";
+        regs = "^define[ ]+[A-Za-z-]+[ ]+.*$";
         if (doregex(regs, funstr))
                 return(foundvar(funstr));
 
@@ -249,9 +277,11 @@ multiarg(char *funstr)
 	char	 excbuf[BUFSIZE], argbuf[BUFSIZE];
 	char	 contbuf[BUFSIZE], varbuf[BUFSIZE];
 	char	*cmdp = NULL, *argp, *fendp = NULL, *endp, *p, *v, *s = " ";
+	char	*regs;
 	int	 spc, numparams, numspc;
-	int	 inlist, sizof, fin;
-	
+	int	 inlist, sizof, fin, inquote;
+
+	/* mg function name regex */	
         if (doregex("^[A-Za-z-]+$", funstr))
 		return(excline(funstr));
 
@@ -276,23 +306,29 @@ multiarg(char *funstr)
 		return (dobeep_msg("strlcpy error"));
 	argp = argbuf;
 	numspc = spc = 1; /* initially fake a space so we find first argument */
-	inlist = fin = 0;
+	inlist = fin = inquote = 0;
 
 	for (p = argbuf; *p != '\0'; p++) {
 		if (*(p + 1) == '\0')
 			fin = 1;
 
 		if (*p != ' ') {
+			if (*p == '"') {
+				if (inquote == 1)
+					inquote = 0;	
+				else
+					inquote = 1;
+			}
 			if (spc == 1)
 				argp = p;
 			spc = 0;
 		}
-		if (*p == ' ' || fin) {
+		if ((*p == ' ' && inquote == 0) || fin) {
 			if (spc == 1)
 				continue;
 
 			if (*p == ' ') {
-				*p = '\0';	/* terminate arg string */
+				*p = '\0';		/* terminate arg string */
 			}
 			endp = p + 1;
 			excbuf[0] = '\0';
@@ -300,7 +336,10 @@ multiarg(char *funstr)
 			contbuf[0] = '\0';			
 			sizof = sizeof(varbuf);
 			v = varbuf;
-			if (isvar(&argp, &v, sizof)) {
+			regs = "[\"]+.*[\"]+";
+       			if (doregex(regs, argp))
+				;			/* found quotes */
+			else if (isvar(&argp, &v, sizof)) {
 				(void)(strlcat(varbuf, " ",
                                     sizof) >= sizof);
 
@@ -311,20 +350,19 @@ multiarg(char *funstr)
 
 				(void)(strlcat(varbuf, contbuf,
 				    sizof) >= sizof);
-
-				(void)(strlcpy(argbuf, varbuf,
+				
+				argbuf[0] = ' ';
+				argbuf[1] = '\0';
+				(void)(strlcat(argbuf, varbuf,
 				    sizof) >= sizof);
 
 				p = argp = argbuf;
-				while (*p != ' ') {
-					if (*p == '\0')
-						break;
-					p++;
-				}
-				*p = '\0';
 				spc = 1;
 				fin = 0;
-			}
+				continue;
+			} else
+				return (dobeep_msgs("Var not found:", argp));
+
 			if (strlcpy(excbuf, cmdp, sizeof(excbuf))
 			    >= sizeof(excbuf))
 				return (dobeep_msg("strlcpy error"));
@@ -346,7 +384,6 @@ multiarg(char *funstr)
 	}
 	return (TRUE);
 }
-
 
 /*
  * Is an item a value or a variable?
@@ -370,7 +407,6 @@ isvar(char **argp, char **varbuf, int sizof)
 	return (FALSE);
 }
 
-
 /*
  * The define string _must_ adhere to the regex in parsexp().
  * This is not the correct way to do parsing but it does highlight
@@ -384,8 +420,11 @@ foundvar(char *defstr)
 	char		*p, *vnamep, *vendp = NULL, *valp;
 	int		 spc;
 
+	/* vars names can't start with these. */
+	/* char *spchrs = "+-.#";	*/
+
 	p = strstr(defstr, " ");        /* move to first ' ' char.    */
-	vnamep = skipwhite(p);  	/* find first char of var name. */
+	vnamep = skipwhite(p);		/* find first char of var name. */
 	vendp = vnamep;
 
 	/* now find the end of the list name */
@@ -454,7 +493,7 @@ foundvar(char *defstr)
  * Finished with buffer evaluation, so clean up any vars.
  * Perhaps keeps them in mg even after use,...
  */
-int
+static int
 clearvars(void)
 {
 	struct varentry	*v1 = NULL;
@@ -484,6 +523,16 @@ clearexp(void)
 		free(e1);
 	}
 	return;
+}
+
+/*
+ * Cleanup before leaving.
+ */
+void
+cleanup(void)
+{
+	clearexp();
+	clearvars();
 }
 
 /*
