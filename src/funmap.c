@@ -1,4 +1,4 @@
-/*	$OpenBSD: funmap.c,v 1.59 2019/07/11 18:20:18 lum Exp $	*/
+/*	$OpenBSD: funmap.c,v 1.60 2021/03/23 18:33:05 lum Exp $	*/
 
 /* This file is in the public domain */
 
@@ -49,10 +49,10 @@ static struct funmap functnames[] = {
 	{indentmode, "auto-indent-mode", 0, NULL},
 	{backtoindent, "back-to-indentation", 0, NULL},
 	{backuptohomedir, "backup-to-home-directory", 0, NULL},
-	{backchar, "backward-char", 0, NULL},
-	{delbword, "backward-kill-word", 0, NULL},
-	{gotobop, "backward-paragraph", 0, NULL},
-	{backword, "backward-word", 0, NULL},
+	{backchar, "backward-char", 1, NULL},
+	{delbword, "backward-kill-word", 1, NULL},
+	{gotobop, "backward-paragraph", 1, NULL},
+	{backword, "backward-word", 1, NULL},
 	{gotobob, "beginning-of-buffer", 0, NULL},
 	{gotobol, "beginning-of-line", 0, NULL},
 	{showmatch, "blink-and-insert", 1, NULL},
@@ -60,7 +60,7 @@ static struct funmap functnames[] = {
 	{NULL, "c-x 4 prefix", 0, NULL},
 	{NULL, "c-x prefix", 0, NULL},
 	{executemacro, "call-last-kbd-macro", 0, NULL},
-	{capword, "capitalize-word", 0, NULL},
+	{capword, "capitalize-word", 1, NULL},
 	{changedir, "cd", 0, NULL},
 	{clearmark, "clear-mark", 0, NULL},
 	{colnotoggle, "column-number-mode", 0, NULL},
@@ -85,9 +85,9 @@ static struct funmap functnames[] = {
 	{csprevmatch, "cscope-prev-symbol", 0, NULL},
 #endif /* CSCOPE */
 	{redefine_key, "define-key", 3, NULL},
-	{backdel, "delete-backward-char", 0, NULL},
+	{backdel, "delete-backward-char", 1, NULL},
 	{deblank, "delete-blank-lines", 0, NULL},
-	{forwdel, "delete-char", 0, NULL},
+	{forwdel, "delete-char", 1, NULL},
 	{delwhite, "delete-horizontal-space", 0, NULL},
 	{delleadwhite, "delete-leading-space", 0, NULL},
 #ifdef	REGEX
@@ -103,7 +103,7 @@ static struct funmap functnames[] = {
 	{digit_argument, "digit-argument", 1, NULL},
 	{timetoggle, "display-time-mode", 0, NULL},
 	{lowerregion, "downcase-region", 0, NULL},
-	{lowerword, "downcase-word", 0, NULL},
+	{lowerword, "downcase-word", 1, NULL},
 	{showversion, "emacs-version", 0, NULL},
 	{showversion, "version", 0, NULL},
 	{finishmacro, "end-kbd-macro", 0, NULL},
@@ -123,9 +123,9 @@ static struct funmap functnames[] = {
 #ifdef ENABLE_CTAGS
 	{findtag, "find-tag", 1, NULL},
 #endif
-	{forwchar, "forward-char", 0, NULL},
-	{gotoeop, "forward-paragraph", 0, NULL},
-	{forwword, "forward-word", 0, NULL},
+	{forwchar, "forward-char", 1, NULL},
+	{gotoeop, "forward-paragraph", 1, NULL},
+	{forwword, "forward-word", 1, NULL},
 	{bindtokey, "global-set-key", 2, NULL},
 	{unbindtokey, "global-unset-key", 1, NULL},
 #ifdef ENABLE_COMPILE_GREP
@@ -144,10 +144,10 @@ static struct funmap functnames[] = {
 	{justone, "just-one-space", 0, NULL},
 	{ctrlg, "keyboard-quit", 0, NULL},
 	{killbuffer_cmd, "kill-buffer", 1, NULL},
-	{killline, "kill-line", 0, NULL},
-	{killpara, "kill-paragraph", 0, NULL},
+	{killline, "kill-line", 1, NULL},
+	{killpara, "kill-paragraph", 1, NULL},
 	{killregion, "kill-region", 0, NULL},
-	{delfword, "kill-word", 0, NULL},
+	{delfword, "kill-word", 1, NULL},
 	{toggleleavetmp, "leave-tmpdir-backups", 0, NULL},
 	{linenotoggle, "line-number-mode", 0, NULL},
 	{listbuffers, "list-buffers", 0, NULL},
@@ -156,25 +156,25 @@ static struct funmap functnames[] = {
 	{localunbind, "local-unset-key", 1, NULL},
 	{makebkfile, "make-backup-files", 0, NULL},
 	{make_dir, "make-directory", 1, NULL},
-	{markpara, "mark-paragraph", 0, NULL},
+	{markpara, "mark-paragraph", 1, NULL},
 	{markbuffer, "mark-whole-buffer", 0, NULL},
 	{do_meta, "meta-key-mode", 0, NULL},	/* better name, anyone? */
 	{negative_argument, "negative-argument", 1, NULL},
-	{enewline, "newline", 0, NULL},
-	{lfindent, "newline-and-indent", 0, NULL},
-	{forwline, "next-line", 0, NULL},
+	{enewline, "newline", 1, NULL},
+	{lfindent, "newline-and-indent", 1, NULL},
+	{forwline, "next-line", 1, NULL},
 #ifdef NOTAB
 	{notabmode, "no-tab-mode", 0, NULL},
 #endif /* NOTAB */
 	{notmodified, "not-modified", 0, NULL},
-	{openline, "open-line", 0, NULL},
+	{openline, "open-line", 1, NULL},
 	{nextwind, "other-window", 0, NULL},
 	{overwrite_mode, "overwrite-mode", 0, NULL},
 #ifdef ENABLE_CTAGS
 	{poptag, "pop-tag-mark", 0, NULL},
 #endif
 	{prefixregion, "prefix-region", 0, NULL},
-	{backline, "previous-line", 0, NULL},
+	{backline, "previous-line", 1, NULL},
 	{prevwind, "previous-window", 0, NULL},
 	{spawncli, "push-shell", 0, NULL},
 	{showcwdir, "pwd", 0, NULL},
@@ -195,14 +195,14 @@ static struct funmap functnames[] = {
 	{replstr, "replace-string", 2, NULL},
 #endif /* REGEX */
 	{revertbuffer, "revert-buffer", 0, NULL},
-	{filesave, "save-buffer", 0, NULL},
+	{filesave, "save-buffer", 1, NULL},
 	{quit, "save-buffers-kill-emacs", 0, NULL},
 	{savebuffers, "save-some-buffers", 0, NULL},
-	{backpage, "scroll-down", 0, NULL},
-	{back1page, "scroll-one-line-down", 0, NULL},
-	{forw1page, "scroll-one-line-up", 0, NULL},
-	{pagenext, "scroll-other-window", 0, NULL},
-	{forwpage, "scroll-up", 0, NULL},
+	{backpage, "scroll-down", 1, NULL},
+	{back1page, "scroll-one-line-down", 1, NULL},
+	{forw1page, "scroll-one-line-up", 1, NULL},
+	{pagenext, "scroll-other-window", 1, NULL},
+	{forwpage, "scroll-up", 1, NULL},
 	{searchagain, "search-again", 0, NULL},
 	{backsearch, "search-backward", 0, NULL},
 	{forwsearch, "search-forward", 0, NULL},
@@ -218,8 +218,8 @@ static struct funmap functnames[] = {
 	{setmark, "set-mark-command", 0, NULL},
 	{setprefix, "set-prefix-string", 1, NULL},
 	{shellcommand, "shell-command", 1, NULL},
-	{piperegion, "shell-command-on-region", 0, NULL},
-	{shrinkwind, "shrink-window", 0, NULL},
+	{piperegion, "shell-command-on-region", 1, NULL},
+	{shrinkwind, "shrink-window", 1, NULL},
 #ifdef NOTAB
 	{space_to_tabstop, "space-to-tabstop", 0, NULL},
 #endif /* NOTAB */
@@ -245,14 +245,14 @@ static struct funmap functnames[] = {
 	{undo_dump, "undo-list", 0, NULL},
 	{universal_argument, "universal-argument", 1, NULL},
 	{upperregion, "upcase-region", 0, NULL},
-	{upperword, "upcase-word", 0, NULL},
+	{upperword, "upcase-word", 1, NULL},
 	{togglevisiblebell, "visible-bell", 0, NULL},
 #ifdef ENABLE_CTAGS
 	{tagsvisit, "visit-tags-table", 0, NULL},
 #endif
 	{showcpos, "what-cursor-position", 0, NULL},
 	{filewrite, "write-file", 1, NULL},
-	{yank, "yank", 0, NULL},
+	{yank, "yank", 1, NULL},
 	{NULL, NULL, 0, NULL}
 };
 
