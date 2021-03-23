@@ -139,7 +139,7 @@ poptobuffer(int f, int n)
 		return (ABORT);
 	if (bufp[0] == '\0' && curbp->b_altb != NULL)
 		bp = curbp->b_altb;
-	else if ((bp = bfind(bufn, TRUE)) == NULL)
+	else if ((bp = bfind(bufp, TRUE)) == NULL)
 		return (FALSE);
 	if (bp == curbp)
 		return (splitwind(f, n));
@@ -173,7 +173,7 @@ killbuffer_cmd(int f, int n)
 		return (ABORT);
 	else if (bufp[0] == '\0')
 		bp = curbp;
-	else if ((bp = bfind(bufn, FALSE)) == NULL)
+	else if ((bp = bfind(bufp, FALSE)) == NULL)
 		return (FALSE);
 	rc = killbuffer(bp);
 	eerase();
@@ -797,7 +797,7 @@ bufferinsert(int f, int n)
 		return (ABORT);
 	if (bufp[0] == '\0' && curbp->b_altb != NULL)
 		bp = curbp->b_altb;
-	else if ((bp = bfind(bufn, FALSE)) == NULL)
+	else if ((bp = bfind(bufp, FALSE)) == NULL)
 		return (FALSE);
 
 	if (bp == curbp)
