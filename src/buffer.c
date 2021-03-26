@@ -380,9 +380,9 @@ makelist(void)
 		}
 
 		if (addlinef(blp, "%c%c%c %-*.*s%c%-6d %-*s",
-		    (bp == curbp) ? '.' : ' ',	/* current buffer ? */
+		    (bp == curbp) ? '>' : ' ',	/* current buffer ? */
 		    ((bp->b_flag & BFCHG) != 0) ? '*' : ' ',	/* changed ? */
-		    ((bp->b_flag & BFREADONLY) != 0) ? ' ' : '*',
+		    ((bp->b_flag & BFREADONLY) != 0) ? '*' : ' ',
 		    w - 5,		/* four chars already written */
 		    w - 5,		/* four chars already written */
 		    bp->b_bname,	/* buffer name */
