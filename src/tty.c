@@ -63,14 +63,14 @@ winchhandler(int sig)
 void
 ttinit(void)
 {
+	struct sigaction sa = { .sa_handler = winchhandler };
 	int errret;
 
 	if (setupterm(NULL, 1, &errret))
 		panic("Terminal setup failed");
 
-	signal(SIGWINCH, winchhandler);
-	signal(SIGCONT, winchhandler);
-	siginterrupt(SIGWINCH, 1);
+	sigaction(SIGWINCH, &sa, NULL);
+	sigaction(SIGCONT, &sa, NULL);
 
 	scroll_fwd = scroll_forward;
 	if (scroll_fwd == NULL || *scroll_fwd == '\0') {
