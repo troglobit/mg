@@ -123,9 +123,19 @@ getkey(int flag)
 PF
 doscan(KEYMAP *map, int c, KEYMAP **newmap)
 {
-	struct map_element	*elec = &map->map_element[0];
-	struct map_element	*last = &map->map_element[map->map_num];
-	PF		 ret;
+	struct map_element	*elec;
+	struct map_element	*last;
+	PF			 ret;
+
+	/*
+	 * some key mappings return NULL when mg is not built with
+	 * the full functionality, e.g. w/o ctags or cscope support
+	 */
+	if (!map)
+		return rescan;
+
+	elec = &map->map_element[0];
+	last = &map->map_element[map->map_num];
 
 	while (elec < last && c > elec->k_num)
 		elec++;
