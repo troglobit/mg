@@ -1,4 +1,4 @@
-/*	$OpenBSD: funmap.c,v 1.60 2021/03/23 18:33:05 lum Exp $	*/
+/*	$OpenBSD: funmap.c,v 1.61 2021/04/20 10:02:50 lum Exp $	*/
 
 /* This file is in the public domain */
 
@@ -101,6 +101,7 @@ static struct funmap functnames[] = {
 	{desckey, "describe-key-briefly", 1, NULL},
 	{diffbuffer, "diff-buffer-with-file", 0, NULL},
 	{digit_argument, "digit-argument", 1, NULL},
+	{dired_jump, "dired-jump", 1, NULL},
 	{timetoggle, "display-time-mode", 0, NULL},
 	{lowerregion, "downcase-region", 0, NULL},
 	{lowerword, "downcase-word", 1, NULL},
