@@ -1,4 +1,4 @@
-/* $OpenBSD: autoexec.c,v 1.16 2015/03/19 21:22:15 bcallah Exp $ */
+/* $OpenBSD: autoexec.c,v 1.18 2021/04/21 14:45:28 lum Exp $ */
 /* this file is in the public domain */
 /* Author: Vincent Labrecque <vincent@openbsd.org>	April 2002 */
 
@@ -96,7 +96,7 @@ add_autoexec(const char *pattern, const char *func)
 int
 auto_execute(int f, int n)
 {
-	char	patbuf[128], funcbuf[128], *patp, *funcp;
+	char	patbuf[BUFSIZE], funcbuf[BUFSIZE], *patp, *funcp;
 	int	s;
 
 	if ((patp = eread("Filename pattern: ", patbuf, sizeof(patbuf),
