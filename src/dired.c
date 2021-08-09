@@ -542,7 +542,7 @@ d_rename(int f, int n)
 		if (S_ISDIR(statbuf.st_mode)) {
 			ret = snprintf(toname, sizeof(toname), "%s/%s",
 			    topath, sname);
-			if (ret < 0 || ret >= sizeof(toname) - 1) {
+			if (ret < 0 || ret >= (int)sizeof(toname) - 1) {
 				dobeep();
 				ewprintf("Directory name too long");
 				return (FALSE);
