@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get -y update
-          sudo apt-get -y install libncurses-dev tree
+          sudo apt-get -y install tree
       - uses: actions/checkout@v2
       - name: Configure
         run: |
@@ -53,7 +53,8 @@ jobs:
       - name: Installing dependencies
         run: |
           apt-get update
-          apt-get install -y build-essential autoconf automake dpkg-dev debhelper devscripts
+          apt-get install -y build-essential libncurses-dev autoconf automake \
+          		     dpkg-dev debhelper devscripts
       - name: Building Debian package
         run: |
           ./autogen.sh
