@@ -1,6 +1,6 @@
 Micro (GNU) Emacs
 =================
-[![License Badge][]][License] [![Travis Status][]][Travis] [![Coverity Status]][Coverity Scan]
+[![License Badge][]][License] [![GitHub Status][]][GitHub] [![Coverity Status]][Coverity Scan]
 <img align="right" src="mg.png" title="mg in action">
 
 Contents
@@ -157,7 +157,7 @@ goes something like this:
   repositories.
 * Feb 25, 2000: First import into the OpenBSD tree, where it is
   currently maintained with contributions from many others.
-* May  8, 2016: Import from OpenBSD 5.9 to [GitHub][]
+* May  8, 2016: Import from OpenBSD 5.9 to [GitHub][repo]
 * May 15, 2016: Mg v3.0, first port back to Linux, by Joachim Wiberg
 * Jul 22, 2018: Mg v3.1, removed libite dependency, by Joachim Wiberg
 * Aug 26, 2018: Mg v3.2, now fully portable¹, by Joachim Wiberg
@@ -216,11 +216,11 @@ the GitHub issue tracker <https://github.com/troglobit/mg/issues>
 [portable Mg]:     https://github.com/hboetes/mg
 [libbsd]:          https://libbsd.freedesktop.org/wiki/
 [Ncurses]:         https://invisible-island.net/ncurses/
-[GitHub]:          https://github.com/troglobit/mg
+[repo]:            https://github.com/troglobit/mg
 [AUTHORS]:         https://github.com/troglobit/mg/blob/master/AUTHORS
 [License]:         http://unlicense.org/
 [License Badge]:   https://img.shields.io/badge/license-Unlicense-blue.svg
-[Travis]:          https://travis-ci.org/troglobit/mg
-[Travis Status]:   https://travis-ci.org/troglobit/mg.png?branch=master
+[GitHub]:          https://github.com/troglobit/mg/actions/workflows/build.yml/
+[GitHub Status]:   https://github.com/troglobit/mg/actions/workflows/build.yml/badge.svg
 [Coverity Scan]:   https://scan.coverity.com/projects/8859
 [Coverity Status]: https://scan.coverity.com/projects/8859/badge.svg
