@@ -372,7 +372,7 @@ startupfile(char *suffix, char *conffile)
 		goto nohome;
 
 	if (conffile != NULL) {
-		(void)strncpy(file, conffile, NFILEN);
+		(void)strlcpy(file, conffile, NFILEN);
 	} else if (suffix == NULL) {
 		ret = snprintf(file, sizeof(file), _PATH_MG_STARTUP, home);
 		if (ret < 0 || ret >= (int)sizeof(file))
