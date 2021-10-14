@@ -1,0 +1,45 @@
+name: Bob the Builder
+
+# Run on all branches, including all pull requests, except the 'dev'
+# branch since that's where we run Coverity Scan (limited tokens/day)
+on:
+  push:
+    branches:
+      - '**'
+      - '!dev'
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  build:
+    # Verify we can build on latest Ubuntu with both gcc and clang
+    name: ${{ matrix.compiler }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compiler: [gcc, clang]
+      fail-fast: false
+    env:
+      MAKEFLAGS: -j3
+      CC: ${{ matrix.compiler }}
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get -y update
+          sudo apt-get -y install tree
+      - uses: actions/checkout@v2
+      - name: Configure
+        run: |
+          ./autogen.sh
+          ./configure --prefix=
+      - name: Build
+        run: |
+          make V=1
+      - name: Install to ~/tmp and Inspect
+        run: |
+          DESTDIR=~/tmp make install-strip
+          tree ~/tmp
+          ldd ~/tmp/bin/mg
+          size ~/tmp/bin/mg
+          ~/tmp/bin/mg -h
