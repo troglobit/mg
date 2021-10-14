@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get -y update
-          sudo apt-get -y install tree
+          sudo apt-get -y install libncurses-dev tree
       - uses: actions/checkout@v2
       - name: Configure
         run: |
