@@ -14,7 +14,7 @@ mg2a (3.5) stable; urgency=medium
     + New command line option, -u mgrc, to specify startup mgrc file
     + Clarify markers in list-buffers output, more similar to GNU Emacs
 
- -- Joachim Wiberg <troglobit@gmail.com>  Sat, 16 Oct 2021 18:30:39 +0200
+ -- Joachim Wiberg <troglobit@gmail.com>  Sun, 17 Oct 2021 01:50:39 +0200
 
 mg2a (3.4) stable; urgency=medium
 

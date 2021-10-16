@@ -1,5 +1,5 @@
 # Written by Joachim Wiberg <troglobit@gmail.com> and put in the public domain.
-AC_INIT([Mg], [3.5-rc1], [https://github.com/troglobit/mg/issues], [mg])
+AC_INIT([Mg], [3.5], [https://github.com/troglobit/mg/issues], [mg])
 AC_CONFIG_AUX_DIR(build-aux)
 AM_INIT_AUTOMAKE([1.11 foreign])
 AM_SILENT_RULES([yes])

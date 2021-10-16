@@ -3,11 +3,12 @@ Change Log
 
 All relevant changes to the project are documented in this file.
 
-[v3.5][UNRELEASED]
-------------------
+[v3.5][] - 2021-10-17
+---------------------
 
 ### Changes
 - Add support for Solaris/Illumos based UNIX systems.  Tested on OmniOS
+- Add Dockerfile and GitHub integration for container images
 - Sync with mg upstream, OpenBSD 7.0, as of May 12, 2021
   - New replace-regexp function, for scripting
   - New dired function, dired-jump activated with C-x C-j
@@ -242,7 +243,7 @@ set as Mg3a.
 	functions.  Some simply marked as "don't care"
   - Fix missing initialization of stack variables
 
-[UNRELEASED]: https://github.com/troglobit/mg/compare/v3.4...HEAD
+[UNRELEASED]: https://github.com/troglobit/mg/compare/v3.5...HEAD
 [v3.5]:       https://github.com/troglobit/mg/compare/v3.4...v3.5
 [v3.4]:       https://github.com/troglobit/mg/compare/v3.3...v3.4
 [v3.3]:       https://github.com/troglobit/mg/compare/v3.2...v3.3
