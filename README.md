@@ -219,7 +219,7 @@ the GitHub issue tracker <https://github.com/troglobit/mg/issues>
 [repo]:            https://github.com/troglobit/mg
 [AUTHORS]:         https://github.com/troglobit/mg/blob/master/AUTHORS
 [License]:         http://unlicense.org/
-[License Badge]:   https://img.shields.io/badge/license-Unlicense-blue.svg
+[License Badge]:   https://img.shields.io/badge/License-Unlicense-blue.svg
 [GitHub]:          https://github.com/troglobit/mg/actions/workflows/build.yml/
 [GitHub Status]:   https://github.com/troglobit/mg/actions/workflows/build.yml/badge.svg
 [Coverity Scan]:   https://scan.coverity.com/projects/8859
