@@ -9,6 +9,7 @@ Contents
 * [Introduction](#introduction)
 * [Usage](#usage)
 * [Building](#building)
+* [Docker](#docker)
 * [History](#history)
 * [Origin & References](#origin--references)
 
@@ -143,6 +144,22 @@ To build a completely static mg with all features:
     ./configure LDFLAGS="-static"
     make
     sudo make install-strip
+
+
+Docker
+------
+
+Alpine Linux based Docker container images are available from GitHub:
+
+    docker pull ghcr.io/troglobit/mg:latest
+
+To edit files from your host's `$HOME`, map it to the container's
+`/root` and run:
+
+    docker run -ti -v $HOME:/root ghcr.io/troglobit/mg:latest
+
+This supports reading your `~/.mg` and it even takes arguments on the
+command line.  Both quick help and the tutorial are bundled.
 
 
 History
