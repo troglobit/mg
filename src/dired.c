@@ -1167,7 +1167,7 @@ gotofile(char *fpth)
 {
 	struct line	*lp, *nlp;
 	char		 fname[NFILEN];
-	char		*p;
+	char		*p = NULL;
 	int		 tmp;
 
 	(void)xbasename(fname, fpth, NFILEN);
