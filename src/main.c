@@ -168,8 +168,10 @@ main(int argc, char **argv)
 	if ((cp = startupfile(NULL, conffile)) != NULL)
 		(void)load(cp);
 
-	if (batch)
+	if (batch) {
+		vttidy();
 		return (0);
+	}
 
 	/*
 	 * Now ensure any default buffer modes from the startup file are
