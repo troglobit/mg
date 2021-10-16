@@ -491,9 +491,8 @@ multiarg(char *cmdp, char *argbuf, int numparams)
 
        			if (!doregex(regs, argp)) {
 				const char *errstr;
-				int iters;
 
-				iters = strtonum(argp, 0, INT_MAX, &errstr);
+				strtonum(argp, 0, INT_MAX, &errstr);
 				if (errstr != NULL)
 					return (dobeep_msgs("Var not found:",
 					    argp));
@@ -692,9 +691,8 @@ expandvals(char *cmdp, char *valp, char *bp)
 				continue;
 			} else {
 				const char *errstr;
-				int iters;
 
-				iters = strtonum(argp, 0, INT_MAX, &errstr);
+				strtonum(argp, 0, INT_MAX, &errstr);
 				if (errstr != NULL)
 					return (dobeep_msgs("Var not found:",
 					    argp));
