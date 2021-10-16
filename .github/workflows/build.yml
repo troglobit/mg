@@ -43,6 +43,27 @@ jobs:
           ldd ~/tmp/bin/mg
           size ~/tmp/bin/mg
           ~/tmp/bin/mg -h
+  msys2:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: git mingw-w64-x86_64-toolchain
+      - name: CI-Build
+        run: |
+          ./autogen.sh
+          ./configure --prefix=
+          make
+          DESTDIR=~/tmp make install-strip
+          ldd ~/tmp/bin/mg
+          size ~/tmp/bin/mg
+          ~/tmp/bin/mg -h
   debian:
     # Verify that Debian packages can be built
     name: Debian Package
