@@ -5,12 +5,11 @@ AM_INIT_AUTOMAKE([1.11 foreign])
 AM_SILENT_RULES([yes])
 
 AC_CONFIG_SRCDIR([src/main.c])
-AC_CONFIG_HEADER([src/config.h])
+AC_CONFIG_HEADERS([src/config.h])
 AC_CONFIG_FILES([Makefile src/Makefile])
 
 AC_PROG_CC
 AC_PROG_INSTALL
-AC_HEADER_STDC
 
 AC_CHECK_HEADERS([pty.h utmp.h])
 AC_CANONICAL_HOST
