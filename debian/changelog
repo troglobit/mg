@@ -1,10 +1,20 @@
-mg2a (3.5) unstable; urgency=medium
+mg2a (3.5) stable; urgency=medium
 
   * Fix regression; status line cleared when trying to open a file.
     Caused by a fix to clear status line after kill/switch by name.
     Original fix redesigned to handle both cases.
+  * Fix #10: replace deprecated signal functions with sigaction()
+  * Fix #11: segfault on disabled keybindings, --disable-ctags/cscope
+  * Fix various gcc build warnings
+  * Sync with mg upstream, OpenBSD 7.0, as of May 12, 2021
+    + New replace-regexp function, for scripting
+    + New dired function, dired-jump activated with C-x C-j
+    + New dired-shell-command function for piping file to a command
+    + New mgrc batch mode, mostly intended for regression testing
+    + New command line option, -u mgrc, to specify startup mgrc file
+    + Clarify markers in list-buffers output, more similar to GNU Emacs
 
- -- Joachim Wiberg <troglobit@gmail.com>  Sun, 11 Oct 2020 10:19:39 +0200
+ -- Joachim Wiberg <troglobit@gmail.com>  Sat, 16 Oct 2021 18:30:39 +0200
 
 mg2a (3.4) stable; urgency=medium
 

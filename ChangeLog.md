@@ -8,11 +8,21 @@ All relevant changes to the project are documented in this file.
 
 ### Changes
 - Add support for Solaris/Illumos based UNIX systems.  Tested on OmniOS
+- Sync with mg upstream, OpenBSD 7.0, as of May 12, 2021
+  - New replace-regexp function, for scripting
+  - New dired function, dired-jump activated with C-x C-j
+  - New dired-shell-command function for piping file to a command
+  - New mgrc batch mode, mostly intended for regression testing
+  - New command line option, -u mgrc, to specify startup mgrc file
+  - Clarify markers in list-buffers output, more similar to GNU Emacs
 
 ### Fixes
 - Fix regression; lost path in status line while trying to open a file.  
   Caused by a fix introduced in v3.4 to clear the status line on kill or
   switch buffer by name.  A new fix has been made to handle both cases.
+- Fix #10: replace deprecated signal functions with `sigaction()`
+- Fix #11: segfault on disabled keybindings, `--disable-ctags/cscope`
+- Fix various gcc build warnings
 
 
 [v3.4][] - 2020-08-23
