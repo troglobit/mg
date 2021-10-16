@@ -19,7 +19,7 @@ Introduction
 Mg is a [Micro Emacs][] clone created in 1987, based on the original
 [MicroEMACS][] v30 released by Dave Conroy in 1985.  The name, "Micro
 GNU Emacs", was disputed early on by the FSF, so today it simply goes by
-`mg`.  This software is fully free and in public domain.
+`mg`.  This software is fully free and in the public domain.
 
 The intention is to be a small, fast, and portable Emacs-like editor for
 users who cannot, or do not want to, run the real Emacs for one reason
@@ -164,6 +164,8 @@ goes something like this:
 * Dec 11, 2019: Mg v3.3, misc fixes and new features from OpenBSD
 * Aug 23, 2020: Mg v3.4, new modeline, quick-help, support for gzipped
   files, and building without termcap/[Ncurses][], by Joachim Wiberg
+* Oct 17, 2021: Mg v3.5, support for Solaris/Illumos based UNIX systems
+  tested on OmniOS and OpenIndiana, sync with Mg from OpenBSD 7.0
 
 See the source distribution for the list of [AUTHORS][].
 
