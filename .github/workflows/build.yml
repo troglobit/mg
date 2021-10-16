@@ -54,13 +54,18 @@ jobs:
         with:
           msystem: MINGW64
           update: true
-          install: git mingw-w64-x86_64-toolchain
-      - name: CI-Build
+          install: git gcc make autoconf automake ncurses tree
+      - name: Configure
         run: |
           ./autogen.sh
           ./configure --prefix=
+      - name: Build
+        run: |
           make
+      - name: Install
+        run: |
           DESTDIR=~/tmp make install-strip
+          tree ~/tmp
           ldd ~/tmp/bin/mg
           size ~/tmp/bin/mg
           ~/tmp/bin/mg -h
