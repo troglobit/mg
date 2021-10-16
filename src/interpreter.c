@@ -124,9 +124,10 @@ int
 foundparen(char *funstr, int llen, int lnum)
 {
 	const char	*lrp = NULL;
-	char		*p, *begp = NULL, *endp = NULL, *prechr;
+	char		*p, *begp = NULL, *endp = NULL, *prechr = NULL;
 	char		*lastchr = NULL;
-	int     	 i, ret, pctr, expctr, blkid, inquote, esc;
+	int     	 i, pctr, expctr, blkid, inquote, esc;
+	int		 ret = FALSE;
 	int		 elen, spc, ns;
 
 	pctr = expctr = inquote = esc = elen = spc = ns = 0;
@@ -621,12 +622,9 @@ founddef(char *defstr, int blkid, int expctr, int hasval, int elen)
 static int
 expandvals(char *cmdp, char *valp, char *bp)
 {
-	char	 excbuf[BUFSIZE], argbuf[BUFSIZE];
-	char	 contbuf[BUFSIZE], varbuf[BUFSIZE];
-	char	*argp, *endp, *p, *v, *s = " ";
-	char	*regs;
-	int	 spc, cnt;
-	int	 inlist, sizof, fin, inquote;
+	char	 argbuf[BUFSIZE], contbuf[BUFSIZE], varbuf[BUFSIZE];
+	char	*argp, *regs, *endp, *p, *v, *s = " ";
+	int	 spc, sizof, fin, inquote;
 
 	/* now find the first argument */
 	p = skipwhite(valp);
@@ -635,7 +633,7 @@ expandvals(char *cmdp, char *valp, char *bp)
 		return (dobeep_msg("strlcpy error"));
 	argp = argbuf;
 	spc = 1; /* initially fake a space so we find first argument */
-	inlist = fin = inquote = cnt = spc = 0;
+	fin = inquote = spc = 0;
 
 	for (p = argbuf; *p != '\0'; p++) {
 		if (*(p + 1) == '\0')
@@ -660,7 +658,6 @@ expandvals(char *cmdp, char *valp, char *bp)
 				*p = '\0';		
 			}
 			endp = p + 1;
-			excbuf[0] = '\0';
 			varbuf[0] = '\0';
 			contbuf[0] = '\0';			
 			sizof = sizeof(varbuf);
