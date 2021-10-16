@@ -66,9 +66,9 @@ jobs:
         run: |
           DESTDIR=~/tmp make install-strip
           tree ~/tmp
-          ldd ~/tmp/bin/mg
-          size ~/tmp/bin/mg
-          ~/tmp/bin/mg -h
+          ldd  ~/tmp/mingw64/bin/mg.exe
+          size ~/tmp/mingw64/bin/mg.exe
+          ~/tmp/mingw64/bin/mg.exe -h
   debian:
     # Verify that Debian packages can be built
     name: Debian Package
