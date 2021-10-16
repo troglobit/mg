@@ -226,7 +226,7 @@ foundparen(char *funstr, int llen, int lnum)
 		} else if (*p != ' ' && *p != '\t') {
 			if (begp == NULL) {
 				begp = p;
-				if (*begp == '"' || isdigit(*begp))
+				if (*begp == '"' || isdigit((short)*begp))
 					return(dobeep_num("First char of "\
 					    "expression error line:", lnm));
 			}
