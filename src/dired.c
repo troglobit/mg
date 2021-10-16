@@ -540,7 +540,7 @@ d_rename(int f, int n)
 		return (FALSE);
 
 	topath = adjustname(toname, TRUE);
-	if (stat(topath, &statbuf) == 0) {
+	if (topath && stat(topath, &statbuf) == 0) {
 		if (S_ISDIR(statbuf.st_mode)) {
 			ret = snprintf(toname, sizeof(toname), "%s/%s",
 			    topath, sname);
