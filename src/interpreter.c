@@ -166,7 +166,7 @@ foundparen(char *funstr, int llen, int lnum)
 		} else if (*p == '(') {
 			if (lastchr != NULL && *lastchr == '(')
 				return(dobeep_num("Multiple consecutive "\
-				    "left parantheses line", lnm));
+				    "left parentheses line", lnm));
 			if (inquote == 0) {
 				if (begp != NULL) {
 					if (*prechr == ' ')
