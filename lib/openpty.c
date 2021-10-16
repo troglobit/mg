@@ -82,7 +82,7 @@ openpty(int *amaster, int *aslave, char *name, struct termios *termp,
 		if (name && (nm = ttyname(s)))
 			strcpy(name, nm);
 		if (winp)
-			(void)ioctl(s, TIOCWINSZ, winp);
+			(void)ioctl(s, TIOCGWINSZ, winp);
 
 		return (0);
 	}

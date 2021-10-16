@@ -43,6 +43,7 @@
 
 #include	<signal.h>
 #include	<sys/stat.h>
+#include	<termios.h>		/* struct winsize et al. */
 
 #ifndef HAVE_STRLCPY
 size_t  strlcpy(char *dst, const char *src, size_t siz);
