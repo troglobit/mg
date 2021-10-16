@@ -7,15 +7,15 @@ on:
     tags:
       - 'v[0-9]+.[0-9]+*'
 
-env:
-  IMAGE_NAME: misc
-
 jobs:
   docker:
     runs-on: ubuntu-latest
     permissions:
       packages: write
       contents: read
+    env:
+      MAKEFLAGS: -j3
+      IMAGE_NAME: mg
     steps:
       - uses: actions/checkout@v2
       - name: Build image
