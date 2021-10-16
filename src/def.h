@@ -73,6 +73,10 @@ char   *fparseln(FILE *, size_t *, size_t *, const char[3], int);
 int	login_tty(int fd);
 #endif
 
+#ifndef HAVE_OPENPTY
+int	openpty(int *amaster, int *aslave, char *name, struct termios *termp, struct winsize *winp);
+#endif
+
 #ifndef HAVE_FUTIMENS
 int     futimens(int, const struct timespec[2]);
 #endif
