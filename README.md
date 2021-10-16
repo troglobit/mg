@@ -29,6 +29,8 @@ reason to learn more than one Emacs flavor.
 
 > Try the [latest release](https://github.com/troglobit/mg/releases/latest),
 > use the tarball with a version in the name, avoid GitHub generated links!
+> Releases come with a `configure` script, so you don't need autotools.
+> Only a C compiler, `make` and you're set to go.
 
 
 Usage
@@ -59,7 +61,7 @@ This project is completely self hosting.  However, by default you need a
 termcap library, like [Ncurses][], to provide APIs like: `setupterm()`,
 `tgoto()`, and `tputs()`.
 
-See below for how to build without Ncurses.
+> See below for how to *build without Ncurses*.
 
 
 ### With termcap/terminfo/curses
