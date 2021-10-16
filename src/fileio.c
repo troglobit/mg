@@ -242,6 +242,7 @@ fbackupfile(const char *fn)
 	struct timespec	 new_times[2];
 	int		 from, to, serrno;
 	ssize_t		 nread;
+	mode_t		 omask;
 	char		 buf[BUFSIZ];
 	char		*nname, *tname, *bkpth;
 
@@ -274,7 +275,10 @@ fbackupfile(const char *fn)
 		free(tname);
 		return (FALSE);
 	}
+
+	omask = umask(0600);
 	to = mkstemp(tname);
+	umask(omask);
 	if (to == -1) {
 		serrno = errno;
 		close(from);
