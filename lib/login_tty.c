@@ -28,11 +28,10 @@
  * SUCH DAMAGE.
  */
 
+#include <termios.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
-
-#include "util.h"
 
 int
 login_tty(int fd)

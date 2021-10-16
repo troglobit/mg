@@ -28,8 +28,12 @@
 # endif
 #endif
 
-#ifdef __linux__
-# include <pty.h>			/* openpty() et al. */
+#ifdef HAVE_PTY_H
+# include	<pty.h>			/* openpty() et al. */
+#endif
+
+#ifdef HAVE_UTMP_H
+# include	<utmp.h>		/* login_pty() on Linux */
 #endif
 
 #ifdef __sun
@@ -65,7 +69,7 @@ char   *fparseln(FILE *, size_t *, size_t *, const char[3], int);
 #define FPARSELN_UNESCALL	0x0f
 #endif
 
-#ifndef HAVE_FPARSELN
+#ifndef HAVE_LOGIN_TTY
 int	login_tty(int fd);
 #endif
 

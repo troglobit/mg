@@ -12,6 +12,7 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_HEADER_STDC
 
+AC_CHECK_HEADERS([pty.h utmp.h])
 AC_CANONICAL_HOST
 
 # Check build host, DragonFly BSD uses priv
