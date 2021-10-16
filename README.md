@@ -1,7 +1,7 @@
 Micro (GNU) Emacs
 =================
 [![License Badge][]][License] [![GitHub Status][]][GitHub] [![Coverity Status]][Coverity Scan]
-<img align="right" src="mg.png" title="mg in action">
+<img align="right" src="doc/mg.png" title="mg in action">
 
 Contents
 --------
