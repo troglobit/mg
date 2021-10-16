@@ -659,6 +659,8 @@ load(const char *fname)
 	if (ret != FIOSUC) {
 		if (ret == FIODIR)
 			(void)ffclose(ffp, NULL);
+		if (ret == FIOGZIP)    /* .gz files not supported yet */
+			(void)pclose(ffp);
 
 		return (FALSE);
 	}
