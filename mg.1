@@ -1,7 +1,7 @@
-.\"	$OpenBSD: mg.1,v 1.123 2021/04/20 10:02:50 lum Exp $
+.\"	$OpenBSD: mg.1,v 1.125 2021/05/02 14:13:17 lum Exp $
 .\" This file is in the public domain.
 .\"
-.Dd $Mdocdate: April 22 2021 $
+.Dd $Mdocdate: May 2 2021 $
 .Dt MG 1
 .Os
 .Sh NAME
@@ -1100,6 +1100,8 @@ Refresh the dired buffer while retaining any flags.
 Scroll down the dired buffer.
 .It dired-scroll-up
 Scroll up the dired buffer.
+.It dired-shell-command
+Pipe the file under the current cursor position through a shell command.
 .It dired-unmark
 Remove the deletion flag for the file on the current line.
 .It dired-unmark-backward
