@@ -536,7 +536,7 @@ isvar(char **argp, char **varbuf, int sizof)
 #endif
 	SLIST_FOREACH(v1, &varhead, entry) {
 		if (strcmp(*argp, v1->v_name) == 0) {
-			(void)(strlcpy(*varbuf, v1->v_buf, sizof) >= sizof);
+			(void)((int)strlcpy(*varbuf, v1->v_buf, sizof) >= sizof);
 			return (TRUE);
 		}
 	}
@@ -670,19 +670,19 @@ expandvals(char *cmdp, char *valp, char *bp)
 				;			/* found quotes */
 			else if (isvar(&argp, &v, sizof)) {
 
-				(void)(strlcat(varbuf, " ",
+				(void)((int)strlcat(varbuf, " ",
                                     sizof) >= sizof);
 
 				*p = ' ';
 				(void)(strlcpy(contbuf, endp,
 				    sizeof(contbuf)) >= sizeof(contbuf));
 
-				(void)(strlcat(varbuf, contbuf,
+				(void)((int)strlcat(varbuf, contbuf,
 				    sizof) >= sizof);
 				
 				argbuf[0] = ' ';
 				argbuf[1] = '\0';
-				(void)(strlcat(argbuf, varbuf,
+				(void)((int)strlcat(argbuf, varbuf,
 				    sizof) >= sizof);
 
 				p = argp = argbuf;
