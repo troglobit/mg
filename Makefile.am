@@ -1,8 +1,7 @@
 # Written by Joachim Wiberg <troglobit@gmail.com> and put in the public domain.
-SUBDIRS        = src
-dist_man1_MANS = mg.1
-doc_DATA       = README.md ChangeLog.md UNLICENSE tutorial .mg
-EXTRA_DIST     = README.md ChangeLog.md UNLICENSE tutorial .mg
+doc_DATA       = README.md ChangeLog.md UNLICENSE
+EXTRA_DIST     = README.md ChangeLog.md UNLICENSE
+SUBDIRS        = doc src
 
 ## Check if tagged in git
 release-hook:
