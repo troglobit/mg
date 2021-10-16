@@ -219,8 +219,8 @@ the GitHub issue tracker <https://github.com/troglobit/mg/issues>
 [libbsd]:          https://libbsd.freedesktop.org/wiki/
 [Ncurses]:         https://invisible-island.net/ncurses/
 [repo]:            https://github.com/troglobit/mg
-[AUTHORS]:         https://github.com/troglobit/mg/blob/master/AUTHORS
-[License]:         http://unlicense.org/
+[AUTHORS]:         https://github.com/troglobit/mg/blob/master/doc/AUTHORS
+[License]:         https://unlicense.org/
 [License Badge]:   https://img.shields.io/badge/License-Unlicense-blue.svg
 [GitHub]:          https://github.com/troglobit/mg/actions/workflows/build.yml/
 [GitHub Status]:   https://github.com/troglobit/mg/actions/workflows/build.yml/badge.svg
