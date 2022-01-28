@@ -85,7 +85,7 @@ getcwdir(char *buf, size_t len)
 	return (TRUE);
 }
 
-/* Create the directory and it's parents. */
+/* Create the directory and its parents. */
 /* ARGSUSED */
 int
 make_dir(int f, int n)

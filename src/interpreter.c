@@ -8,7 +8,7 @@
 /*
  * This file attempts to add some 'scripting' functionality into mg.
  *
- * The initial goal is to give mg the ability to use it's existing functions
+ * The initial goal is to give mg the ability to use its existing functions
  * and structures in a linked-up way. Hopefully resulting in user definable
  * functions. The syntax is 'scheme' like but currently it is not a scheme
  * interpreter.

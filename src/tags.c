@@ -450,7 +450,7 @@ curtoken(int f, int n, char *token)
 	
 	/* Underscore character is to be treated as "inword" while
 	 * processing tokens unlike mg's default word traversal. Save
-	 * and restore it's cinfo value so that tag matching works for
+	 * and restore its cinfo value so that tag matching works for
 	 * identifier with underscore.
 	 */
 	c = cinfo['_'];
