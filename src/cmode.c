@@ -209,6 +209,8 @@ cc_lfindent(int f, int n)
 {
 	if (n < 0)
 		return (FALSE);
+	if (cc_strip_trailp)
+		deltrailwhite(FFRAND, 1);
 	if (enewline(FFRAND, 1) == FALSE)
 		return (FALSE);
 	return (cc_indent(FFRAND, n));

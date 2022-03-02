@@ -372,6 +372,7 @@ lfindent(int f, int n)
 				nicol |= 0x07;
 			++nicol;
 		}
+		delwhite(FFRAND, 1);
 		if (lnewline() == FALSE || ((
 #ifdef	NOTAB
 		    curbp->b_flag & BFNOTAB) ? linsert(nicol, ' ') == FALSE : (
