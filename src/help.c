@@ -237,9 +237,9 @@ quickhelp(int f, int n)
 	bp->b_flag |= BFREADONLY;
 
 	addline(bp, "FILE             BUFFER          WINDOW           MARK/KILL       MISC");
-	addline(bp, "C-x C-c  exit    C-x C-k close   C-0   only other C-space  mark   C-_ undo");
-	addline(bp, "C-x C-f  find    C-x k   other   C-1   only this  C-w      wipe   C-s search");
-	addline(bp, "C-x C-s  save    C-x C-b list    C-2   split two  C-k      close  C-r r-search");
+	addline(bp, "C-x C-c  exit    C-x k   close   C-x 0 only other C-space  mark   C-_ undo");
+	addline(bp, "C-x C-f  find    C-x o   other   C-x 1 only this  C-w      wipe   C-s search");
+	addline(bp, "C-x C-s  save    C-x C-b list    C-x 2 split two  C-k      close  C-r r-search");
 	addline(bp, "C-x s    all     C-x b   switch  C-x ^ enlarge    C-y      yank   M-% replace");
 	addline(bp, "C-x i    insert  C-x g   goto ln C-x o other win  C-x C-x  swap   M-q reformat");
 	addline(bp, "______________________________________________________________________________");
