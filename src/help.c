@@ -240,7 +240,7 @@ quickhelp(int f, int n)
 	addline(bp, "C-x C-c exit     C-x b   switch  C-x 0 only other C-space mark    C-_ undo");
 	addline(bp, "C-x C-f find     C-x k   close   C-x 1 only this  C-w     kill-rg C-s search");
 	addline(bp, "C-x C-s save     C-x C-b list    C-x 2 split two  C-k     kill-ln C-r r-search");
-	addline(bp, "C-x s   save-all C-x u   undo    C-x ^ enlarge    C-y     yank    M-% replace");
+	addline(bp, "C-x s   save-all C-x h   mark    C-x ^ enlarge    C-y     yank    M-% replace");
 	addline(bp, "C-x i   insert   C-x g   goto-ln C-x o other win  C-x C-x swap    M-q reformat");
 	addline(bp, "______________________________________________________________________________");
 	addlinef(bp, "%s", hlp);
