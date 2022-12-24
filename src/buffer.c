@@ -958,6 +958,7 @@ dorevert(void)
 {
 	int lineno;
 	struct undo_rec *rec;
+	char fname[NFILEN];
 
 	if (access(curbp->b_fname, F_OK|R_OK) != 0) {
 		dobeep();
@@ -982,7 +983,10 @@ dorevert(void)
 		free_undo_record(rec);
 	}
 
-	if (readin(curbp->b_fname))
+	/* don't use curbp->b_fname as src and dist of filename, causes mem overlap */
+	strlcpy(fname, curbp->b_fname, sizeof(fname));
+
+	if (readin(fname))
 		return(setlineno(lineno));
 	return (FALSE);
 }
