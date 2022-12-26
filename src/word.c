@@ -1,4 +1,4 @@
-/*	$OpenBSD: word.c,v 1.18 2015/12/29 19:44:32 lum Exp $	*/
+/*	$OpenBSD: word.c,v 1.20 2022/12/26 19:16:02 jmc Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -69,7 +69,7 @@ forwword(int f, int n)
 
 /*
  * Transpose 2 words. 
- * The function below is artifically restricted to only a maximum of 1 iteration
+ * The function below is artificially restricted to only a maximum of 1 iteration
  * at the moment because the 'undo' functionality within mg needs amended for
  * multiple movements of point, backwards and forwards.
  */
