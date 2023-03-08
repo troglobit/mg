@@ -50,7 +50,6 @@ int			 tceeol;
 int			 tcinsl;
 int			 tcdell;
 
-/* ARGSUSED */
 static void
 winchhandler(int sig)
 {
@@ -439,7 +438,6 @@ ttresize(void)
 /*
  * fake char output for charcost()
  */
-/* ARGSUSED */
 static int
 fakec(int c)
 {

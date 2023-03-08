@@ -28,7 +28,6 @@ static int	findbind(KEYMAP *, PF, char *, size_t);
  * Read a key from the keyboard, and look it up in the keymap.
  * Display the name of the function currently bound to the key.
  */
-/* ARGSUSED */
 int
 desckey(int f, int n)
 {
@@ -104,7 +103,6 @@ found:
  * keys and their current bindings, and stores the table in the
  * *help* pop-up buffer.  This lets Mg produce its own wall chart.
  */
-/* ARGSUSED */
 int
 wallchart(int f, int n)
 {
@@ -178,7 +176,6 @@ help_help(int f, int n)
 	return ((*funct)(f, n));
 }
 
-/* ARGSUSED */
 int
 apropos_command(int f, int n)
 {

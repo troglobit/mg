@@ -67,7 +67,6 @@ ctagcmp(struct ctag *s, struct ctag *t)
  * on first use. If a filename is already recorded, ask user to retain
  * already loaded tags (if any) and unload them if user chooses not to.
  */
-/* ARGSUSED */
 int
 tagsvisit(int f, int n)
 {
@@ -260,7 +259,6 @@ pushtag(char *tok)
 /*
  * If tag stack is not empty pop stack and jump to recorded buffer, dot.
  */
-/* ARGSUSED */
 int
 poptag(int f, int n)
 {

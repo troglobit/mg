@@ -164,7 +164,6 @@ ffwopen(FILE ** ffp, const char *fn, struct buffer *bp)
 /*
  * Close a file.
  */
-/* ARGSUSED */
 int
 ffclose(FILE *ffp, struct buffer *bp)
 {

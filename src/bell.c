@@ -64,7 +64,6 @@ dobeep(void)
 	}
 }
 
-/* ARGSUSED */
 int
 toggleaudiblebell(int f, int n)
 {
@@ -76,7 +75,6 @@ toggleaudiblebell(int f, int n)
 	return (TRUE);
 }
 
-/* ARGSUSED */
 int
 togglevisiblebell(int f, int n)
 {

@@ -29,7 +29,6 @@ static int 	do_gotoeop(int, int, int *);
  * preceding line. Keep doing this until a line with only spaces is found or
  * the start of buffer.
  */
-/* ARGSUSED */
 int
 gotobop(int f, int n)
 {
@@ -68,7 +67,6 @@ gotobop(int f, int n)
  * Move to end of paragraph.
  * See comments for gotobop(). Same, but moving forwards.
  */
-/* ARGSUSED */
 int
 gotoeop(int f, int n)
 {
@@ -125,7 +123,6 @@ do_gotoeop(int f, int n, int *i)
  * Justify a paragraph.  Fill the current paragraph according to the current
  * fill column.
  */
-/* ARGSUSED */
 int
 fillpara(int f, int n)
 {
@@ -263,7 +260,6 @@ cleanup:
  * the cursor is on an empty line, move down the buffer to the first line with
  * non-space characters. Then mark n paragraphs and delete.
  */
-/* ARGSUSED */
 int
 killpara(int f, int n)
 {
@@ -297,7 +293,6 @@ killpara(int f, int n)
  * This leaves the cursor at the beginning of the paragraph where markpara()
  * was invoked.
  */
-/* ARGSUSED */
 int
 markpara(int f, int n)
 {
@@ -327,7 +322,6 @@ markpara(int f, int n)
  * multiple times, transpose to the n'th paragraph. If invoked between 
  * paragraphs, move to the previous paragraph, then continue.
  */
-/* ARGSUSED */
 int
 transposepara(int f, int n)
 {
@@ -407,7 +401,6 @@ findpara(void)
  * Insert char with work wrap.  Check to see if we're past fillcol, and if so,
  * justify this line.  As a last step, justify the line.
  */
-/* ARGSUSED */
 int
 fillword(int f, int n)
 {

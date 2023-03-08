@@ -18,7 +18,6 @@
  * shell supports POSIX job control.  If the terminal supports an alternate
  * screen, we will switch to it.
  */
-/* ARGSUSED */
 int
 spawncli(int f, int n)
 {

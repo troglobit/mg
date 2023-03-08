@@ -35,7 +35,6 @@ dirinit(void)
 /*
  * Change current working directory.
  */
-/* ARGSUSED */
 int
 changedir(int f, int n)
 {
@@ -68,7 +67,6 @@ changedir(int f, int n)
 /*
  * Show current directory.
  */
-/* ARGSUSED */
 int
 showcwdir(int f, int n)
 {
@@ -86,7 +84,6 @@ getcwdir(char *buf, size_t len)
 }
 
 /* Create the directory and its parents. */
-/* ARGSUSED */
 int
 make_dir(int f, int n)
 {

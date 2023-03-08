@@ -23,7 +23,6 @@ struct line *maclcur;
 
 union macrodef macro[MAXMACRO];
 
-/* ARGSUSED */
 int
 definemacro(int f, int n)
 {
@@ -53,7 +52,6 @@ definemacro(int f, int n)
 	return (macrodef = TRUE);
 }
 
-/* ARGSUSED */
 int
 finishmacro(int f, int n)
 {
@@ -65,7 +63,6 @@ finishmacro(int f, int n)
 	return (FALSE);
 }
 
-/* ARGSUSED */
 int
 executemacro(int f, int n)
 {

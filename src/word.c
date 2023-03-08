@@ -23,7 +23,6 @@ int	grabword(char **);
  * Move the cursor backward by "n" words. All of the details of motion are
  * performed by the "backchar" and "forwchar" routines.
  */
-/* ARGSUSED */
 int
 backword(int f, int n)
 {
@@ -48,7 +47,6 @@ backword(int f, int n)
  * Move the cursor forward by the specified number of words.  All of the
  * motion is done by "forwchar".
  */
-/* ARGSUSED */
 int
 forwword(int f, int n)
 {
@@ -226,7 +224,6 @@ grabword(char **word)
  * Move the cursor forward by the specified number of words.  As you move,
  * convert any characters to upper case.
  */
-/* ARGSUSED */
 int
 upperword(int f, int n)
 {
@@ -269,7 +266,6 @@ upperword(int f, int n)
  * Move the cursor forward by the specified number of words.  As you move
  * convert characters to lower case.
  */
-/* ARGSUSED */
 int
 lowerword(int f, int n)
 {
@@ -313,7 +309,6 @@ lowerword(int f, int n)
  * characters to lower case.  Error if you try to move past the end of the
  * buffer.
  */
-/* ARGSUSED */
 int
 capword(int f, int n)
 {
@@ -392,7 +387,6 @@ out:
 /*
  * Kill forward by "n" words.
  */
-/* ARGSUSED */
 int
 delfword(int f, int n)
 {
@@ -449,7 +443,6 @@ out:
  * the first call to "backchar" special, but decided that that would just be
  * weird. Normally this is bound to "M-Rubout" and to "M-Backspace".
  */
-/* ARGSUSED */
 int
 delbword(int f, int n)
 {

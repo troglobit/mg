@@ -38,7 +38,6 @@ static	int	shellcmdoutput(char * const[], char * const, int);
  * Kill the region.  Ask "getregion" to figure out the bounds of the region.
  * Move "." to the start, and kill the characters. Mark is cleared afterwards.
  */
-/* ARGSUSED */
 int
 killregion(int f, int n)
 {
@@ -65,7 +64,6 @@ killregion(int f, int n)
  * clearing the mark afterwards.
  * This is a bit like a kill region followed by a yank.
  */
-/* ARGSUSED */
 int
 copyregion(int f, int n)
 {
@@ -111,7 +109,6 @@ copyregion(int f, int n)
  * the changes. Call "lchange" to ensure that redisplay is done in all
  * buffers.
  */
-/* ARGSUSED */
 int
 lowerregion(int f, int n)
 {
@@ -155,7 +152,6 @@ lowerregion(int f, int n)
  * doing the changes.  Call "lchange" to ensure that redisplay is done in all
  * buffers.
  */
-/* ARGSUSED */
 int
 upperregion(int f, int n)
 {
@@ -284,7 +280,6 @@ static char	prefix_string[PREFIXLENGTH] = {'>', '\0'};
  * beginning of the line after the end of the region.  If an argument is
  * given, prompts for the line prefix string.
  */
-/* ARGSUSED */
 int
 prefixregion(int f, int n)
 {
@@ -331,7 +326,6 @@ prefixregion(int f, int n)
 /*
  * Set line prefix string. Used by prefixregion.
  */
-/* ARGSUSED */
 int
 setprefix(int f, int n)
 {

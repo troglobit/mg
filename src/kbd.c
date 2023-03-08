@@ -263,7 +263,6 @@ universal_argument(int f, int n)
 	}
 }
 
-/* ARGSUSED */
 int
 digit_argument(int f, int n)
 {

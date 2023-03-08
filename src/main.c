@@ -314,7 +314,6 @@ pty_init(void)
  * Quit command.  If an argument, always quit.  Otherwise confirm if a buffer
  * has been changed and not written out.  Normally bound to "C-x C-c".
  */
-/* ARGSUSED */
 int
 quit(int f, int n)
 {
@@ -339,7 +338,6 @@ quit(int f, int n)
  * User abort.  Should be called by any input routine that sees a C-g to abort
  * whatever C-g is aborting these days. Currently does nothing.
  */
-/* ARGSUSED */
 int
 ctrlg(int f, int n)
 {

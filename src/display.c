@@ -101,7 +101,6 @@ extern int macrodef;
  * Since we don't have variables (we probably should) these are command
  * processors for changing the values of mode flags.
  */
-/* ARGSUSED */
 int
 linenotoggle(int f, int n)
 {
@@ -115,7 +114,6 @@ linenotoggle(int f, int n)
 	return (TRUE);
 }
 
-/* ARGSUSED */
 int
 colnotoggle(int f, int n)
 {

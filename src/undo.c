@@ -380,7 +380,6 @@ undo_add_change(struct line *lp, int offset, int size)
 /*
  * Show the undo records for the current buffer in a new buffer.
  */
-/* ARGSUSED */
 int
 undo_dump(int f, int n)
 {
@@ -478,7 +477,6 @@ undo_dump(int f, int n)
  * two undo actions, we make it point back at the topmost record. This is
  * how we handle redoing.
  */
-/* ARGSUSED */
 int
 undo(int f, int n)
 {

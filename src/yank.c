@@ -147,7 +147,6 @@ kchunk(char *cp1, RSIZE chunk, int kflag)
  * it kills any text before dot on the current line, then it kills back
  * abs(arg) lines.
  */
-/* ARGSUSED */
 int
 killline(int f, int n)
 {
@@ -219,7 +218,6 @@ done:
  * bug associated with a yank when dot is on the top line of the window
  * (nothing moves, because all of the new text landed off screen).
  */
-/* ARGSUSED */
 int
 yank(int f, int n)
 {

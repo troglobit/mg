@@ -92,7 +92,6 @@ add_autoexec(const char *pattern, const char *func)
  * function to execute when a file matching the specified pattern
  * is read into a buffer.
 */
-/* ARGSUSED */
 int
 auto_execute(int f, int n)
 {

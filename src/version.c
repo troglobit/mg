@@ -18,7 +18,6 @@ const char	version[] = PACKAGE_STRING;
  * Display the version. All this does
  * is copy the version string onto the echo line.
  */
-/* ARGSUSED */
 int
 showversion(int f, int n)
 {
