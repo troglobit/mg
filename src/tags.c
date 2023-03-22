@@ -365,17 +365,18 @@ strip(char *s, size_t len)
  * l, and can be freed during cleanup.
  */
 int
-addctag(char *l)
+addctag(char *s)
 {
 	struct ctag *t;
+	char *l;
 	
 	if ((t = malloc(sizeof(struct ctag))) == NULL) {
 		dobeep();
 		ewprintf("Out of memory");
 		return (FALSE);
 	}
-	t->tag = l;
-	if ((l = strchr(l, '\t')) == NULL)
+	t->tag = s;
+	if ((l = strchr(s, '\t')) == NULL)
 		goto cleanup;
 	*l++ = '\0';
 	t->fname = l;
@@ -389,7 +390,7 @@ addctag(char *l)
 	return (TRUE);
 cleanup:
 	free(t);
-	free(l);
+	free(s);
 	return (FALSE);
 }
 
