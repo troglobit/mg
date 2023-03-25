@@ -373,6 +373,7 @@ addctag(char *s)
 	if ((t = malloc(sizeof(struct ctag))) == NULL) {
 		dobeep();
 		ewprintf("Out of memory");
+		free(s);
 		return (FALSE);
 	}
 	t->tag = s;
