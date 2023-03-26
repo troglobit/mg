@@ -204,6 +204,7 @@ cat <<EOF
 
  Optional features:
   doc/ & man/....: $with_docs
+  tutorial.gz....: $with_tutorial
   autoexec.......: $enable_autoexec
   cmode..........: $enable_cmode
   compile mode...: $enable_compile
