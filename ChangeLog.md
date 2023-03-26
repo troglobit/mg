@@ -3,6 +3,28 @@ Change Log
 
 All relevant changes to the project are documented in this file.
 
+[v3.6][UNRELEASED]
+---------------------
+
+### Changes
+- Sync with mg upstream, OpenBSD 7.2, as of March 26 2023
+  - Drop trailing whitespace on RET (c-mode)
+  - Add `zap-to-char` and `zap-up-to-char`, binding the former to M-z
+- Add support for `--without-docs` to skip installation of files to
+  `/usr/share/doc/mg`, including the manual
+- Install gzipped tutorial in `/usr/share/mg/`, for built-in help
+
+### Fixes
+- Sync with mg upstream, OpenBSD 7.2, as of March 26 2023
+  - Fix `dobeep_msgs()` usage, does not support format strings, this may
+    have caused unexpected crashes for some operations, e.g. goto line
+    that does not exist
+  - Fix memleaks and possible crashes in ctags support
+- Fix #17: typos in `*quick*` help buffer, also replace duplicate undo
+  with mark command instead
+- Fix #18: revert-buffer crash on macOS
+
+
 [v3.5][] - 2021-10-17
 ---------------------
 
@@ -244,6 +266,7 @@ set as Mg3a.
   - Fix missing initialization of stack variables
 
 [UNRELEASED]: https://github.com/troglobit/mg/compare/v3.5...HEAD
+[v3.6]:       https://github.com/troglobit/mg/compare/v3.5...v3.6
 [v3.5]:       https://github.com/troglobit/mg/compare/v3.4...v3.5
 [v3.4]:       https://github.com/troglobit/mg/compare/v3.3...v3.4
 [v3.3]:       https://github.com/troglobit/mg/compare/v3.2...v3.3
