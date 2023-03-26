@@ -249,7 +249,7 @@ readin(char *fname)
 	} else if ((access(fname, W_OK) == -1)) {
 		if (errno != ENOENT) {
 			ro = TRUE;
-		} else if (errno == ENOENT) {
+		} else {
 			(void)xdirname(dp, fname, sizeof(dp));
 			(void)strlcat(dp, "/", sizeof(dp));
 
