@@ -178,10 +178,11 @@ AC_OUTPUT
 # sysconfdir  => ${prefix}/etc
 # runstatedir => ${localstatedir}/run
 AS_IF([test "x$prefix" = "x" ],	[PREFIX="/"], [PREFIX=`eval echo $prefix`])
+datadir=$datadir/mg
 SYSCONFDIR=`eval echo $sysconfdir`
+DATADIR=`eval echo $datadir`
 DOCDIR=`eval echo $docdir`
 STARTUP=`eval echo $startup`
-
 
 cat <<EOF
 
@@ -189,6 +190,7 @@ cat <<EOF
  $PACKAGE_NAME version $PACKAGE_VERSION
   Prefix.........: $PREFIX
   Sysconfdir.....: $SYSCONFDIR
+  Datadir........: $DATADIR
   Docdir.........: $DOCDIR
   Fallback ~/.mg.: $STARTUP
   C Compiler.....: $CC $CFLAGS $CPPFLAGS $LDFLAGS $LIBS

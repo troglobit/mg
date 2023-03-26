@@ -15,7 +15,7 @@ mg_SOURCES      += queue.h tree.h
 mg_SOURCES      += extensions.c
 
 mg_CFLAGS        = -W -Wall -Wextra -Wno-unused-parameter
-mg_CFLAGS       += -D_GNU_SOURCE -DDOCDIR=\"$(docdir)\"
+mg_CFLAGS       += -D_GNU_SOURCE -DDATADIR=\"$(pkgdatadir)\" -DDOCDIR=\"$(docdir)\"
 if TINY
 mg_CFLAGS       += -fomit-frame-pointer -fdata-sections -ffunction-sections	\
 		   -fno-stack-protector -fno-asynchronous-unwind-tables -flto	\

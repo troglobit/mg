@@ -282,15 +282,22 @@ tutorial(int f, int n)
 		return (FALSE);
 	}
 
-	fn = DOCDIR "/tutorial.gz";
-	if (access(fn, R_OK) == -1) {
+	while (1) {
+		fn = DATADIR "/tutorial.gz";
+		if (!access(fn, R_OK))
+			break;
+		fn = DATADIR "/tutorial";
+		if (!access(fn, R_OK))
+			break;
+		fn = DOCDIR "/tutorial.gz";
+		if (!access(fn, R_OK))
+			break;
 		fn = DOCDIR "/tutorial";
-		if (access(fn, R_OK) == -1) {
-			ewprintf("Sorry, cannot find the tutorial on this system.");
-			goto fail;
-		}
+		if (!access(fn, R_OK))
+			break;
+		ewprintf("Sorry, cannot find the tutorial on this system.");
+		goto fail;
 	}
-
 	if (readin(fn) != TRUE)
 		goto fail;
 
