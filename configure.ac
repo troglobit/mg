@@ -63,6 +63,10 @@ AC_ARG_WITH(mglog,
 	AS_HELP_STRING([--with-mglog], [Enable debugging to log file, default: ./log/*.log]),
 	[mglog=$withval], [mglog='no'])
 
+AC_ARG_WITH(docs,
+     AS_HELP_STRING([--without-docs], [Skip installation of documenation & manual, default: yes]),
+     [with_docs=$withval], [with_docs='yes'])
+
 AC_ARG_WITH(curses,
      AS_HELP_STRING([--without-curses], [Build without curses/termcap, default: auto]),
      [with_curses=$withval], [with_curses='yes'])
@@ -164,6 +168,7 @@ AM_CONDITIONAL(CTAGS,    [test "x$enable_ctags"    = "xyes"])
 AM_CONDITIONAL(DIRED,    [test "x$enable_dired"    = "xyes"])
 AM_CONDITIONAL(TINY,     [test "x$enable_tiny"     = "xyes"])
 AM_CONDITIONAL(MGLOG,    [test "x$mglog"          != "xno"])
+AM_CONDITIONAL(DOCS,     [test "x$with_docs"      != "xno"])
 AM_CONDITIONAL(NOCURSES, [test "x$with_curses"     = "xno"])
 
 # Generate all files
@@ -191,8 +196,9 @@ cat <<EOF
   Termcap/curses.: $with_curses $curses_status
 
  Optional features:
+  doc/ & man/....: $with_docs
   autoexec.......: $enable_autoexec
-  cmode.-........: $enable_cmode
+  cmode..........: $enable_cmode
   compile mode...: $enable_compile
   cscope.........: $enable_cscope
   ctags..........: $enable_ctags

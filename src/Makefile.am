@@ -1,9 +1,10 @@
 # Written by Joachim Wiberg <troglobit@gmail.com> and put in the public domain.
 AUTOMAKE_OPTIONS = subdir-objects
+if DOCS
+doc_DATA         = README
+endif
 
 bin_PROGRAMS     = mg
-doc_DATA         = README
-
 mg_SOURCES       = basic.c bell.c buffer.c cinfo.c dir.c display.c echo.c 	\
 		   extend.c file.c fileio.c funmap.c help.c interpreter.c	\
 		   kbd.c keymap.c line.c macro.c main.c match.c modes.c		\

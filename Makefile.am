@@ -1,6 +1,7 @@
 # Written by Joachim Wiberg <troglobit@gmail.com> and put in the public domain.
-doc_DATA       = README.md ChangeLog.md UNLICENSE
-EXTRA_DIST     = README.md ChangeLog.md UNLICENSE
+if DOCS
+dist_doc_DATA  = README.md ChangeLog.md UNLICENSE
+endif
 SUBDIRS        = doc src
 
 ## Check if tagged in git
