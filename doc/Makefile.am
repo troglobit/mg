@@ -5,8 +5,11 @@ endif
 EXTRA_DIST     = AUTHORS
 
 if TUTOR
-pkgdata_DATA   = tutorial
+pkgdata_DATA   = tutorial.gz
 
-install-data-hook:
-	gzip -f $(DESTDIR)$(pkgdatadir)/tutorial
+clean-local:
+	-rm -f $(builddir)/tutorial.gz
+
+%.gz: %
+	gzip -c $< >$(builddir)/$@
 endif
