@@ -64,12 +64,16 @@ AC_ARG_WITH(mglog,
 	[mglog=$withval], [mglog='no'])
 
 AC_ARG_WITH(docs,
-     AS_HELP_STRING([--without-docs], [Skip installation of documenation & manual, default: yes]),
+     AS_HELP_STRING([--without-docs], [Skip installation of documenation & manual]),
      [with_docs=$withval], [with_docs='yes'])
 
 AC_ARG_WITH(curses,
      AS_HELP_STRING([--without-curses], [Build without curses/termcap, default: auto]),
      [with_curses=$withval], [with_curses='yes'])
+
+AC_ARG_WITH(tutorial,
+     AS_HELP_STRING([--without-tutorial], [Skip installation of $datadir/mg/tutorial.gz]),
+     [with_tutorial=$withval], [with_tutorial='yes'])
 
 # Check for a termcap compatible library
 AS_IF([test "x$with_curses" = "xyes" -o "x$with_curses" = "xauto"], [
@@ -170,6 +174,7 @@ AM_CONDITIONAL(TINY,     [test "x$enable_tiny"     = "xyes"])
 AM_CONDITIONAL(MGLOG,    [test "x$mglog"          != "xno"])
 AM_CONDITIONAL(DOCS,     [test "x$with_docs"      != "xno"])
 AM_CONDITIONAL(NOCURSES, [test "x$with_curses"     = "xno"])
+AM_CONDITIONAL(TUTOR,    [test "x$with_tutorial"  != "xno"])
 
 # Generate all files
 AC_OUTPUT
