@@ -86,6 +86,7 @@ cssymbol(int f, int n)
 /*
  * Find this global definition. Bound to C-c s d
  */
+int
 csdefinition(int f, int n)
 {
 	return (do_cscope(CSDEFINITION));
