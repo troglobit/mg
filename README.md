@@ -179,7 +179,7 @@ goes something like this:
 * May  8, 2016: Import from OpenBSD 5.9 to [GitHub][repo]
 * May 15, 2016: Mg v3.0, first port back to Linux, by Joachim Wiberg
 * Jul 22, 2018: Mg v3.1, removed libite dependency, by Joachim Wiberg
-* Aug 26, 2018: Mg v3.2, now fully portable¹, by Joachim Wiberg
+* Aug 26, 2018: Mg v3.2, now fully portable[^1], by Joachim Wiberg
 * Dec 11, 2019: Mg v3.3, misc fixes and new features from OpenBSD
 * Aug 23, 2020: Mg v3.4, new modeline, quick-help, support for gzipped
   files, and building without termcap/[Ncurses][], by Joachim Wiberg
@@ -187,6 +187,12 @@ goes something like this:
   tested on OmniOS and OpenIndiana, sync with Mg from OpenBSD 7.0
 
 See the source distribution for the list of [AUTHORS][].
+
+[^1]: This project has been extensively tested on Debian GNU/Linux,
+	Ubuntu, CentOS, Fedora, Alpine Linux, Solaris/Illumos based systems
+	like OmniOS, FreeBSD, NetBSD, OpenBSD, DragonFly BSD, Apple macOS >=
+	10.10, Cygwin, MSYS2, as well as a few embedded Linux systems using
+	musl libc and uClibc-ng.
 
 
 Origin & References
@@ -206,12 +212,6 @@ friendly to porting to resource constrained systems.  New features:
 * Support for Ctrl-cursor + Ctrl-PgUp/PgDn like Emacs
 * Support for `M-x no-tab-mode` and `M-x version`
 * Support for opening gzipped text files in read-only mode
-
-¹) This project has been extensively tested on Debian GNU/Linux, Ubuntu,
-CentOS, Fedora, Alpine Linux, Solaris/Illumos based systems like OmniOS,
-FreeBSD, NetBSD, OpenBSD, DragonFly BSD, Apple macOS >= 10.10, Cygwin,
-MSYS2, as well as a few embedded Linux systems using musl libc and
-uClibc-ng.
 
 Merged, and continously tracked, clones:
 
