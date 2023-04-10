@@ -338,7 +338,7 @@ int
 addctag(char *s)
 {
 	struct ctag *t;
-	char *l;
+	char *l, *m;
 	
 	if ((t = malloc(sizeof(struct ctag))) == NULL) {
 		dobeep();
@@ -356,6 +356,11 @@ addctag(char *s)
 	*l++ = '\0';
 	if (*l == '\0')
 		goto cleanup;
+
+	/* compat with newer exuberant ctags format */
+	if ((m = strstr(l, ";\"")))
+		*m = '\0';
+
 	t->pat = strip(l, strlen(l));
 	if (RB_INSERT(tagtree, &tags, t) != NULL) {
 		/* ignore duplicates */
