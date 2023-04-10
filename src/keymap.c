@@ -272,7 +272,11 @@ static PF metami[] = {
 	rescan,                 /* * */
 #endif
 	rescan,                 /* + */
+#ifdef ENABLE_CTAGS
+	poptag,                 /* , */
+#else
 	rescan,                 /* , */
+#endif
 	negative_argument,	/* - */
 #ifdef ENABLE_CTAGS
 	findtag,		/* . */
