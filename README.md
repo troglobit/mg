@@ -185,6 +185,7 @@ goes something like this:
   files, and building without termcap/[Ncurses][], by Joachim Wiberg
 * Oct 17, 2021: Mg v3.5, support for Solaris/Illumos based UNIX systems
   tested on OmniOS and OpenIndiana, sync with Mg from OpenBSD 7.0
+* Apr 10, 2023: Mg v3.6, sync with OpenBSD, improved ctags support
 
 See the source distribution for the list of [AUTHORS][].
 
@@ -207,6 +208,7 @@ friendly to porting to resource constrained systems.  New features:
 
 * Emacs-like modeline with `(row,col)` and new `display-time-mode`
 * Support for building without curses, using termios + escape seq.
+* Support for exhuberant/universal ctags `tags` file format
 * Built-in `*quick*` help using `C-h q`
 * Tutorial accessible using `C-h t`
 * Support for Ctrl-cursor + Ctrl-PgUp/PgDn like Emacs

@@ -3,13 +3,16 @@ Change Log
 
 All relevant changes to the project are documented in this file.
 
-[v3.6][UNRELEASED]
+[v3.6][] - 2023-04-10
 ---------------------
 
 ### Changes
-- Sync with mg upstream, OpenBSD 7.2, as of March 26 2023
+- Add support for exuberant/universal Ctags `tags` file format
+- Add support for M-, to `pop-tag-mark`, like GNU Emacs
+- Sync with mg upstream, OpenBSD 7.2, as of April 10 2023
   - Drop trailing whitespace on RET (c-mode)
   - Add `zap-to-char` and `zap-up-to-char`, binding the former to M-z
+  - Change `visit-tags-table` to immediately load tags file
 - Add support for `--without-docs` to skip installation of files to
   `/usr/share/doc/mg`, including the manual
 - Install gzipped tutorial in `/usr/share/mg/`, for built-in help
@@ -20,6 +23,8 @@ All relevant changes to the project are documented in this file.
     have caused unexpected crashes for some operations, e.g. goto line
     that does not exist
   - Fix memleaks and possible crashes in ctags support
+  - Fall back to `/bin/sh` if `$SHELL` is undefined
+  - Use basename of `argv[0]` instead of hard coding "sh"
 - Fix #17: typos in `*quick*` help buffer, also replace duplicate undo
   with mark command instead
 - Fix #18: revert-buffer crash on macOS
@@ -265,7 +270,7 @@ set as Mg3a.
 	functions.  Some simply marked as "don't care"
   - Fix missing initialization of stack variables
 
-[UNRELEASED]: https://github.com/troglobit/mg/compare/v3.5...HEAD
+[UNRELEASED]: https://github.com/troglobit/mg/compare/v3.6...HEAD
 [v3.6]:       https://github.com/troglobit/mg/compare/v3.5...v3.6
 [v3.5]:       https://github.com/troglobit/mg/compare/v3.4...v3.5
 [v3.4]:       https://github.com/troglobit/mg/compare/v3.3...v3.4
