@@ -49,12 +49,12 @@ static int   leavetmp = 0;	/* 1 = leave any '~' files in tmp dir */
  * Open a file for reading.
  */
 int
-ffropen(FILE ** ffp, const char *fn, struct buffer *bp)
+ffropen(FILE **ffp, const char *fn, struct buffer *bp)
 {
 	if (isgzip(fn)) {
 		char cmd[strlen(fn) + sizeof(GUNZIP) + 2];
 
-                sprintf(cmd, "%s %s", GUNZIP, fn);
+                snprintf(cmd, sizeof(cmd), "%s %s", GUNZIP, fn);
                 if ((*ffp = popen(cmd, "r")) == NULL)
 			goto filerr;
 
