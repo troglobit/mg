@@ -367,7 +367,7 @@ adjustname(const char *fn, int slashslash)
 FILE *
 startupfile(char *suffix, char *conffile, char *path, size_t len)
 {
-	FILE		*ffp;
+	FILE		*ffp = NULL;
 	char		*home;
 	int		 ret;
 
@@ -389,8 +389,13 @@ startupfile(char *suffix, char *conffile, char *path, size_t len)
 	ret = ffropen(&ffp, path, NULL);
 	if (ret == FIOSUC)
 		return (ffp);
-	if (ret == FIODIR)
-		(void)ffclose(ffp, NULL);
+	if (ffp) {
+		if (ret == FIOGZIP)
+			(void)pclose(ffp);
+		else
+			(void)ffclose(ffp, NULL);
+		ffp = NULL;
+	}
 nohome:
 #ifdef STARTUPFILE
 	if (suffix == NULL) {
@@ -407,8 +412,12 @@ nohome:
 	ret = ffropen(&ffp, path, NULL);
 	if (ret == FIOSUC)
 		return (ffp);
-	if (ret == FIODIR)
-		(void)ffclose(ffp, NULL);
+	if (ffp) {
+		if (ret == FIOGZIP)
+			(void)pclose(ffp);
+		else
+			(void)ffclose(ffp, NULL);
+	}
 #endif
 	return (NULL);
 }
