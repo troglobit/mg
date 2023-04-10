@@ -1,3 +1,24 @@
+mg2a (3.6) unstable; urgency=medium
+
+  * Add support for exuberant/universal Ctags tags file format
+  * Add support for M-, to pop-tag-mark, like GNU Emacs
+  * Sync with mg upstream, OpenBSD 7.2, as of April 10 2023
+    + Drop trailing whitespace on RET (c-mode)
+    + Add zap-to-char and zap-up-to-char, binding the former to M-z
+    + Change visit-tags-table to immediately load tags file
+    + Fix dobeep_msgs() usage, does not support format strings, this may
+      have caused unexpected crashes for some operations, e.g. goto line
+      that does not exist
+    + Fix memleaks and possible crashes in ctags support
+    + Fall back to /bin/sh if $SHELL is undefined
+    + Use basename of argv[0] instead of hard coding "sh"
+  * Install gzipped tutorial in /usr/share/mg/, for built-in help
+  * Fix #17: typos in *quick* help buffer, also replace duplicate undo
+    with mark command instead
+  * Fix #18: revert-buffer crash on macOS
+
+ -- Joachim Wiberg <troglobit@gmail.com>  Mon, 10 Apr 2023 09:05:52 +0200
+
 mg2a (3.5) stable; urgency=medium
 
   * Fix regression; status line cleared when trying to open a file.
