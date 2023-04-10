@@ -378,11 +378,11 @@ startupfile(char *suffix, char *conffile, char *path, size_t len)
 		(void)strlcpy(path, conffile, len);
 	} else if (suffix == NULL) {
 		ret = snprintf(path, len, _PATH_MG_STARTUP, home);
-		if (ret < 0 || ret >= len)
+		if (ret < 0 || ret >= (int)len)
 			return (NULL);
 	} else {
 		ret = snprintf(path, len, _PATH_MG_TERM, home, suffix);
-		if (ret < 0 || ret >= len)
+		if (ret < 0 || ret >= (int)len)
 			return (NULL);
 	}
 
@@ -395,12 +395,12 @@ nohome:
 #ifdef STARTUPFILE
 	if (suffix == NULL) {
 		ret = snprintf(path, len, "%s", STARTUPFILE);
-		if (ret < 0 || ret >= len)
+		if (ret < 0 || ret >= (int)len)
 			return (NULL);
 	} else {
 		ret = snprintf(path, len, "%s-%s", STARTUPFILE,
 		    suffix);
-		if (ret < 0 || ret >= len)
+		if (ret < 0 || ret >= (int)len)
 			return (NULL);
 	}
 
