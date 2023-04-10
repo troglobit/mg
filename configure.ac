@@ -203,6 +203,7 @@ cat <<EOF
   Termcap/curses.: $with_curses $curses_status
 
  Optional features:
+  MGLOG..........: $with_mglog
   doc/ & man/....: $with_docs
   tutorial.gz....: $with_tutorial
   autoexec.......: $enable_autoexec
