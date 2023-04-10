@@ -24,9 +24,7 @@ jobs:
           wget -q https://scan.coverity.com/download/cxx/linux64         \
                --post-data "token=$TOKEN&project=${COVERITY_PROJ}&md5=1" \
                -O coverity-latest.tar.gz.md5
-          export MD5=$(cat coverity-latest.tar.gz.md5)
-          echo "Got MD5 $MD5"
-          echo ::set-output name=md5::${MD5}
+          echo "md5=$(cat coverity-latest.tar.gz.md5)" | tee -a $GITHUB_OUTPUT
       - uses: actions/cache@v3
         id: cache
         with:
