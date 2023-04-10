@@ -400,6 +400,8 @@ parsexp(char *begp, const char *par1, const char *par2, int blkid, int expctr,
 
 	cmdp = begp;
 	fendp = strchr(cmdp, ' ');
+	if (!fendp)
+		return (dobeep_msgs("Failed parsing expression, missing ' ': ", cmdp));
 	*fendp = '\0';
 
 	/*
