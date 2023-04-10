@@ -621,25 +621,32 @@ evalbuffer(int f, int n)
 int
 evalfile(int f, int n)
 {
-	FILE	*ffp;
+	FILE	*ffp = NULL;
 	char	 fname[NFILEN], *bufp;
-	int	 ret;
+	int	 ret = 0;
 
-	if ((bufp = eread("Load file: ", fname, NFILEN,
-	    EFNEW | EFCR)) == NULL)
+	if ((bufp = eread("Load file: ", fname, NFILEN, EFNEW | EFCR)) == NULL)
 		return (ABORT);
 	if (bufp[0] == '\0')
-		return (FALSE);
+		goto cleanup;
 	if ((bufp = adjustname(fname, TRUE)) == NULL)
-		return (FALSE);
+		goto cleanup;
 	ret = ffropen(&ffp, bufp, NULL);
-	if (ret == FIODIR)
-		(void)ffclose(ffp, NULL);
 	if (ret != FIOSUC)
- 		return (FALSE);
+		goto cleanup;
+
 	ret = load(ffp, bufp);
 	(void)ffclose(ffp, NULL);
 	return (ret);
+cleanup:
+	if (ffp) {
+		if (ret == FIOGZIP)
+			pclose(ffp);
+		else
+			fclose(ffp);
+	}
+
+	return (FALSE);
 }
 
 /*
