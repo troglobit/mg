@@ -1,4 +1,4 @@
-/*	$OpenBSD: keymap.c,v 1.60 2022/10/20 18:59:24 op Exp $	*/
+/*	$OpenBSD: keymap.c,v 1.61 2023/04/17 09:49:04 op Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -513,7 +513,6 @@ static struct KEYMAPE (1) indntmap = {
 	}
 };
 
-#ifdef NOTAB
 static PF notab_tab[] = {
 	space_to_tabstop	/* ^I */
 };
@@ -528,7 +527,6 @@ static struct KEYMAPE (1) notabmap = {
 		}
 	}
 };
-#endif /* NOTAB */
 
 static struct KEYMAPE (1) overwmap = {
 	0,
@@ -560,9 +558,7 @@ struct maps_s	fundamental_mode = { (KEYMAP *)&fundmap, "fundamental", NULL };
 static struct maps_s map_table[] = {
 	{(KEYMAP *) &fillmap, "fill", NULL},
 	{(KEYMAP *) &indntmap, "indent", NULL},
-#ifdef NOTAB
 	{(KEYMAP *) &notabmap, "notab", NULL},
-#endif /* NOTAB */
 	{(KEYMAP *) &overwmap, "overwrite", NULL},
 	{(KEYMAP *) &metamap, "esc prefix", NULL},
 	{(KEYMAP *) &cXmap, "c-x prefix", NULL},

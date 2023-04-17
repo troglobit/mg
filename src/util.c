@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.43 2021/03/01 10:51:14 lum Exp $	*/
+/*	$OpenBSD: util.c,v 1.46 2023/04/17 09:49:04 op Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -99,11 +99,7 @@ getcolpos(struct mgwin *wp)
 
 	for (i = 0; i < wp->w_doto; ++i) {
 		c = lgetc(wp->w_dotp, i);
-		if (c == '\t'
-#ifdef NOTAB
-		    && !(wp->w_bufp->b_flag & BFNOTAB)
-#endif /* NOTAB */
-			) {
+		if (c == '\t') {
 			col |= 0x07;
 			col++;
 		} else if (ISCTRL(c) != FALSE)
@@ -335,13 +331,29 @@ deltrailwhite(int f, int n)
 	return (TRUE);
 }
 
+/*
+ * Raw indent routine.  Use spaces and tabs to fill the given number of
+ * cols, but respect no-tab-mode.
+ */
+int
+doindent(int cols)
+{
+	int n;
 
+	if (curbp->b_flag & BFNOTAB)
+		return (linsert(cols, ' '));
+	if ((n = cols / 8) != 0 && linsert(n, '\t') == FALSE)
+		return (FALSE);
+	if ((n = cols % 8) != 0 && linsert(n, ' ') == FALSE)
+		return (FALSE);
+	return (TRUE);
+}
 
 /*
  * Insert a newline, then enough tabs and spaces to duplicate the indentation
- * of the previous line.  Assumes tabs are every eight characters.  Quite
- * simple.  Figure out the indentation of the current line.  Insert a newline
- * by calling the standard routine.  Insert the indentation by inserting the
+ * of the previous line, respecting no-tab-mode and the buffer tab width.
+ * Figure out the indentation of the current line.  Insert a newline by
+ * calling the standard routine.  Insert the indentation by inserting the
  * right number of tabs and spaces.  Return TRUE if all ok.  Return FALSE if
  * one of the subcommands failed. Normally bound to "C-m".
  */
@@ -366,12 +378,7 @@ lfindent(int f, int n)
 			++nicol;
 		}
 		delwhite(FFRAND, 1);
-		if (lnewline() == FALSE || ((
-#ifdef	NOTAB
-		    curbp->b_flag & BFNOTAB) ? linsert(nicol, ' ') == FALSE : (
-#endif /* NOTAB */
-		    ((i = nicol / 8) != 0 && linsert(i, '\t') == FALSE) ||
-		    ((i = nicol % 8) != 0 && linsert(i, ' ') == FALSE)))) {
+		if (lnewline() == FALSE || doindent(nicol) == FALSE) {
 			s = FALSE;
 			break;
 		}
@@ -388,7 +395,7 @@ lfindent(int f, int n)
 int
 indent(int f, int n)
 {
-	int soff, i;
+	int soff;
 
 	if (n < 0)
 		return (FALSE);
@@ -402,12 +409,7 @@ indent(int f, int n)
 	/* insert appropriate whitespace */
 	soff = curwp->w_doto;
 	(void)gotobol(FFRAND, 1);
-	if (
-#ifdef	NOTAB
-	    (curbp->b_flag & BFNOTAB) ? linsert(n, ' ') == FALSE :
-#endif /* NOTAB */
-	    (((i = n / 8) != 0 && linsert(i, '\t') == FALSE) ||
-	    ((i = n % 8) != 0 && linsert(i, ' ') == FALSE)))
+	if ( doindent(n) == FALSE)
 		return (FALSE);
 
 	(void)forwchar(FFRAND, soff);
@@ -463,7 +465,6 @@ backdel(int f, int n)
 	return (s);
 }
 
-#ifdef	NOTAB
 int
 space_to_tabstop(int f, int n)
 {
@@ -473,7 +474,6 @@ space_to_tabstop(int f, int n)
 		return (TRUE);
 	return (linsert((n << 3) - (curwp->w_doto & 7), ' '));
 }
-#endif /* NOTAB */
 
 /*
  * Move the dot to the first non-whitespace character of the current line.
