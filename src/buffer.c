@@ -1,4 +1,4 @@
-/*	$OpenBSD: buffer.c,v 1.105 2018/12/13 14:59:16 lum Exp $	*/
+/* $OpenBSD: buffer.c,v 1.114 2023/04/21 13:39:36 op Exp $ */
 
 /* This file is in the public domain. */
 
@@ -23,6 +23,39 @@ static struct buffer  *makelist(void);
 static struct buffer *bnew(const char *);
 
 static int usebufname(const char *);
+
+/* Default tab width */
+int	 defb_tabw = 8;
+
+/*
+ * Set the tab width for the current buffer, or the default for new
+ * buffers if called with a prefix argument.
+ */
+int
+settabw(int f, int n)
+{
+	char	buf[8], *bufp;
+	const char *errstr;
+
+	if (f & FFARG) {
+		if (n <= 0 || n > 16)
+			return (FALSE);
+		defb_tabw = n;
+		return (TRUE);
+	}
+
+	if ((bufp = eread("Tab Width: ", buf, sizeof(buf),
+	    EFNUL | EFNEW | EFCR)) == NULL)
+		return (ABORT);
+	if (bufp[0] == '\0')
+		return (ABORT);
+	n = strtonum(buf, 1, 16, &errstr);
+	if (errstr)
+		return (dobeep_msgs("Tab width", errstr));
+	curbp->b_tabw = n;
+	curwp->w_rflag |= WFFRAME;
+	return (TRUE);
+}
 
 int
 togglereadonlyall(int f, int n)
@@ -600,6 +633,7 @@ bnew(const char *bname)
 	bp->b_lines = 1;
 	bp->b_nlseq = "\n";		/* use unix default */
 	bp->b_nlchr = bp->b_nlseq;
+	bp->b_tabw = defb_tabw;
 	if ((bp->b_bname = strdup(bname)) == NULL) {
 		dobeep();
 		ewprintf("Can't get %d bytes", strlen(bname) + 1);
