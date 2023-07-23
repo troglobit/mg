@@ -239,8 +239,6 @@ quickhelp(int f, int n)
 	addline(bp, "C-x C-s save     C-x C-b list    C-x 2 split two  C-k     kill-ln C-r r-search");
 	addline(bp, "C-x s   save-all C-x h   mark    C-x ^ enlarge    C-y     yank    M-% replace");
 	addline(bp, "C-x i   insert   C-x g   goto-ln C-x o other win  C-x C-x swap    M-q reformat");
-	addline(bp, "______________________________________________________________________________");
-	addlinef(bp, "%s", hlp);
 
 	rc = popbuftop(bp, WNONE);
 	if (rc == TRUE) {
@@ -249,7 +247,7 @@ quickhelp(int f, int n)
 		prevwind(0, 0);
 
 		/* Attempt to shkrink window to size fo quick help */
-		n = curwp->w_ntrows - 8;
+		n = curwp->w_ntrows - 6;
 		shrinkwind(FFRAND, n);
 
 		prevwind(0, 0);

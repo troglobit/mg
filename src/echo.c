@@ -46,6 +46,7 @@ eerase(void)
 	tteeol();
 	ttflush();
 	epresf = FALSE;
+	ewprintf(" %s", hlp);
 }
 
 /*
