@@ -553,6 +553,7 @@ int		 colnotoggle(int, int);
 int		 timetoggle(int, int);
 
 /* echo.c X */
+int		 helptoggle(int, int);
 void		 eerase(void);
 int		 eyorn(const char *);
 int		 eynorr(const char *);

@@ -102,6 +102,7 @@ static struct funmap functnames[] = {
 	{diffbuffer, "diff-buffer-with-file", 0, NULL},
 	{digit_argument, "digit-argument", 1, NULL},
 	{dired_jump, "dired-jump", 1, NULL},
+	{helptoggle, "display-help-mode", 0, NULL},
 	{timetoggle, "display-time-mode", 0, NULL},
 	{lowerregion, "downcase-region", 0, NULL},
 	{lowerword, "downcase-word", 1, NULL},

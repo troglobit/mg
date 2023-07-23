@@ -34,6 +34,23 @@ static void	 eputc(char);
 static struct list	*copy_list(struct list *);
 
 int		epresf = FALSE;		/* stuff in echo line flag */
+int		helpsh = TRUE;		/* help-text in echo buffer */
+
+/*
+ * Toggle permanent display of short help text in echo buffer
+ */
+int
+helptoggle(int f, int n)
+{
+	if (f & FFARG)
+		helpsh = n > 0;
+	else
+		helpsh = !helpsh;
+
+	sgarbf = TRUE;
+
+	return (TRUE);
+}
 
 /*
  * Erase the echo line.
@@ -46,7 +63,8 @@ eerase(void)
 	tteeol();
 	ttflush();
 	epresf = FALSE;
-	ewprintf(" %s", hlp);
+	if (helpsh)
+		ewprintf(" %s", hlp);
 }
 
 /*
