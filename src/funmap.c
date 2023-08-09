@@ -60,6 +60,7 @@ static struct funmap functnames[] = {
 	{NULL, "c-x 4 prefix", 0, NULL},
 	{NULL, "c-x prefix", 0, NULL},
 	{executemacro, "call-last-kbd-macro", 0, NULL},
+	{applymacro, "apply-macro-to-region-lines", 0, NULL},
 	{capword, "capitalize-word", 1, NULL},
 	{changedir, "cd", 0, NULL},
 	{clearmark, "clear-mark", 0, NULL},

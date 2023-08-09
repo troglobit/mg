@@ -764,6 +764,7 @@ int		 showversion(int, int);
 int		 definemacro(int, int);
 int		 finishmacro(int, int);
 int		 executemacro(int, int);
+int		 applymacro(int, int);
 
 /* modes.c X */
 int		 indentmode(int, int);

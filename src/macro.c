@@ -106,3 +106,53 @@ executemacro(int f, int n)
 	inmacro = FALSE;
 	return (TRUE);
 }
+
+int
+applymacro(int f, int n)
+{
+	struct line	*odotp, *omarkp, *tmarkp;
+	int	odoto, odotline, omarko, omarkline, tmarko, tmarkline;
+
+	if (curwp->w_markp == NULL) {
+		dobeep();
+		ewprintf("No mark set in this window");
+		return (FALSE);
+	}
+
+	/* (save-mark-and-excursion) save the state of the "." and mark */
+	odotp = curwp->w_dotp;
+	omarkp = curwp->w_markp;
+	odoto = curwp->w_doto;
+	odotline = curwp->w_dotline;
+	omarko = curwp->w_marko;
+	omarkline = curwp->w_markline;
+
+	if (curwp->w_dotline > curwp->w_markline) {
+		swapmark(FFRAND, 0);
+	}
+
+	tmarkp = curwp->w_markp;
+	tmarko = curwp->w_marko;
+	tmarkline = curwp->w_markline;
+
+	while (curwp->w_dotline < curwp->w_markline) {
+		gotobol(FFRAND, 1);
+		executemacro(FFRAND, 1);
+		forwline(FFRAND, 1);
+
+		/* restore mark that may have been altered by the executed macro */
+		curwp->w_markp = tmarkp;
+		curwp->w_marko = tmarko;
+		curwp->w_markline = tmarkline;
+	}
+
+	/* (save-mark-and-excursion) restore the state of the "." and mark */
+	curwp->w_dotp = odotp;
+	curwp->w_doto = odoto;
+	curwp->w_dotline = odotline;
+	curwp->w_markp = omarkp;
+	curwp->w_marko = omarko;
+	curwp->w_markline = omarkline;
+
+	return (TRUE);
+}
