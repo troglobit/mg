@@ -468,6 +468,8 @@ backdel(int f, int n)
 int
 space_to_tabstop(int f, int n)
 {
+	(void)f;
+
 	if (n < 0)
 		return (FALSE);
 	if (n == 0)
@@ -498,6 +500,7 @@ joinline(int f, int n)
 {
 	int doto;
 
+	(void)n;
 	undo_boundary_enable(FFRAND, 0);
 	if (f & FFARG) {
 		gotoeol(FFRAND, 1);
