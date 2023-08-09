@@ -133,6 +133,7 @@ displaymatch(struct line *clp, int cbo)
 	struct line	*tlp;
 	int	 tbo;
 	int	 cp;
+	int	 buflen;
 	int	 bufo;
 	int	 c;
 	int	 col;
@@ -167,9 +168,10 @@ displaymatch(struct line *clp, int cbo)
 		update(CMODE);
 	} else {
 		/* match is not in this window, so display line in echo area */
+		buflen = (int)sizeof(buf) - 1;
 		bufo = 0;
 		for (cp = 0; cp < llength(clp); cp++) {
-			if (bufo >= sizeof(buf) - 1)
+			if (bufo >= buflen)
 				break;
 
 			c = lgetc(clp, cp);
@@ -181,11 +183,11 @@ displaymatch(struct line *clp, int cbo)
 					buf[bufo++] = c;
 			} else {
 				col = ntabstop(bufo, curbp->b_tabw);
-				while (bufo < col && bufo < sizeof(buf) - 1)
+				while (bufo < col && bufo < buflen)
 					buf[bufo++] = ' ';
 			}
 		}
-		buf[bufo++] = '\0';
+		buf[bufo++] = 0;
 		ewprintf("Matches %s", buf);
 	}
 }
