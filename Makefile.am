@@ -4,9 +4,13 @@ dist_doc_DATA  = README.md ChangeLog.md UNLICENSE
 endif
 SUBDIRS        = doc src
 
+## Generate .deb package
+package:
+	@debuild -uc -us -B --lintian-opts --profile debian -i -I --show-overrides
+
 ## Check if tagged in git
 release-hook:
-	@if [ ! `git tag | grep $(PACKAGE_VERSION)` ]; then				\
+	@if [ "x`git tag -l v$(PACKAGE_VERSION)|grep $(PACKAGE_VERSION)`" = "x" ]; then	\
 		echo;									\
 		printf "\e[1m\e[41mCannot find release tag $(PACKAGE_VERSION)\e[0m\n";	\
 		printf "\e[1m\e[5mDo release anyway?\e[0m "; read yorn;			\
@@ -21,9 +25,6 @@ release-hook:
 		printf "\e[1m\e[44m>>Remember to push tags!\e[0m\n";			\
 		echo;									\
 	fi
-
-package:
-	@debuild -uc -us -B --lintian-opts --profile debian -i -I --show-overrides
 
 ## Target to run when building a release
 release: release-hook distcheck
