@@ -40,10 +40,10 @@ int setupterm(const char *term, int filedes, int *errret)
 			NULL,	        /* 9: Command char */
 			"\e[%i%d;%dH",  /* 10: Cursor addr */
 			"\e[B",		/* 11: Cursor Down  */
-			"\e[H",		/* 12: Cursor Home  */
-			"\e[?25l",	/* 13: Cursor invisible */
-			"\e[D",		/* 14: Cursor Left  */
-			NULL,		/* 15: Cursor mem addr */
+			"\e[F",		/* 12: Cursor End   */
+			"\e[H",		/* 13: Cursor Home  */
+			"\e[?25l",	/* 14: Cursor invisible */
+			"\e[D",		/* 15: Cursor Left  */
 			"\e[?25h",	/* 16: Cursor normal */
 			"\e[C",		/* 17: Cursor Right */
 			NULL,		/* 18: Cursor to LL */
@@ -77,12 +77,12 @@ int setupterm(const char *term, int filedes, int *errret)
 			"\e[%dM",	/* 46: Parm delete N lines*/
 			"\e[%dL",	/* 47: Parm insert N lines */
 			"\e[%de",	/* 48: Parm cusror down N lines*/
-			NULL,		/* 49: */
-			"\e[5~",	/* 50: PgUp  */
-			"\e[6~",	/* 51: PgDn  */
-			"\e[F",		/* 52: End   */
-			"\e[2~",	/* 53: Ins   */
-			"\e[3~",	/* 54: Del   */
+			"\e[1~",	/* 49: Home  */
+			"\e[2~",	/* 50: Ins   */
+			"\e[3~",	/* 51: Del   */
+			"\e[4~",	/* 52: End   */
+			"\e[5~",	/* 53: PgUp  */
+			"\e[6~",	/* 54: PgDn  */
 			"\e[%de",	/* 55: VPR, advance N lines */
 		}
 	};

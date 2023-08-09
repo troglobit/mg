@@ -56,8 +56,10 @@ ttykeymapinit(void)
 		dobindkey(fundamental_map, "next-line", key_down);
 	if (key_beg)
 		dobindkey(fundamental_map, "beginning-of-line", key_beg);
-	else if (key_home)
+	if (key_home)
 		dobindkey(fundamental_map, "beginning-of-line", key_home);
+	if (key_eol)
+		dobindkey(fundamental_map, "end-of-line", key_eol);
 	if (key_end)
 		dobindkey(fundamental_map, "end-of-line", key_end);
 	if (key_npage)

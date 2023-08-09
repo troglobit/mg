@@ -33,17 +33,18 @@ extern TERMINAL *cur_term;
 
 #define bell                 CUR t_str[1]
 #define key_down             CUR t_str[11]
-#define key_home             CUR t_str[12]
-#define key_left             CUR t_str[14]
+#define key_eol              CUR t_str[12]
+#define key_home             CUR t_str[13]
+#define key_left             CUR t_str[15]
 #define key_right            CUR t_str[17]
 #define key_up               CUR t_str[19]
 
-#define key_ppage            CUR t_str[50]
-#define key_npage            CUR t_str[51]
-#define key_beg              NULL
+#define key_ppage            CUR t_str[53]
+#define key_npage            CUR t_str[54]
+#define key_beg              CUR t_str[49]
 #define key_end              CUR t_str[52]
-#define key_ic               CUR t_str[53]
-#define key_dc               CUR t_str[54]
+#define key_ic               CUR t_str[50]
+#define key_dc               CUR t_str[51]
 #define scroll_reverse       CUR t_str[11]
 #define scroll_forward       CUR t_str[10]
 
