@@ -1,6 +1,6 @@
 Micro (GNU) Emacs
 =================
-[![License Badge][]][License] [![GitHub Status][]][GitHub] [![Coverity Status]][Coverity Scan]
+[![License Badge][]][License] [![GitHub Status][]][GitHub] [![Coverity Status][]][Coverity Scan]
 
 Contents
 --------
