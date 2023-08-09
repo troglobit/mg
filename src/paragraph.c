@@ -311,6 +311,7 @@ markpara(int f, int n)
 	/* set the mark here */
 	curwp->w_markp = curwp->w_dotp;
 	curwp->w_marko = curwp->w_doto;
+	curwp->w_markline = curwp->w_dotline;
 
 	(void)gotobop(FFRAND, i);
 
