@@ -13,10 +13,12 @@ RUN apk --no-cache add --virtual .build-dependencies \
 
 WORKDIR /root
 COPY . ./
-RUN git clean -fdx; ./autogen.sh && \
-    ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var && make install-strip
+RUN git clean -fdx
+RUN ./autogen.sh
+RUN ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var CFLAGS=-static
+RUN make install-strip
 
-FROM alpine:latest
+FROM scratch
 
 COPY --from=0 /usr/bin/mg /usr/bin/mg
 COPY --from=0 /usr/share/doc/mg /usr/share/doc/mg
