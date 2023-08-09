@@ -144,9 +144,10 @@ displaymatch(struct line *clp, int cbo)
 	 */
 	inwindow = FALSE;
 	for (tlp = curwp->w_linep; tlp != lforw(curwp->w_dotp);
-	    tlp = lforw(tlp))
+	     tlp = lforw(tlp)) {
 		if (tlp == clp)
 			inwindow = TRUE;
+	}
 
 	if (inwindow == TRUE) {
 		tlp = curwp->w_dotp;	/* save current position */
@@ -174,10 +175,11 @@ displaymatch(struct line *clp, int cbo)
 					buf[bufo++] = CCHR(c);
 				} else
 					buf[bufo++] = c;
-			else
+			} else {
 				do {
 					buf[bufo++] = ' ';
 				} while (bufo & 7);
+			}
 		}
 		buf[bufo++] = '\0';
 		ewprintf("Matches %s", buf);
