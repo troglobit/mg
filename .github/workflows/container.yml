@@ -65,6 +65,7 @@ jobs:
             echo "tags=${{ github.repository }}:$VERSION,${{ github.repository }}:latest" >> $GITHUB_OUTPUT
             echo "labels=org.opencontainers.image.version=$VERSION"                       >> $GITHUB_OUTPUT
           fi
+          echo "args=revision=${GITHUB_SHA}" >> $GITHUB_OUTPUT
       - uses: docker/metadata-action@v4
         with:
           images: |
@@ -77,7 +78,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - uses: docker/build-push-action@v4
         with:
-          build-args: revision="${GITHUB_SHA}"
+          build-args: ${{ steps.meta.outputs.args }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
