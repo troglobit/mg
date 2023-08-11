@@ -65,7 +65,7 @@ jobs:
             echo "tags=$VERSION,latest"                             >> $GITHUB_OUTPUT
             echo "labels=org.opencontainers.image.version=$VERSION" >> $GITHUB_OUTPUT
           fi
-      - uses: docker/metadata-action@v3
+      - uses: docker/metadata-action@v4
         with:
           images: |
             ${{ github.repository }}
