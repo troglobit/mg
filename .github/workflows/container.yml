@@ -22,10 +22,14 @@ jobs:
         run: |
           VERSION=$(echo ${{ github.ref }} | sed -e 's,.*/\(.*\),\1,')
           if [ "$VERSION" = "master" ]; then
-            echo "tags=${{ github.repository }}:build-${GITHUB_RUN_NUMBER}"               >> $GITHUB_OUTPUT
+            base="${{ github.repository }}:build-${GITHUB_RUN_NUMBER}"
+            ghcr="ghcr.io/$base"
+            echo "tags=$base,$ghcr"                                 >> $GITHUB_OUTPUT
           else
-            echo "tags=${{ github.repository }}:$VERSION,${{ github.repository }}:latest" >> $GITHUB_OUTPUT
-            echo "labels=org.opencontainers.image.version=$VERSION"                       >> $GITHUB_OUTPUT
+            base="${{ github.repository }}:$VERSION,${{ github.repository }}:latest"
+            base="ghcr.io/${{ github.repository }}:$VERSION,ghcr.io/${{ github.repository }}:latest"
+            echo "tags=$base,$ghcr"                                 >> $GITHUB_OUTPUT
+            echo "labels=org.opencontainers.image.version=$VERSION" >> $GITHUB_OUTPUT
           fi
           echo "args=revision=${GITHUB_SHA}" >> $GITHUB_OUTPUT
       - uses: docker/metadata-action@v4
