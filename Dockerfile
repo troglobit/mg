@@ -21,7 +21,7 @@ RUN make install-strip
 FROM scratch
 ARG revision=$revision
 LABEL org.opencontainers.image.title="Mg"
-LABEL org.opencontainers.image.description="Micro (GNU) Emacs-like text editor in the public-domain"
+LABEL org.opencontainers.image.description="Micro Emacs text editor"
 LABEL org.opencontainers.image.documentation="https://man.troglobit.com/man1/mg.1.html"
 LABEL org.opencontainers.image.url="https://github.com/troglobit/mg"
 LABEL org.opencontainers.image.licenses="Unlicense"
