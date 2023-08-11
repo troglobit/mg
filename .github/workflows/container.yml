@@ -60,10 +60,10 @@ jobs:
         run: |
           VERSION=$(echo ${{ github.ref }} | sed -e 's,.*/\(.*\),\1,')
           if [ "$VERSION" = "master" ]; then
-            echo "tags=build-${GITHUB_RUN_NUMBER}"                  >> $GITHUB_OUTPUT
+            echo "tags=${{ github.repository }}:build-${GITHUB_RUN_NUMBER}"               >> $GITHUB_OUTPUT
           else
-            echo "tags=$VERSION,latest"                             >> $GITHUB_OUTPUT
-            echo "labels=org.opencontainers.image.version=$VERSION" >> $GITHUB_OUTPUT
+            echo "tags=${{ github.repository }}:$VERSION,${{ github.repository }}:latest" >> $GITHUB_OUTPUT
+            echo "labels=org.opencontainers.image.version=$VERSION"                       >> $GITHUB_OUTPUT
           fi
       - uses: docker/metadata-action@v4
         with:
