@@ -18,7 +18,7 @@ RUN ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var CFLAGS=-sta
 RUN make install-strip
 
 FROM scratch
-ARG revision=$revision
+ARG revision="$revision"
 LABEL org.opencontainers.image.title="Mg"
 LABEL org.opencontainers.image.description="Micro Emacs text editor"
 LABEL org.opencontainers.image.documentation="https://man.troglobit.com/man1/mg.1.html"
