@@ -15,44 +15,6 @@ jobs:
       contents: read
     env:
       MAKEFLAGS: -j3
-      IMAGE_NAME: mg
-    steps:
-      - uses: actions/checkout@v3
-      - name: Collect metadata for image
-        id: meta
-        run: |
-          echo "ver=$(echo ${{ github.ref }} | sed -e 's,.*/\(.*\),\1,')" >> $GITHUB_OUTPUT
-      - name: Build image
-        run: |
-          if [ "${{ steps.meta.outputs.ver }}" != "master" ]; then
-            args="--label \"org.opencontainers.image.version=${{ steps.meta.outputs.ver }}\""
-          fi
-          docker buildx build . --tag $IMAGE_NAME --build-arg "revision=${GITHUB_SHA}" $args
-      - name: Log in to registry
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-      - name: Push image
-        run: |
-          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
-          # Change all uppercase to lowercase
-          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
-          # Strip git ref prefix from version
-          if [ "${{ steps.meta.outputs.ver }}" = "master" ]; then
-            VERSION="build-${GITHUB_RUN_NUMBER}"
-          else
-            VERSION="${{ steps.meta.outputs.ver }} latest"
-          fi
-          echo IMAGE_ID=$IMAGE_ID
-          echo VERSION=${{ steps.meta.outputs.ver }}
-          echo REVISION=${GITHUB_SHA}
-          for ver in $VERSION; do
-            docker tag $IMAGE_NAME $IMAGE_ID:$ver
-            docker push $IMAGE_ID:$ver
-          done
-  dockerhub:
-    runs-on: ubuntu-latest
-    env:
-      MAKEFLAGS: -j3
     steps:
       - uses: actions/checkout@v3
       - name: Collect metadata for image
@@ -70,8 +32,16 @@ jobs:
         with:
           images: |
             ${{ github.repository }}
+            ghcr.io/${{ github.repository }}
       - uses: docker/setup-qemu-action@v2
       - uses: docker/setup-buildx-action@v2
+      - name: Log in to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Log in to Docker Hub
       - uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
