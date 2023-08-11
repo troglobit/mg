@@ -7,13 +7,12 @@
 #
 
 FROM alpine:latest
-
-RUN apk --no-cache add --virtual .build-dependencies \
-  alpine-sdk autoconf automake git
-
 WORKDIR /root
 COPY . ./
-RUN git clean -fdx
+
+RUN apk --no-cache add --virtual .build-dependencies \
+  alpine-sdk autoconf automake
+
 RUN ./autogen.sh
 RUN ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var CFLAGS=-static
 RUN make install-strip
