@@ -18,20 +18,34 @@ jobs:
       IMAGE_NAME: mg
     steps:
       - uses: actions/checkout@v3
+      - name: Collect metadata for image
+        id: meta
+        run;: |
+          echo ver=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')" >> $GITHUB_OUTPUT
       - name: Build image
-        run: docker build . --file Dockerfile --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}"
+        run: |
+          if [ "${{ steps.meta.outputs.ver }}" != "master" ]; then
+            args="--label \"org.opencontainers.image.version=${{ steps.meta.outputs.ver }}\""
+          fi
+          docker buildx build . --tag $IMAGE_NAME --build-arg "revision=${GITHUB_SHA}" $args
       - name: Log in to registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
       - name: Push image
         run: |
           IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
           # Change all uppercase to lowercase
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
           # Strip git ref prefix from version
-          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
-          # Use Docker `latest` tag convention
-          [ "$VERSION" == "master" ] && VERSION=latest
+          if [ "${{ steps.meta.outputs.ver }}" = "master" ]; then
+            VERSION="build-${GITHUB_RUN_NUMBER}"
+          else
+            VERSION="${{ steps.meta.outputs.ver }} latest"
+          fi
           echo IMAGE_ID=$IMAGE_ID
-          echo VERSION=$VERSION
-          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
-          docker push $IMAGE_ID:$VERSION
+          echo VERSION=${{ steps.meta.outputs.ver }}
+          echo REVISION=${GITHUB_SHA}
+          for ver in $VERSION; do
+            docker tag $IMAGE_NAME $IMAGE_ID:$ver
+            docker push $IMAGE_ID:$ver
+          done
