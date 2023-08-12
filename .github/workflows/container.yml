@@ -17,26 +17,15 @@ jobs:
       MAKEFLAGS: -j3
     steps:
       - uses: actions/checkout@v3
-      - name: Collect metadata for image
-        id: meta
-        run: |
-          VERSION=$(echo ${{ github.ref }} | sed -e 's,.*/\(.*\),\1,')
-          if [ "$VERSION" = "master" ]; then
-            base="${{ github.repository }}:build-${GITHUB_RUN_NUMBER}"
-            ghcr="ghcr.io/$base"
-            echo "tags=$base,$ghcr"                                 >> $GITHUB_OUTPUT
-          else
-            base="${{ github.repository }}:$VERSION,${{ github.repository }}:latest"
-            base="ghcr.io/${{ github.repository }}:$VERSION,ghcr.io/${{ github.repository }}:latest"
-            echo "tags=$base,$ghcr"                                 >> $GITHUB_OUTPUT
-            echo "labels=org.opencontainers.image.version=$VERSION" >> $GITHUB_OUTPUT
-          fi
-          echo "args=revision=${GITHUB_SHA}" >> $GITHUB_OUTPUT
       - uses: docker/metadata-action@v4
+        id: meta
         with:
           images: |
             ${{ github.repository }}
             ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=edge
           labels: |
             org.opencontainers.image.title=Mg
             org.opencontainers.image.description=Micro Emacs text editor based on OpenBSD mg
@@ -56,8 +45,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - uses: docker/build-push-action@v4
         with:
-          build-args: ${{ steps.meta.outputs.args }}
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le
