@@ -32,6 +32,15 @@ jobs:
             echo "labels=org.opencontainers.image.version=$VERSION" >> $GITHUB_OUTPUT
           fi
           echo "args=revision=${GITHUB_SHA}" >> $GITHUB_OUTPUT
+      - uses: docker/metadata-action@v4
+        with:
+          images: |
+            ${{ github.repository }}
+            ghcr.io/${{ github.repository }}
+          labels: |
+            org.opencontainers.image.title=Mg
+            org.opencontainers.image.description=Micro Emacs text editor based on OpenBSD mg
+            org.opencontainers.image.vendor=Troglobit Software Inc.
       - uses: docker/setup-qemu-action@v2
       - uses: docker/setup-buildx-action@v2
       - name: Log in to GHCR
