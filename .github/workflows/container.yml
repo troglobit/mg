@@ -37,10 +37,10 @@ jobs:
             type=edge
           labels: |
             org.opencontainers.image.title=Mg
-            org.opencontainers.image.description=Micro Emacs text editor
+            org.opencontainers.image.description=Micro Emacs text editor from OpenBSD
             org.opencontainers.image.url=https://github.com/troglobit/mg
             org.opencontainers.image.documentation=https://man.troglobit.com/man1/mg.1.html
-            org.opencontainers.image.source=https://github.com/troglobit/mg/tree/${GITHUB_SHA:-master}/
+            org.opencontainers.image.source=https://github.com/troglobit/mg/tree/${{ github.sha }}/
       - uses: docker/setup-qemu-action@v2
       - uses: docker/setup-buildx-action@v2
       - name: Log in to GHCR
@@ -68,11 +68,11 @@ jobs:
             name-canonical=true,
             push-by-digest=true,
             push=true,
-            annotation-index-descriptor.org.opencontainers.image.title=Mg,
-            annotation-index-descriptor.org.opencontainers.image.description=Micro Emacs text editor for ${{ matrix.platform }},
-            annotation-index-descriptor.org.opencontainers.image.url=https://github.com/troglobit/mg,
-            annotation-index-descriptor.org.opencontainers.image.licenses=Unlicense,
-            annotation-index-descriptor.org.opencontainers.image.revision=${GITHUB_SHA}
+            annotation-manifest-descriptor.org.opencontainers.image.title=Mg,
+            annotation-manifest-descriptor.org.opencontainers.image.description=Micro Emacs text editor for ${{ matrix.platform }},
+            annotation-manifest-descriptor.org.opencontainers.image.url=https://github.com/troglobit/mg,
+            annotation-manifest-descriptor.org.opencontainers.image.licenses=Unlicense,
+            annotation-manifest-descriptor.org.opencontainers.image.revision=${GITHUB_SHA}
       - name: Export digest
         run: |
           mkdir -p /tmp/digests
