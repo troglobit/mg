@@ -18,6 +18,11 @@ RUN ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var CFLAGS=-sta
 RUN make install-strip
 
 FROM scratch
+LABEL org.opencontainers.image.title         "Mg"
+LABEL org.opencontainers.image.description   "Micro Emacs text editor from OpenBSD"
+LABEL org.opencontainers.image.documentation "https://man.troglobit.com/man1/mg.1.html"
+LABEL org.opencontainers.image.url           "https://github.com/troglobit/mg"
+LABEL org.opencontainers.image.licenses      "Unlicense"
 
 COPY --from=0 /usr/bin/mg /usr/bin/mg
 COPY --from=0 /usr/share/doc/mg /usr/share/doc/mg
