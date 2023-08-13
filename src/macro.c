@@ -108,6 +108,15 @@ executemacro(int f, int n)
 }
 
 int
+endorexecmacro(int f, int n)
+{
+	if (macrodef)
+		return finishmacro(f, n);
+
+	return executemacro(f, n);
+}
+
+int
 applymacro(int f, int n)
 {
 	struct line	*odotp, *omarkp, *tmarkp;

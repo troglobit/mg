@@ -112,6 +112,7 @@ static struct funmap functnames[] = {
 	{finishmacro, "end-kbd-macro", 0, NULL},
 	{gotoeob, "end-of-buffer", 0, NULL},
 	{gotoeol, "end-of-line", 0, NULL},
+	{endorexecmacro, "end-or-call-last-kbd-macro", 0, NULL},
 	{enlargewind, "enlarge-window", 0, NULL},
 	{NULL, "esc prefix", 0, NULL},
 	{evalbuffer, "eval-current-buffer", 0, NULL},
