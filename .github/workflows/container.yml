@@ -55,9 +55,15 @@ jobs:
       - uses: docker/build-push-action@v4
         with:
           context: .
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: ${{ matrix.platform }}
-          outputs: type=image,name=target,push-by-digest=true,name-canonical=true,push=true,annotation-index.org.opencontainers.image.description=Micro Emacs text editor for ${{ matrix.platform }}
+          outputs: >-
+            type=image,
+            push-by-digest=true,
+            name-canonical=true,
+            push=true,
+            annotation-index.org.opencontainers.image.description=Micro Emacs text editor ${{ matrix.platform }}
       - name: Export digest
         run: |
           mkdir -p /tmp/digests
