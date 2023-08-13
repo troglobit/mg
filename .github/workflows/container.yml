@@ -53,6 +53,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - uses: docker/build-push-action@v4
+        id: build
         with:
           context: .
           labels: ${{ steps.meta.outputs.labels }}
