@@ -3,6 +3,31 @@ Change Log
 
 All relevant changes to the project are documented in this file.
 
+
+[v3.7][] - 2023-08-13
+---------------------
+
+### Changes
+- New command `display-help-toggle`, ensures the quick-help text is
+  always shown in the status area, enabled by default
+- New command `apply-macro-to-region-lines` by Ben Scuron
+- Sync with OpenBSD as of April 21, 2023:
+  - Add command `set-tab-width` to change per-buffer tab width
+  - Sync manual changes: grammar, visual improvements
+- Drop support for disabling `no-tab-mode` when calling `configure`
+  script.  Simplifies code greatly and not needed anymore since it is
+  enabled by default upstream
+
+### Fixes
+- Fix Home/End key for builds both with and without curses
+- Fixes bug where the current markline is not reset after being
+  cleared, by Ben Scuron
+- Sync with OpenBSD as of April 21, 2023:
+  - Fixes to `no-tab-mode`.  OpenBSD had previously removed this mode,
+    relevant change in this fork: indent next line with spaces
+  - Fix buffer overflow when no match is found for a search
+
+
 [v3.6][] - 2023-04-10
 ---------------------
 
@@ -271,6 +296,7 @@ set as Mg3a.
   - Fix missing initialization of stack variables
 
 [UNRELEASED]: https://github.com/troglobit/mg/compare/v3.6...HEAD
+[v3.7]:       https://github.com/troglobit/mg/compare/v3.6...v3.7
 [v3.6]:       https://github.com/troglobit/mg/compare/v3.5...v3.6
 [v3.5]:       https://github.com/troglobit/mg/compare/v3.4...v3.5
 [v3.4]:       https://github.com/troglobit/mg/compare/v3.3...v3.4
