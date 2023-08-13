@@ -45,6 +45,20 @@ extern TERMINAL *cur_term;
 #define key_end              CUR t_str[52]
 #define key_ic               CUR t_str[50]
 #define key_dc               CUR t_str[51]
+
+#define key_f1               CUR t_str[58]
+#define key_f2               CUR t_str[59]
+#define key_f3               CUR t_str[60]
+#define key_f4               CUR t_str[61]
+#define key_f5               CUR t_str[62]
+#define key_f6               CUR t_str[63]
+#define key_f7               CUR t_str[64]
+#define key_f8               CUR t_str[65]
+#define key_f9               CUR t_str[66]
+#define key_f10              CUR t_str[67]
+#define key_f11              CUR t_str[68]
+#define key_f12              CUR t_str[69]
+
 #define scroll_reverse       CUR t_str[11]
 #define scroll_forward       CUR t_str[10]
 

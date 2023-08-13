@@ -83,12 +83,25 @@ int setupterm(const char *term, int filedes, int *errret)
 			"\e[4~",	/* 52: End   */
 			"\e[5~",	/* 53: PgUp  */
 			"\e[6~",	/* 54: PgDn  */
-			"\e[%de",	/* 55: VPR, advance N lines */
+			"\e[7~",	/* 55: Home  */
+			"\e[8~",	/* 56: End   */
+			"\e[10~",	/* 57: F0    */
+			"\eOP",		/* 58: F1    */
+			"\eOQ",		/* 59: F2    */
+			"\eOR",		/* 60: F3    */
+			"\eOS",		/* 61: F4    */
+			"\e[15~",	/* 62: F5    */
+			"\e[17~",	/* 63: F6    */
+			"\e[18~",	/* 64: F7    */
+			"\e[19~",	/* 65: F8    */
+			"\e[20~",	/* 66: F9    */
+			"\e[21~",	/* 67: F10   */
+			"\e[23~",	/* 68: F11   */
+			"\e[24~",	/* 69: F12   */
 		}
 	};
 	struct	termios	 ostate;	/* saved tty state */
 	struct	termios	 nstate;	/* values for editor mode */
-
 
 	if (!term) {
 		term = getenv("TERM");
