@@ -186,6 +186,7 @@ goes something like this:
 * Oct 17, 2021: Mg v3.5, support for Solaris/Illumos based UNIX systems
   tested on OmniOS and OpenIndiana, sync with Mg from OpenBSD 7.0
 * Apr 10, 2023: Mg v3.6, sync with OpenBSD, improved ctags support
+* Aug 13, 2023: Mg v3.7, sync with OpenBSD, improved usability
 
 See the source distribution for the list of [AUTHORS][].
 
