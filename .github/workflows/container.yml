@@ -8,7 +8,7 @@ on:
       - 'v[0-9]+.[0-9]+*'
 
 jobs:
-  docker:
+  build:
     runs-on: ubuntu-latest
     permissions:
       packages: write
