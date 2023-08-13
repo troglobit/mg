@@ -60,11 +60,11 @@ jobs:
             name-canonical=true,
             push-by-digest=true,
             push=true,
-            annotation.org.opencontainers.image.title="Mg",
-            annotation.org.opencontainers.image.description="Micro Emacs text editor ${{ matrix.platform }}",
-            annotation.org.opencontainers.image.url="https://github.com/troglobit/mg",
-            annotation.org.opencontainers.image.licenses="Unlicense",
-            annotation.org.opencontainers.image.revision="${GITHUB_SHA}"
+            annotation.org.opencontainers.image.title=Mg,
+            annotation.org.opencontainers.image.description=Micro Emacs text editor ${{ matrix.platform }},
+            annotation.org.opencontainers.image.url=https://github.com/troglobit/mg,
+            annotation.org.opencontainers.image.licenses=Unlicense,
+            annotation.org.opencontainers.image.revision=${GITHUB_SHA}
       - name: Export digest
         run: |
           mkdir -p /tmp/digests
