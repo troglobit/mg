@@ -71,6 +71,18 @@ ttykeymapinit(void)
 	if (key_dc)
 		dobindkey(fundamental_map, "delete-char", key_dc);
 
+	/* Bind function keys */
+	if (key_f1)
+		dobindkey(fundamental_map, "quick-help", key_f1);
+	if (key_f2)
+		dobindkey(fundamental_map, "save-buffer", key_f2);
+	if (key_f3)
+		dobindkey(fundamental_map, "start-kbd-macro", key_f3);
+	if (key_f4)
+		dobindkey(fundamental_map, "end-or-call-last-kbd-macro", key_f4);
+	if (key_f10)
+		dobindkey(fundamental_map, "save-buffers-kill-emacs", key_f10);
+
 	/* Local extensions, not available in termcap */
 	if (key_cup)
 		dobindkey(fundamental_map, "backward-paragraph", key_cup);
