@@ -92,7 +92,16 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.REGISTRY_IMAGE }}
+          images: |
+            ${{ github.repository }}
+            ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=edge
+          labels: |
+            org.opencontainers.image.title=Mg
+            org.opencontainers.image.description=Micro Emacs text editor based on OpenBSD mg
+            org.opencontainers.image.vendor=Troglobit Software Inc.
       - name: Log in to GHCR
         uses: docker/login-action@v2
         with:
