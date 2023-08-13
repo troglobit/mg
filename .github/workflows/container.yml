@@ -59,8 +59,9 @@ jobs:
           platforms: ${{ matrix.platform }}
           outputs: >-
             type=image,
-            push-by-digest=true,
+            name=${{ github.repository }},
             name-canonical=true,
+            push-by-digest=true,
             push=true,
             annotation-index.org.opencontainers.image.description=Micro Emacs text editor ${{ matrix.platform }}
       - name: Export digest
