@@ -29,6 +29,9 @@ jobs:
       - uses: docker/metadata-action@v4
         id: meta
         with:
+          images: |
+            ${{ github.repository }}
+            ghcr.io/${{ github.repository }}
           labels: |
             org.opencontainers.image.source=https://github.com/troglobit/mg/tree/${{ github.sha }}/
       - uses: docker/setup-qemu-action@v2
