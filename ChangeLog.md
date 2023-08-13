@@ -11,6 +11,12 @@ All relevant changes to the project are documented in this file.
 - New command `display-help-toggle`, ensures the quick-help text is
   always shown in the status area, enabled by default
 - New command `apply-macro-to-region-lines` by Ben Scuron
+- New command `end-or-call-last-kbd-macro`, used in key bindings
+- Map function keys F1-F4 + F10 to common functions:
+  - F1: Toggle quick help
+  - F2: Save current buffer
+  - F3: Start keyboard macro
+  - F4: End keyboard macro, or call latest macro from mark
 - Sync with OpenBSD as of April 21, 2023:
   - Add command `set-tab-width` to change per-buffer tab width
   - Sync manual changes: grammar, visual improvements
