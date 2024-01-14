@@ -4,7 +4,7 @@ Micro (GNU) Emacs
 
 Contents
 --------
-<a href="doc/mg.png"><img align="right" src="doc/mg-thumb.png" title="mg in action"></a>
+<a href="doc/mg.png"><img align="right" src="doc/mg.png" title="mg in action"></a>
 
 * [Introduction](#introduction)
 * [Usage](#usage)
