@@ -102,7 +102,9 @@ static struct funmap functnames[] = {
 	{desckey, "describe-key-briefly", 1, NULL},
 	{diffbuffer, "diff-buffer-with-file", 0, NULL},
 	{digit_argument, "digit-argument", 1, NULL},
+#ifdef ENABLE_DIRED
 	{dired_jump, "dired-jump", 1, NULL},
+#endif
 	{helptoggle, "display-help-mode", 0, NULL},
 	{timetoggle, "display-time-mode", 0, NULL},
 	{lowerregion, "downcase-region", 0, NULL},
