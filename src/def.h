@@ -474,6 +474,7 @@ int		 filewrite(int, int);
 int		 filesave(int, int);
 int		 buffsave(struct buffer *);
 int		 makebkfile(int, int);
+int		 reqnewline(int, int);
 int		 writeout(FILE **, struct buffer *, char *);
 void		 upmodes(struct buffer *);
 size_t		 xbasename(char *, const char *, size_t);

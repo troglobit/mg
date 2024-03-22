@@ -17,6 +17,8 @@
 
 #include "def.h"
 
+static int reqnl = FALSE;  /* Don't enforce final newline by default. */
+
 size_t xdirname(char *, const char *, size_t);
 
 /*
@@ -663,6 +665,26 @@ makebkfile(int f, int n)
 	return (TRUE);
 }
 
+int
+reqnewline(int f, int n)
+{
+	char buf[5], *arg;
+
+	arg = eread("Require newline at EOF (nil, t, ask): ", buf, sizeof(buf), EFNEW);
+	if (arg == NULL)
+		return (ABORT);
+
+	if (!strcasecmp(arg, "nil"))
+		reqnl = FALSE;
+	else if (!strcasecmp(arg, "t"))
+		reqnl = TRUE;
+	else if (!strcasecmp(arg, "ask"))
+		reqnl = 2;
+	else
+		return (FALSE);
+	return (TRUE);
+}
+
 /*
  * NB: bp is passed to both ffwopen and ffclose because some
  * attribute information may need to be updated at open time
@@ -703,7 +725,10 @@ writeout(FILE ** ffp, struct buffer *bp, char *fn)
 	lpend = bp->b_headp;
 	eobnl = 0;
 	if (llength(lback(lpend)) != 0) {
-		eobnl = eyorn("No newline at end of file, add one");
+		if (reqnl == 2)
+			eobnl = eyorn("No newline at end of file, add one");
+		else
+			eobnl = reqnl;
 		if (eobnl != TRUE && eobnl != FALSE)
 			return (eobnl); /* abort */
 	}

@@ -885,6 +885,14 @@ is negative, it is that line from the bottom.
 .It Ic redraw-display
 Refresh the display.
 Recomputes all window sizes in case something has changed.
+.It Ic require-final-newline <nil | T | ask>
+Require files to have a final newline added when saving.  By default
+this is disabled (nil).  To always add a missing newline set to
+.Ic T ,
+to restore the original
+.Nm
+behavior, use
+.Ic ask .
 .It Ic revert-buffer
 Revert the current buffer to the latest file on disk.
 .It Ic save-buffer
@@ -966,7 +974,7 @@ Sets the mark in the current window to the current dot location.
 Sets the prefix string to be used by the
 .Ic prefix-region
 command.
-.It set-tab-width
+.It Ic set-tab-width
 Set the tab width for the current buffer, or the default for new buffers
 if called with a prefix argument or from the startup file.
 .It Ic shell-command

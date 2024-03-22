@@ -201,6 +201,7 @@ static struct funmap functnames[] = {
 	{re_repl, "replace-regexp", 2, NULL},
 	{replstr, "replace-string", 2, NULL},
 #endif /* REGEX */
+	{reqnewline, "require-final-newline", 1, NULL},
 	{revertbuffer, "revert-buffer", 0, NULL},
 	{filesave, "save-buffer", 1, NULL},
 	{quit, "save-buffers-kill-emacs", 0, NULL},
