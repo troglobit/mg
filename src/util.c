@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.49 2023/04/21 14:14:13 op Exp $	*/
+/*	$OpenBSD: util.c,v 1.51 2024/07/08 14:33:29 op Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -351,9 +351,9 @@ doindent(int cols)
 
 	if (curbp->b_flag & BFNOTAB)
 		return (linsert(cols, ' '));
-	if ((n = cols / 8) != 0 && linsert(n, '\t') == FALSE)
+	if ((n = cols / curbp->b_tabw) != 0 && linsert(n, '\t') == FALSE)
 		return (FALSE);
-	if ((n = cols % 8) != 0 && linsert(n, ' ') == FALSE)
+	if ((n = cols % curbp->b_tabw) != 0 && linsert(n, ' ') == FALSE)
 		return (FALSE);
 	return (TRUE);
 }
