@@ -33,9 +33,6 @@ static int findcolpos(const struct buffer *, const struct line *, int);
 static struct line *findnonblank(struct line *);
 static int isnonblank(const struct line *, int);
 
-void cmode_init(void);
-int cc_comment(int, int);
-
 /* Keymaps */
 
 static PF cmode_brace[] = {

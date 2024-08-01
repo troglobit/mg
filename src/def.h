@@ -854,7 +854,6 @@ extern int		 curgoal;
 extern int		 startrow;
 extern int		 epresf;
 extern int		 sgarbf;
-extern int		 mode;
 extern int		 nrow;
 extern int		 ncol;
 extern int		 ttrow;
