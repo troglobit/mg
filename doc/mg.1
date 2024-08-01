@@ -198,7 +198,7 @@ describe-bindings
 describe-key-briefly
 .It C-h t
 tutorial
-.It C-h q
+.It C-h q, F1
 quick-help
 .It C-j
 newline-and-indent
@@ -230,7 +230,7 @@ scroll-up
 kill-region
 .It C-x C-b
 list-buffers
-.It C-x C-c
+.It C-x C-c, F10
 save-buffers-kill-emacs
 .It C-x C-f
 find-file
@@ -246,7 +246,7 @@ delete-blank-lines
 toggle-read-only
 .It C-x C-r
 find-file-read-only
-.It C-x C-s
+.It C-x C-s, F2
 save-buffer
 .It C-x C-u
 upcase-region
@@ -256,10 +256,12 @@ find-alternate-file
 write-file
 .It C-x C-x
 exchange-point-and-mark
-.It C-x (
+.It C-x (, F3
 start-kbd-macro
 .It C-x \&)
 end-kbd-macro
+.Id F4
+end-or-call-last-kbd-macro
 .It C-x 0
 delete-window
 .It C-x 1
