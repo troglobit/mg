@@ -422,8 +422,8 @@ retry:
 					dobeep();
 					ewprintf("Could not allocate %d bytes",
 					    newsize);
-						s = FIOERR;
-						goto endoffile;
+					s = FIOERR;
+					goto endoffile;
 				}
 				bcopy(line, cp, linesize);
 				free(line);
