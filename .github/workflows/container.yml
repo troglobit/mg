@@ -61,7 +61,9 @@ jobs:
         run: |
           mkdir -p /tmp/digests
           digest="${{ steps.build.outputs.digest }}"
-          touch "/tmp/digests/${digest#sha256:}"
+          fn="/tmp/digests/${digest#sha256:}"
+          echo "Creating unique digest file for ${{ matrix.platform }}: $fn"
+          touch $fn
       - name: Upload digest
         uses: actions/upload-artifact@v4
         with:
