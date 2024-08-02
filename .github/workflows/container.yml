@@ -58,19 +58,24 @@ jobs:
             annotation-index.org.opencontainers.image.licenses=Unlicense,
             annotation-index.org.opencontainers.image.revision=${{ github.sha }}
       - name: Export digest
+        id: digest
         run: |
+          platform=${{ matrix.platform }}
+          arch="${platform#linux/}"
+          echo  "arch=$arch" >> $GITHUB_OUTPUT
           mkdir -p /tmp/digests
           digest="${{ steps.build.outputs.digest }}"
           fn="/tmp/digests/${digest#sha256:}"
-          echo "Creating unique digest file for ${{ matrix.platform }}: $fn"
+          echo "Saving $arch digest: $fn"
           touch $fn
       - name: Upload digest
         uses: actions/upload-artifact@v4
         with:
-          name: digests
+          name: ${{ steps.digest.outputs.arch }}
           path: /tmp/digests/*
           if-no-files-found: error
           retention-days: 1
+
   merge:
     runs-on: ubuntu-latest
     needs: build
