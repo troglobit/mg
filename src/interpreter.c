@@ -395,7 +395,7 @@ parsexp(char *begp, const char *par1, const char *par2, int blkid, int expctr,
 {
 	struct expentry *e1 = NULL;
 	PF		 funcp;
-	char		*cmdp, *fendp, *valp, *fname, *funb = NULL;;
+	char		*cmdp, *fendp, *valp, *fname, *funb = NULL;
 	int		 numparams, ret;
 
 	cmdp = begp;
