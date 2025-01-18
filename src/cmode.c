@@ -22,9 +22,6 @@
 extern int changemode(int, int, char *);
 
 static int cc_strip_trailp = TRUE;	/* Delete Trailing space? */
-static int cc_basic_indent = 8;		/* Basic Indent multiple */
-static int cc_cont_indent = 4;		/* Continued line indent */
-static int cc_colon_indent = -8;	/* Label / case indent */
 
 static int getmatch(int, int);
 static int getindent(const struct line *, int *);
@@ -324,17 +321,17 @@ getindent(const struct line *lp, int *curi)
 	 * we continue
 	 */
 	if (colonp) {
-		*curi += cc_colon_indent;
-		newind -= cc_colon_indent;
+		*curi += -curbp->b_tabw;
+		newind -= -curbp->b_tabw;
 	}
 
-	*curi -= (cbrace) * cc_basic_indent;
-	newind += obrace * cc_basic_indent;
+	*curi -= (cbrace) * curbp->b_tabw;
+	newind += obrace * curbp->b_tabw;
 
 	if (nparen < 0)
-		newind -= cc_cont_indent;
+		newind -= curbp->b_tabw / 2;
 	else if (nparen > 0)
-		newind += cc_cont_indent;
+		newind += curbp->b_tabw / 2;
 
 	*curi += nicol;
 
