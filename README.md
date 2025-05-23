@@ -28,6 +28,7 @@ or another.  Compatibility with GNU Emacs is key for Mg, separating it
 from other [ErsatzEmacs][] clones, because there should never be any
 reason to learn more than one Emacs flavor.
 
+> [!TIP]
 > Try the [latest release](https://github.com/troglobit/mg/releases/latest),
 > use the tarball with a version in the name, avoid GitHub generated links!
 > Releases come with a `configure` script, so you don't need autotools.
