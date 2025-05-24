@@ -60,7 +60,7 @@ AC_ARG_WITH(startup,
 
 AC_ARG_WITH(mglog,
 	AS_HELP_STRING([--with-mglog], [Enable debugging to log file, default: ./log/*.log]),
-	[mglog=$withval], [mglog='no'])
+	[with_mglog=$withval], [with_mglog='no'])
 
 AC_ARG_WITH(docs,
      AS_HELP_STRING([--without-docs], [Skip installation of documenation & manual]),
@@ -154,8 +154,8 @@ AS_IF([test "x$startup" != "xno"],[
 		AC_MSG_ERROR([Must supply argument])])]
 	AC_DEFINE_UNQUOTED(STARTUPFILE, "$startup", [Init file to run if ~/.mg is missing]))
 
-AS_IF([test "x$mglog" != "xno"],
-	AC_DEFINE_UNQUOTED(MGLOG, "$mglog", [Debug logging of mg internals]))
+AS_IF([test "x$with_mglog" != "xno"],
+	AC_DEFINE_UNQUOTED(MGLOG, "$with_mglog", [Debug logging of mg internals]))
 
 # Control build with automake flags
 AM_CONDITIONAL(REGEX,    [test "x$enable_regexp"   = "xyes"])
@@ -166,7 +166,7 @@ AM_CONDITIONAL(CSCOPE,   [test "x$enable_cscope"   = "xyes"])
 AM_CONDITIONAL(CTAGS,    [test "x$enable_ctags"    = "xyes"])
 AM_CONDITIONAL(DIRED,    [test "x$enable_dired"    = "xyes"])
 AM_CONDITIONAL(TINY,     [test "x$enable_tiny"     = "xyes"])
-AM_CONDITIONAL(MGLOG,    [test "x$mglog"          != "xno"])
+AM_CONDITIONAL(MGLOG,    [test "x$with_mglog"     != "xno"])
 AM_CONDITIONAL(DOCS,     [test "x$with_docs"      != "xno"])
 AM_CONDITIONAL(NOCURSES, [test "x$with_curses"     = "xno"])
 AM_CONDITIONAL(TUTOR,    [test "x$with_tutorial"  != "xno"])
