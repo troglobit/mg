@@ -220,17 +220,17 @@ friendly to porting to resource constrained systems.  New features:
 Merged, and continously tracked, clones:
 
 * http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/mg/ (upstream)
-* https://github.com/hboetes/mg (official portable version)
+* https://github.com/hboetes/mg (active)
 * https://github.com/ibara/mg (active)
 * https://github.com/scott-parker/mg-openbsd (inactive since 2015)
 * https://github.com/paaguti/mg3a (continuation of Bengt Larsson's mg3a)
 * https://github.com/kisom/kmg (another inactive fork with Go support)
 * https://github.com/jasperla/tinyschemg (OpenBSD mg with tinyscheme)
 
-> **Note**: the official [portable Mg][] project, used by Debian and
-> other GNU/Linux distributions, is maintained by Han Boetes.  Unlike
-> this project, which is stand-alone, Boetes relies on [libbsd][] to
-> maintain portability.
+> [!NOTE]
+> Han Boetes' [portable Mg][] project is what Debian and its derivatives
+> package.  Unlike this project, which is completely stand-alone, Boetes
+> relies on [libbsd][] to maintain portability.
 
 Please report any bugs and problems with the packaging and porting to
 the GitHub issue tracker <https://github.com/troglobit/mg/issues>
