@@ -59,7 +59,9 @@ static int	 createlist(struct buffer *);
 static void	 redelete(struct buffer *);
 static char 	 *findfname(struct line *, char *);
 
-extern struct keymap_s helpmap, cXmap, metamap;
+extern struct KEYMAPE (2) helpmap;
+extern struct KEYMAPE (6) cXmap;
+extern struct KEYMAPE (8) metamap;
 
 const char DDELCHAR = 'D';
 
