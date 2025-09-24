@@ -585,6 +585,7 @@ int		 fupdstat(struct buffer *);
 int		 backuptohomedir(int, int);
 int		 toggleleavetmp(int, int);
 char		*expandtilde(const char *);
+int		 gunzip_pclose(FILE *);
 
 /* kbd.c X */
 int		 do_meta(int, int);

@@ -26,6 +26,75 @@
 #include "kbd.h"
 #include "pathnames.h"
 
+#define MAX_GZIPPED_FILES 16
+static struct {
+	FILE *fp;
+	pid_t pid;
+} open_gzipped_files[MAX_GZIPPED_FILES];
+static int num_gzipped_files = 0;
+
+static FILE *
+gunzip_popen(const char *fn, pid_t *pidp)
+{
+	int pdes[2];
+	pid_t pid;
+
+	if (pipe(pdes) == -1)
+		return NULL;
+
+	if ((pid = fork()) == -1) {
+		close(pdes[0]);
+		close(pdes[1]);
+		return NULL;
+	}
+
+	if (pid == 0) { /* child */
+		close(pdes[0]);
+		if (dup2(pdes[1], STDOUT_FILENO) == -1)
+			_exit(127);
+		close(pdes[1]);
+		execlp("gunzip", "gunzip", "-c", fn, (char *)NULL);
+		_exit(127);
+	}
+
+	/* parent */
+	*pidp = pid;
+	close(pdes[1]);
+	return fdopen(pdes[0], "r");
+}
+
+int
+gunzip_pclose(FILE *fp)
+{
+	int i;
+	pid_t pid = -1;
+	int status;
+
+	for (i = 0; i < num_gzipped_files; i++) {
+		if (open_gzipped_files[i].fp == fp) {
+			pid = open_gzipped_files[i].pid;
+			/* Remove from list */
+			num_gzipped_files--;
+			open_gzipped_files[i] = open_gzipped_files[num_gzipped_files];
+			break;
+		}
+	}
+
+	(void)fclose(fp);
+
+	if (pid == -1)
+		return -1; /* Not found */
+
+	while (waitpid(pid, &status, 0) == -1) {
+		if (errno != EINTR) {
+			status = -1;
+			break;
+		}
+	}
+
+	return status;
+}
+
 #ifndef MAXNAMLEN
 #define MAXNAMLEN 255
 #endif
@@ -52,11 +121,20 @@ int
 ffropen(FILE **ffp, const char *fn, struct buffer *bp)
 {
 	if (isgzip(fn)) {
-		char cmd[strlen(fn) + sizeof(GUNZIP) + 2];
+		pid_t pid;
 
-                snprintf(cmd, sizeof(cmd), "%s %s", GUNZIP, fn);
-                if ((*ffp = popen(cmd, "r")) == NULL)
+		if (num_gzipped_files >= MAX_GZIPPED_FILES) {
+			dobeep();
+			ewprintf("Too many gzipped files open");
+			return (FIOERR);
+		}
+
+		if ((*ffp = gunzip_popen(fn, &pid)) == NULL)
 			goto filerr;
+
+		open_gzipped_files[num_gzipped_files].fp = *ffp;
+		open_gzipped_files[num_gzipped_files].pid = pid;
+		num_gzipped_files++;
 
 		ffstat(*ffp, bp);
 		if (bp)
@@ -245,19 +323,28 @@ fbackupfile(const char *fn)
 	char		 buf[BUFSIZ];
 	char		*nname, *tname, *bkpth;
 
-	if (stat(fn, &sb) == -1) {
+	if ((from = open(fn, O_RDONLY)) == -1)
+		return (FALSE);
+
+	if (fstat(from, &sb) == -1) {
+		serrno = errno;
+		close(from);
 		dobeep();
-		ewprintf("Can't stat %s : %s", fn, strerror(errno));
+		ewprintf("Can't stat %s : %s", fn, strerror(serrno));
+		errno = serrno;
 		return (FALSE);
 	}
 
-	if ((bkpth = bkuplocation(fn)) == NULL)
+	if ((bkpth = bkuplocation(fn)) == NULL) {
+		close(from);
 		return (FALSE);
+	}
 
 	if (asprintf(&nname, "%s~", bkpth) == -1) {
 		dobeep();
 		ewprintf("Can't allocate backup file name : %s", strerror(errno));
 		free(bkpth);
+		close(from);
 		return (ABORT);
 	}
 	if (asprintf(&tname, "%s.XXXXXXXXXX", bkpth) == -1) {
@@ -265,15 +352,10 @@ fbackupfile(const char *fn)
 		ewprintf("Can't allocate temp file name : %s", strerror(errno));
 		free(bkpth);
 		free(nname);
+		close(from);
 		return (ABORT);
 	}
 	free(bkpth);
-
-	if ((from = open(fn, O_RDONLY)) == -1) {
-		free(nname);
-		free(tname);
-		return (FALSE);
-	}
 
 	omask = umask(0600);
 	to = mkstemp(tname);
@@ -391,7 +473,7 @@ startupfile(char *suffix, char *conffile, char *path, size_t len)
 		return (ffp);
 	if (ffp) {
 		if (ret == FIOGZIP)
-			(void)pclose(ffp);
+			(void)gunzip_pclose(ffp);
 		else
 			(void)ffclose(ffp, NULL);
 		ffp = NULL;
@@ -414,7 +496,7 @@ nohome:
 		return (ffp);
 	if (ffp) {
 		if (ret == FIOGZIP)
-			(void)pclose(ffp);
+			(void)gunzip_pclose(ffp);
 		else
 			(void)ffclose(ffp, NULL);
 	}
