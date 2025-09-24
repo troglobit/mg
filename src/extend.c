@@ -641,7 +641,7 @@ evalfile(int f, int n)
 cleanup:
 	if (ffp) {
 		if (ret == FIOGZIP)
-			pclose(ffp);
+			gunzip_pclose(ffp);
 		else
 			fclose(ffp);
 	}

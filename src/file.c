@@ -446,7 +446,7 @@ retry:
 endoffile:
 	/* ignore errors */
 	if (pipe)
-		(void)pclose(ffp);
+		(void)gunzip_pclose(ffp);
 	else
 		(void)ffclose(ffp, NULL);
 
