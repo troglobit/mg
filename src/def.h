@@ -882,3 +882,8 @@ extern int		 rptcount;	/* successive invocation count */
  */
 extern int		 shownlprompt;
 int			 togglenewlineprompt(int, int);
+
+#ifdef HAVE_LUA
+/* lua.c */
+void		 lua_init(void);
+#endif /* HAVE_LUA */

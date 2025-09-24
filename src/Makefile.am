@@ -53,6 +53,12 @@ if MGLOG
 mg_SOURCES     += log.c log.h
 endif
 
+if LUA
+mg_SOURCES     += lua.c
+mg_CFLAGS      += $(LUA_CFLAGS)
+mg_LDADD       += $(LUA_LIBS)
+endif
+
 #
 # Building w/o terminfo/termcap/curses/ncurses
 #
