@@ -124,6 +124,10 @@ main(int argc, char **argv)
 	maps_init();		/* Keymaps and modes.		*/
 	funmap_init();		/* Functions.			*/
 
+#ifdef HAVE_LUA
+	lua_init();
+#endif /* HAVE_LUA */
+
 #ifdef  MGLOG
 	if (!mgloginit())
 		errx(1, "Unable to create logging environment.");
@@ -172,6 +176,12 @@ main(int argc, char **argv)
 		(void)load(ffp, file);
 		ffclose(ffp, NULL);
 	}
+
+#ifdef HAVE_LUA
+    if (access("vim.lua", F_OK) == 0) {
+        lua_eval_file("vim.lua");
+    }
+#endif
 
 	if (batch) {
 		vttidy();

@@ -74,6 +74,32 @@ AC_ARG_WITH(tutorial,
      AS_HELP_STRING([--without-tutorial], [Skip installation of $datadir/mg/tutorial.gz]),
      [with_tutorial=$withval], [with_tutorial='yes'])
 
+AC_ARG_WITH(lua,
+     AS_HELP_STRING([--with-lua], [Enable LUA scripting support.]),
+     [], [with_lua=no])
+
+# Check for LUA
+AS_IF([test "x$with_lua" != "xno"], [
+   PKG_CHECK_MODULES([LUA], [lua5.3], [have_lua=yes], [
+   PKG_CHECK_MODULES([LUA], [lua-5.3], [have_lua=yes], [
+   PKG_CHECK_MODULES([LUA], [lua5.2], [have_lua=yes], [
+   PKG_CHECK_MODULES([LUA], [lua-5.2], [have_lua=yes], [
+   PKG_CHECK_MODULES([LUA], [lua5.1], [have_lua=yes], [
+   PKG_CHECK_MODULES([LUA], [lua-5.1], [have_lua=yes], [
+   PKG_CHECK_MODULES([LUA], [lua], [have_lua=yes], [
+      have_lua=no
+   ])])])])])])])
+   AS_IF([test "x$have_lua" = "xyes"], [
+      AC_DEFINE(HAVE_LUA, 1, [Have LUA library])
+   ], [
+      AS_IF([test "x$with_lua" = "xyes"], [
+         AC_MSG_ERROR([LUA support explicitly requested, but libraries not found.])
+      ])
+   ])
+])
+AC_SUBST(LUA_CFLAGS)
+AC_SUBST(LUA_LIBS)
+
 # Check for a termcap compatible library
 AS_IF([test "x$with_curses" = "xyes" -o "x$with_curses" = "xauto"], [
 	AC_CHECK_LIB(ncurses, tgoto, , [
@@ -170,6 +196,7 @@ AM_CONDITIONAL(MGLOG,    [test "x$with_mglog"     != "xno"])
 AM_CONDITIONAL(DOCS,     [test "x$with_docs"      != "xno"])
 AM_CONDITIONAL(NOCURSES, [test "x$with_curses"     = "xno"])
 AM_CONDITIONAL(TUTOR,    [test "x$with_tutorial"  != "xno"])
+AM_CONDITIONAL(LUA,      [test "x$have_lua"        = "xyes"])
 
 # Generate all files
 AC_OUTPUT
@@ -208,6 +235,7 @@ cat <<EOF
   ctags..........: $enable_ctags
   dired..........: $enable_dired
   regexp.........: $enable_regexp
+  lua............: $with_lua
 
 ------------- Compiler version --------------
 $($CC --version || true)
