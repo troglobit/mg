@@ -385,12 +385,19 @@ re_forwsrch(void)
  * system is notified of the change, and TRUE is returned.  If the string isn't
  * found, FALSE is returned.
  */
+/*
+ * This routine does the real work of a backward search.  The pattern is sitting
+ * in the external variable "re_pat".  If found, dot is updated, the window
+ * system is notified of the change, and TRUE is returned.  If the string isn't
+ * found, FALSE is returned.
+ */
 static int
 re_backsrch(void)
 {
-	struct line		*clp;
-	int		 tbo, tdotline;
+	struct line	*clp;
+	int		 tbo, tdotline, search_offset;
 	regmatch_t	 lastmatch;
+	int		 match_found_on_line;
 
 	clp = curwp->w_dotp;
 	tbo = curwp->w_doto;
@@ -399,38 +406,56 @@ re_backsrch(void)
 	/* Start search one position to the left of dot */
 	tbo = tbo - 1;
 	if (tbo < 0) {
-		/* must move up one line */
 		clp = lback(clp);
 		tdotline--;
-		tbo = llength(clp);
+		if (clp != curbp->b_headp)
+			tbo = llength(clp);
 	}
 
-	/*
-	 * Note this loop does not process the last line, but this editor
-	 * always makes the last line empty so this is good.
-	 */
-	while (clp != (curbp->b_headp)) {
-		regex_match[0].rm_so = 0;
-		regex_match[0].rm_eo = llength(clp);
+	while (clp != curbp->b_headp) {
+		search_offset = 0;
+		match_found_on_line = 0;
 		lastmatch.rm_so = -1;
-		/*
-		 * Keep searching until we don't match any longer.  Assumes a
-		 * non-match does not modify the regex_match array.  We have to
-		 * do this character-by-character after the first match since
-		 * POSIX regexps don't give you a way to do reverse matches.
-		 */
-		while (!regexec(&regex_buff, ltext(clp) ? ltext(clp) : "",
-		    RE_NMATCH, regex_match, REG_STARTEND) &&
-		    regex_match[0].rm_so <= tbo) {
-			memcpy(&lastmatch, &regex_match[0], sizeof(regmatch_t));
-			regex_match[0].rm_so++;
+
+		while (search_offset <= llength(clp)) {
+			regex_match[0].rm_so = search_offset;
 			regex_match[0].rm_eo = llength(clp);
+
+			if (regexec(&regex_buff, ltext(clp) ? ltext(clp) : "",
+			    RE_NMATCH, regex_match, REG_STARTEND) != 0) {
+				/* No more matches on this line. */
+				break;
+			}
+			if (regex_match[0].rm_so <= tbo) {
+				/*
+				 * This is a valid match, store it.
+				 */
+				memcpy(&lastmatch, &regex_match[0],
+				    sizeof(regmatch_t));
+				match_found_on_line = 1;
+
+				/*
+				 * Advance search offset for next iteration.
+				 * Handle zero-length matches to avoid an
+				 * infinite loop.
+				 */
+				if (regex_match[0].rm_so == regex_match[0].rm_eo)
+					search_offset = regex_match[0].rm_eo + 1;
+				else
+					search_offset = regex_match[0].rm_eo;
+			} else {
+				/*
+				 * Match is past our target offset, so we can
+				 * stop searching this line.
+				 */
+				break;
+			}
 		}
-		if (lastmatch.rm_so == -1) {
-			clp = lback(clp);
-			tdotline--;
-			tbo = llength(clp);
-		} else {
+
+		if (match_found_on_line) {
+			/*
+			 * We found the last valid match on this line.
+			 */
 			memcpy(&regex_match[0], &lastmatch, sizeof(regmatch_t));
 			curwp->w_doto = regex_match[0].rm_so;
 			curwp->w_dotp = clp;
@@ -438,6 +463,11 @@ re_backsrch(void)
 			curwp->w_rflag |= WFMOVE;
 			return (TRUE);
 		}
+		/* No match on this line, move to previous. */
+		clp = lback(clp);
+		tdotline--;
+		if (clp != curbp->b_headp)
+			tbo = llength(clp);
 	}
 	return (FALSE);
 }
