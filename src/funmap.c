@@ -152,6 +152,7 @@ static struct funmap functnames[] = {
 	{justone, "just-one-space", 0, NULL},
 	{ctrlg, "keyboard-quit", 0, NULL},
 	{killbuffer_cmd, "kill-buffer", 1, NULL},
+	{killthisbuffer, "kill-this-buffer", 0, NULL},
 	{killline, "kill-line", 1, NULL},
 	{killpara, "kill-paragraph", 1, NULL},
 	{zaptochar, "zap-to-char", 1, NULL},
@@ -205,6 +206,8 @@ static struct funmap functnames[] = {
 #endif /* REGEX */
 	{reqnewline, "require-final-newline", 1, NULL},
 	{revertbuffer, "revert-buffer", 0, NULL},
+	{recoverfile, "recover-file", 1, NULL},
+	{recoverbuffer, "recover-this-file", 0, NULL},
 	{filesave, "save-buffer", 1, NULL},
 	{quit, "save-buffers-kill-emacs", 0, NULL},
 	{savebuffers, "save-some-buffers", 0, NULL},

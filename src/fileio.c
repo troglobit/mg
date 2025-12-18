@@ -38,7 +38,6 @@
 #define GUNZIP "gunzip -c"
 #endif
 
-static char *bkuplocation(const char *);
 static int   bkupleavetmp(const char *);
 static int   isgzip(const char *);
 
@@ -662,7 +661,7 @@ isgzip(const char *fn)
 /*
  * Location of backup file. This function creates the correct path.
  */
-static char *
+char *
 bkuplocation(const char *fn)
 {
 	struct stat sb;

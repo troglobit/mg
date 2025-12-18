@@ -770,7 +770,10 @@ d_create_directory(int f, int n)
 int
 d_killbuffer_cmd(int f, int n)
 {
-	return(killbuffer_cmd(FFRAND, 0));
+	int r;
+	r = killbuffer_cmd(FFRAND, 0);
+	delwind(FFRAND, 0);
+	return r;
 }
 
 int

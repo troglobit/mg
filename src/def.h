@@ -524,6 +524,7 @@ struct buffer   *bfind(const char *, int);
 int		 poptobuffer(int, int);
 int		 killbuffer(struct buffer *);
 int		 killbuffer_cmd(int, int);
+int		 killthisbuffer(int, int);
 int		 savebuffers(int, int);
 int		 listbuffers(int, int);
 int		 addlinef(struct buffer *, char *, ...);
@@ -541,6 +542,9 @@ int		 getbufcwd(char *, size_t);
 int		 checkdirty(struct buffer *);
 int		 revertbuffer(int, int);
 int		 dorevert(void);
+int		 recoverfile(int, int);
+int		 recoverbuffer(int, int);
+int		 dorecover(char*, int);
 int		 diffbuffer(int, int);
 struct buffer	*findbuffer(char *);
 
@@ -585,6 +589,7 @@ int		 fisdir(const char *);
 int		 fchecktime(struct buffer *);
 int		 fupdstat(struct buffer *);
 int		 backuptohomedir(int, int);
+char		*bkuplocation(const char *);
 int		 toggleleavetmp(int, int);
 char		*expandtilde(const char *);
 

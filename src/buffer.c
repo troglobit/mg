@@ -209,6 +209,20 @@ killbuffer_cmd(int f, int n)
 	return rc;
 }
 
+/*
+ * Kill the current buffer.
+ */
+int
+killthisbuffer(int f, int n)
+{
+	int rc;
+
+	rc = killbuffer(curbp);
+	eerase();
+
+	return rc;
+}
+
 int
 killbuffer(struct buffer *bp)
 {
@@ -1012,6 +1026,96 @@ dorevert(void)
 
 	if (readin(fname))
 		return(setlineno(lineno));
+	return (FALSE);
+}
+
+/*
+ * Recover a backup file from its backup for a given file
+ */
+int
+recoverfile(int f, int n)
+{
+	char *fbuf;
+	char mbuf[NFILEN + 32];
+
+	fbuf = malloc(sizeof(char) * NFILEN);
+	strlcpy(fbuf, curbp->b_cwd, NFILEN);
+
+	if ((fbuf = eread("Recover file: ", fbuf, NFILEN,
+	    EFDEF | EFNEW | EFCR | EFFILE)) == NULL)
+		return (ABORT);
+	else if (fbuf[0] == '\0')
+		return (FALSE);
+	else if (strlen(fbuf) >= NFILEN)
+		return (ABORT);
+
+	snprintf(mbuf, sizeof(mbuf), "Recover file %s", fbuf);
+	if (eyorn(mbuf) == TRUE)
+		return dorecover(fbuf, 0);
+
+	return (FALSE);
+}
+
+/*
+ * Recover a backup file from its backup for the current buffer
+ */
+int
+recoverbuffer(int f, int n)
+{
+	char mbuf[NFILEN + 32];
+	
+	if (curbp->b_fname[0] == 0)
+		return(dobeep_msg("Cannot recover, not associated with any files."));
+
+	snprintf(mbuf, sizeof(mbuf), "Recover file %s", curbp->b_fname);
+	if (eyorn(mbuf) == TRUE)
+		return dorecover(curbp->b_fname, 1);
+
+	return (FALSE);
+}
+
+int
+dorecover(char* fname, int this)
+{
+	struct undo_rec *rec;
+	char fbuf[NFILEN];
+	char bbuf[NFILEN];
+	char dbuf[NFILEN];
+
+	strlcpy(fbuf, fname, sizeof(fbuf));
+	snprintf(bbuf, NFILEN, "%s~", bkuplocation(fname));
+	
+	/* backup current working directory */
+	strlcpy(dbuf, curbp->b_cwd, sizeof(dbuf));
+
+	if (access(bbuf, F_OK|R_OK) != 0) {
+		dobeep();
+		if (errno == ENOENT)
+			ewprintf("File %s has no backup!", fbuf);
+		else
+			ewprintf("Backup %s is not readable!", bbuf);
+		return (FALSE);
+	}
+
+	/* Prevent readin from asking if we want to kill the buffer. */
+	if (this)
+		curbp->b_flag &= ~BFCHG;
+
+	/* Clean up undo memory */
+	while ((rec = TAILQ_FIRST(&curbp->b_undo))) {
+		TAILQ_REMOVE(&curbp->b_undo, rec, next);
+		free_undo_record(rec);
+	}
+
+	if (readin(bbuf))
+	{
+		strlcpy(curbp->b_cwd, dbuf, sizeof(curbp->b_cwd));
+		strlcpy(curbp->b_fname, fbuf, sizeof(curbp->b_fname));
+		// Set file to be changed
+		curbp->b_flag |= BFCHG;
+		// Move to start of recovered file
+		return(setlineno(1));
+	}
 	return (FALSE);
 }
 
