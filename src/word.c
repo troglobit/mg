@@ -175,6 +175,7 @@ transposeword(int f, int n)
 		curwp->w_dotline = tmp2_w_dotline;
 		curwp->w_dotp = tmp2_w_dotp;
 
+		free(word2);
 		word2 = NULL;
 	}
 	curwp->w_doto = tmp2_w_doto;
