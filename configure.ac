@@ -37,7 +37,7 @@ AC_CHECK_LIB([util], [login_tty])
 AC_CHECK_LIB([util], [openpty])
 
 # Check for usually missing API's, which we can replace
-AC_REPLACE_FUNCS([fparseln futimens login_tty openpty reallocarray strlcpy strlcat strtonum])
+AC_REPLACE_FUNCS([fparseln futimens login_tty openpty reallocarray recallocarray strlcpy strlcat strtonum])
 AC_CONFIG_LIBOBJ_DIR([lib])
 
 # Check for configured features

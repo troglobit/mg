@@ -61,6 +61,10 @@ long long strtonum(const char *numstr, long long minval, long long maxval, const
 void   *reallocarray(void *optr, size_t nmemb, size_t size);
 #endif
 
+#ifndef HAVE_RECALLOCARRAY
+void   *recallocarray(void *optr, size_t oldnmemb, size_t newnmemb, size_t size);
+#endif
+
 #ifndef HAVE_FPARSELN
 char   *fparseln(FILE *, size_t *, size_t *, const char[3], int);
 #define FPARSELN_UNESCESC	0x01
