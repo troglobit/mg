@@ -1057,19 +1057,24 @@ copy_list(struct list *lp)
 	last = NULL;
 	while (lp) {
 		current = malloc(sizeof(struct list));
-		if (current == NULL) {
-			/* Free what we have allocated so far */
-			for (current = last; current; current = nxt) {
-				nxt = current->l_next;
-				free(current->l_name);
-				free(current);
-			}
-			return (NULL);
+		if (current == NULL)
+			goto fail;
+		current->l_name = strdup(lp->l_name);
+		if (current->l_name == NULL) {
+			free(current);
+			goto fail;
 		}
 		current->l_next = last;
-		current->l_name = strdup(lp->l_name);
 		last = current;
 		lp = lp->l_next;
 	}
 	return (last);
+
+ fail:
+	for (current = last; current; current = nxt) {
+		nxt = current->l_next;
+		free(current->l_name);
+		free(current);
+	}
+	return (NULL);
 }
