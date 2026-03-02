@@ -336,7 +336,11 @@ complete_function_list(const char *fname)
 				free_file_list(head);
 				return (NULL);
 			}
-			el->l_name = strdup(fn->fn_name);
+			if ((el->l_name = strdup(fn->fn_name)) == NULL) {
+				free(el);
+				free_file_list(head);
+				return (NULL);
+			}
 			el->l_next = head;
 			head = el;
 		}

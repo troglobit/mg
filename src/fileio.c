@@ -484,7 +484,6 @@ make_file_list(char *buf)
 	DIR		*dirp;
 	struct dirent	*dent;
 	struct list	*last, *current;
-	char		 fl_name[NFILEN + 2];
 	char		 prefixx[NFILEN + 1];
 
 	/*
@@ -587,14 +586,13 @@ make_file_list(char *buf)
 			closedir(dirp);
 			return (NULL);
 		}
-		ret = snprintf(fl_name, sizeof(fl_name),
+		ret = asprintf(&current->l_name,
 		    "%s%s%s", prefixx, dent->d_name, isdir ? "/" : "");
-		if (ret < 0 || ret >= (int)sizeof(fl_name)) {
+		if (ret == -1) {
 			free(current);
 			continue;
 		}
 		current->l_next = last;
-		current->l_name = strdup(fl_name);
 		last = current;
 	}
 	closedir(dirp);
