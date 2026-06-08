@@ -24,6 +24,8 @@ static struct buffer *bnew(const char *);
 
 static int usebufname(const char *);
 
+static int shortanswers = 0;
+
 /* Default tab width */
 int	 defb_tabw = 8;
 
@@ -658,10 +660,11 @@ bclear(struct buffer *bp)
 {
 	struct line	*lp;
 	int		 s;
+    int		(*q)(const char *) = shortanswers ? eyorn : eyesno;
 
 	/* Has buffer changed, and do we care? */
 	if (!(bp->b_flag & BFIGNDIRTY) && (bp->b_flag & BFCHG) != 0 &&
-	    (s = eyesno("Buffer modified; kill anyway")) != TRUE)
+	    (s = q("Buffer modified; kill anyway")) != TRUE)
 		return (s);
 	bp->b_flag &= ~BFCHG;	/* Not changed		 */
 	while ((lp = lforw(bp->b_headp)) != bp->b_headp)
@@ -1110,4 +1113,16 @@ findbuffer(char *fn)
 
 	bp = bfind(bname, TRUE);
 	return (bp);
+}
+
+/*
+ * Toggle shortanswers like in Gnu emacs: no yes or no questions,
+ * only y or n
+ */
+int
+useshortanswers(int f, int n)
+{
+	shortanswers = !shortanswers;
+
+	return (TRUE);
 }

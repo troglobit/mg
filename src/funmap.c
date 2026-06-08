@@ -50,6 +50,7 @@ static struct funmap functnames[] = {
 	{backtoindent, "back-to-indentation", 0, NULL},
 	{backuptohomedir, "backup-to-home-directory", 0, NULL},
 	{backchar, "backward-char", 1, NULL},
+    {useshortanswers, "use-short-answers", 0, NULL},
 	{delbword, "backward-kill-word", 1, NULL},
 	{gotobop, "backward-paragraph", 1, NULL},
 	{backword, "backward-word", 1, NULL},

@@ -584,6 +584,7 @@ int		 fchecktime(struct buffer *);
 int		 fupdstat(struct buffer *);
 int		 backuptohomedir(int, int);
 int		 toggleleavetmp(int, int);
+int          useshortanswers(int, int);
 char		*expandtilde(const char *);
 
 /* kbd.c X */
