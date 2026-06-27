@@ -5,7 +5,7 @@
 /*
  *		Character class tables.
  * Do it yourself character classification
- * macros, that understand the multinational character set,
+ * macros, that understand the Latin-1 character set,
  * and let me ask some questions the standard macros (in
  * ctype.h) don't let you ask.
  */
@@ -20,9 +20,9 @@
  * This table, indexed by a character drawn
  * from the 256 member character set, is used by my
  * own character type macros to answer questions about the
- * type of a character. It handles the full multinational
- * character set, and lets me ask some questions that the
- * standard "ctype" macros cannot ask.
+ * type of a character. It handles the full ISO 8859-1
+ * (Latin-1) character set, and lets me ask some questions
+ * that the standard "ctype" macros cannot ask.
  */
 /*
  * Due to incompatible behaviour between "standard" emacs and
@@ -72,28 +72,28 @@ char cinfo[256] = {
 	0, 0, 0, 0,
 	0, 0, 0, 0,						      /* 0xAX */
 	0, 0, 0, 0,
-	0, 0, 0, 0,
+	0, 0, _MG_W, 0,
 	0, 0, 0, 0,
 	0, 0, 0, 0,						      /* 0xBX */
-	0, 0, 0, 0,
-	0, 0, 0, 0,
+	0, _MG_W, 0, 0,
+	0, 0, _MG_W, 0,
 	0, 0, 0, 0,
 	_MG_U | _MG_W, _MG_U | _MG_W, _MG_U | _MG_W, _MG_U | _MG_W,   /* 0xCX */
 	_MG_U | _MG_W, _MG_U | _MG_W, _MG_U | _MG_W, _MG_U | _MG_W,
 	_MG_U | _MG_W, _MG_U | _MG_W, _MG_U | _MG_W, _MG_U | _MG_W,
 	_MG_U | _MG_W, _MG_U | _MG_W, _MG_U | _MG_W, _MG_U | _MG_W,
-	0, _MG_U | _MG_W, _MG_U | _MG_W, _MG_U | _MG_W,		      /* 0xDX */
+	_MG_U | _MG_W, _MG_U | _MG_W, _MG_U | _MG_W, _MG_U | _MG_W,   /* 0xDX */
+	_MG_U | _MG_W, _MG_U | _MG_W, _MG_U | _MG_W, 0,
 	_MG_U | _MG_W, _MG_U | _MG_W, _MG_U | _MG_W, _MG_U | _MG_W,
-	_MG_U | _MG_W, _MG_U | _MG_W, _MG_U | _MG_W, _MG_U | _MG_W,
-	_MG_U | _MG_W, _MG_U | _MG_W, 0, _MG_W,
+	_MG_U | _MG_W, _MG_U | _MG_W, _MG_U | _MG_W, _MG_W,
 	_MG_L | _MG_W, _MG_L | _MG_W, _MG_L | _MG_W, _MG_L | _MG_W,   /* 0xEX */
 	_MG_L | _MG_W, _MG_L | _MG_W, _MG_L | _MG_W, _MG_L | _MG_W,
 	_MG_L | _MG_W, _MG_L | _MG_W, _MG_L | _MG_W, _MG_L | _MG_W,
 	_MG_L | _MG_W, _MG_L | _MG_W, _MG_L | _MG_W, _MG_L | _MG_W,
-	0, _MG_L | _MG_W, _MG_L | _MG_W, _MG_L | _MG_W,		      /* 0xFX */
+	_MG_L | _MG_W, _MG_L | _MG_W, _MG_L | _MG_W, _MG_L | _MG_W,   /* 0xFX */
+	_MG_L | _MG_W, _MG_L | _MG_W, _MG_L | _MG_W, 0,
 	_MG_L | _MG_W, _MG_L | _MG_W, _MG_L | _MG_W, _MG_L | _MG_W,
-	_MG_L | _MG_W, _MG_L | _MG_W, _MG_L | _MG_W, _MG_L | _MG_W,
-	_MG_L | _MG_W, _MG_L | _MG_W, 0, 0
+	_MG_L | _MG_W, _MG_L | _MG_W, _MG_L | _MG_W, _MG_W
 };
 
 /*

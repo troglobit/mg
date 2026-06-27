@@ -16,7 +16,7 @@
 /*
  * These flags, and the macros below them,
  * make up a do-it-yourself set of "ctype" macros that
- * understand the DEC multinational set, and let me ask
+ * understand the ISO 8859-1 (Latin-1) set, and let me ask
  * a slightly different set of questions.
  */
 #define _MG_W	0x01		/* Word.			 */
