@@ -781,9 +781,11 @@ paragraphs.
 Marks whole buffer as a region by putting dot at the beginning and mark
 at the end of buffer.
 .It Ic meta-key-mode
-When disabled, the meta key can be used to insert extended-ascii (8-bit)
-characters.
-When enabled, the meta key acts as usual.
+Toggle interpretation of the eighth bit of keyboard input as the Meta
+key.
+Disabled by default so that 8-bit characters can be typed.
+Terminals that send Meta as an escape prefix are unaffected by this
+setting.
 .It Ic negative-argument
 Process a negative argument for keyboard-invoked functions.
 .It Ic newline
@@ -1237,9 +1239,8 @@ language in which extensions can be written;
 however, keys can be rebound and certain parameters can be changed
 in startup files.
 .Pp
-In order to use 8-bit characters (such as German umlauts), the Meta key
-needs to be disabled via the
-.Ic meta-key-mode
-command.
+On terminals that signal the Meta key by setting the eighth bit,
+Meta bindings only work after enabling
+.Ic meta-key-mode .
 .Pp
 Multi-byte character sets, such as UTF-8, are not supported.

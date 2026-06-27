@@ -25,7 +25,7 @@ char	 prompt[PROMPTL] = "", *promptp = prompt;
 
 static int mgwrap(PF, int, int);
 
-static int		 use_metakey = TRUE;
+static int		 use_metakey = FALSE;
 static int		 pushed = FALSE;
 static int		 pushedc;
 
