@@ -614,6 +614,13 @@ void		 panic(char *);
 /* cinfo.c */
 char		*getkeyname(char  *, size_t, int);
 
+/* utf8.c */
+void		 utf8_init(void);
+int		 utf8_iscont(int);
+int		 utf8_seqlen(int);
+int		 utf8_decode(const char *, int, int *);
+int		 utf8_get(const struct line *, int, int *);
+
 /* basic.c */
 int		 gotobol(int, int);
 int		 backchar(int, int);
@@ -871,6 +878,7 @@ extern int		 doaudiblebell;
 extern int		 dovisiblebell;
 extern int		 dblspace;
 extern int		 allbro;
+extern int		 utf8_mode;
 extern int		 batch;
 extern char	 	 cinfo[];
 extern char		*keystrings[];
