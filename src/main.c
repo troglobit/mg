@@ -120,6 +120,7 @@ main(int argc, char **argv)
 	argv += optind;
 
 	setlocale(LC_CTYPE, "");
+	utf8_init();
 
 	maps_init();		/* Keymaps and modes.		*/
 	funmap_init();		/* Functions.			*/
