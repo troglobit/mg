@@ -1032,7 +1032,8 @@ eputc(char c)
 			c = CCHR(c);
 		}
 		ttputc(c);
-		++ttcol;
+		if (!utf8_mode || !utf8_iscont(c))
+			++ttcol;
 	}
 }
 

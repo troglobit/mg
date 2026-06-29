@@ -447,6 +447,7 @@ int		 ttraw(void);
 void		 ttclose(void);
 int		 ttcooked(void);
 int		 ttputc(int);
+void		 ttputcell(int);
 void		 ttflush(void);
 int		 ttgetc(void);
 int		 ttwait(int);

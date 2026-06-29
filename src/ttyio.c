@@ -131,6 +131,31 @@ ttputc(int c)
 }
 
 /*
+ * Write a display cell.  In UTF-8 locales a cell holds a
+ * codepoint, which is encoded on output; in single-byte locales
+ * it holds a byte, which is written as-is.
+ */
+void
+ttputcell(int cp)
+{
+	if (!utf8_mode || cp < 0x80) {
+		ttputc(cp);
+	} else if (cp < 0x800) {
+		ttputc(0xc0 | (cp >> 6));
+		ttputc(0x80 | (cp & 0x3f));
+	} else if (cp < 0x10000) {
+		ttputc(0xe0 | (cp >> 12));
+		ttputc(0x80 | ((cp >> 6) & 0x3f));
+		ttputc(0x80 | (cp & 0x3f));
+	} else {
+		ttputc(0xf0 | (cp >> 18));
+		ttputc(0x80 | ((cp >> 12) & 0x3f));
+		ttputc(0x80 | ((cp >> 6) & 0x3f));
+		ttputc(0x80 | (cp & 0x3f));
+	}
+}
+
+/*
  * Flush output.
  */
 void

@@ -101,7 +101,7 @@ showcpos(int f, int n)
 int
 getcolpos(struct mgwin *wp)
 {
-	int	col, i, c;
+	int	col, i, c, len;
 	char tmp[5];
 
 	/* determine column */
@@ -109,6 +109,11 @@ getcolpos(struct mgwin *wp)
 
 	for (i = 0; i < wp->w_doto; ++i) {
 		c = lgetc(wp->w_dotp, i);
+		if (c >= 0x80 && utf8_get(wp->w_dotp, i, &len) != -1) {
+			col++;
+			i += len - 1;
+			continue;
+		}
 		if (c == '\t') {
 			col = ntabstop(col, wp->w_bufp->b_tabw);
 		} else if (ISCTRL(c) != FALSE)
