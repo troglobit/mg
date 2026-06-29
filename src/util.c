@@ -434,6 +434,38 @@ indent(int f, int n)
 
 
 /*
+ * Number of bytes taken by the n characters after byte offset o on
+ * line lp.  The implied newline at the end of a line is one byte and
+ * a UTF-8 sequence is one character.  Counts past the end of buffer
+ * so that ldelete() fails there, just as a plain byte count does.
+ */
+static RSIZE
+forwbytes(struct line *lp, int o, int n)
+{
+	RSIZE	 bytes = 0;
+	int	 len;
+
+	while (n-- > 0) {
+		if (o == llength(lp)) {
+			if (lforw(lp) == curbp->b_headp) {
+				bytes += n + 1;
+				break;
+			}
+			lp = lforw(lp);
+			o = 0;
+			bytes++;
+		} else if (utf8_get(lp, o, &len) != -1) {
+			o += len;
+			bytes += len;
+		} else {
+			o++;
+			bytes++;
+		}
+	}
+	return (bytes);
+}
+
+/*
  * Delete forward.  This is real easy, because the basic delete routine does
  * all of the work.  Watches for negative arguments, and does the right thing.
  * If any argument is present, it kills rather than deletes, to prevent loss
@@ -452,7 +484,8 @@ forwdel(int f, int n)
 		thisflag |= CFKILL;
 	}
 
-	return (ldelete((RSIZE) n, (f & FFARG) ? KFORW : KNONE));
+	return (ldelete(forwbytes(curwp->w_dotp, curwp->w_doto, n),
+	    (f & FFARG) ? KFORW : KNONE));
 }
 
 /*
@@ -475,7 +508,8 @@ backdel(int f, int n)
 		thisflag |= CFKILL;
 	}
 	if ((s = backchar(f | FFRAND, n)) == TRUE)
-		s = ldelete((RSIZE)n, (f & FFARG) ? KFORW : KNONE);
+		s = ldelete(forwbytes(curwp->w_dotp, curwp->w_doto, n),
+		    (f & FFARG) ? KFORW : KNONE);
 
 	return (s);
 }
