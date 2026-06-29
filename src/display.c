@@ -24,16 +24,18 @@
 
 /*
  * A video structure always holds
- * an array of characters whose length is equal to
+ * an array of display cells whose length is equal to
  * the longest line possible. v_text is allocated
- * dynamically to fit the screen width.
+ * dynamically to fit the screen width.  A cell holds one
+ * column: a byte in single-byte locales, a codepoint in
+ * UTF-8 locales.
  */
 struct video {
 	short	v_hash;		/* Hash code, for compares.	 */
 	short	v_flag;		/* Flag word.			 */
 	short	v_color;	/* Color of the line.		 */
 	int	v_cost;		/* Cost of display.		 */
-	char	*v_text;	/* The actual characters.	 */
+	int	*v_text;	/* The actual display cells.	 */
 };
 
 #define VFCHG	0x0001			/* Changed.			 */
@@ -54,6 +56,8 @@ struct score {
 void	vtmove(int, int);
 void	vtputc(int, struct mgwin *);
 void	vtpute(int, struct mgwin *);
+void	vtputl(struct line *, struct mgwin *);
+void	vtputel(struct line *, struct mgwin *);
 int	vtputs(const char *, struct mgwin *);
 void	vteeol(void);
 void	updext(int, int);
@@ -158,14 +162,6 @@ vtresize(int force, int newrow, int newcol)
 	rowchanged = (newrow != nrow);
 	colchanged = (newcol != ncol);
 
-#define TRYREALLOC(a, n) do {					\
-		void *tmp;					\
-		if ((tmp = realloc((a), (n))) == NULL) {	\
-			panic("out of memory in display code");	\
-		}						\
-		(a) = tmp;					\
-	} while (0)
-
 #define TRYREALLOCARRAY(a, n, m) do {				\
 		void *tmp;					\
 		if ((tmp = reallocarray((a), (n), (m))) == NULL) {\
@@ -226,8 +222,10 @@ vtresize(int force, int newrow, int newcol)
 	}
 	if (rowchanged || colchanged || first_run) {
 		for (i = 0; i < 2 * (newrow - 1); i++)
-			TRYREALLOC(video[i].v_text, newcol);
-		TRYREALLOC(blanks.v_text, newcol);
+			TRYREALLOCARRAY(video[i].v_text, newcol,
+			    sizeof(*video[i].v_text));
+		TRYREALLOCARRAY(blanks.v_text, newcol,
+		    sizeof(*blanks.v_text));
 	}
 
 	nrow = newrow;
@@ -242,7 +240,6 @@ vtresize(int force, int newrow, int newcol)
 	return (TRUE);
 }
 
-#undef TRYREALLOC
 #undef TRYREALLOCARRAY
 
 /*
@@ -349,6 +346,46 @@ vtputc(int c, struct mgwin *wp)
 }
 
 /*
+ * Put the codepoint of a decoded UTF-8 sequence on the virtual
+ * display, in a single cell.  Positions left of the display,
+ * possible in extended lines, are tracked but not stored.
+ */
+static void
+vtputcp(int cp)
+{
+	struct video	*vp;
+
+	vp = vscreen[vtrow];
+	if (vtcol >= ncol)
+		vp->v_text[ncol - 1] = '$';
+	else {
+		if (vtcol >= 0)
+			vp->v_text[vtcol] = cp;
+		++vtcol;
+	}
+}
+
+/*
+ * Write an entire line to the virtual display.  UTF-8 sequences
+ * are decoded into one cell each; all other bytes go through
+ * vtputc() as before.
+ */
+void
+vtputl(struct line *lp, struct mgwin *wp)
+{
+	int	 c, cp, i, len;
+
+	for (i = 0; i < llength(lp); ++i) {
+		c = lgetc(lp, i);
+		if (c >= 0x80 && (cp = utf8_get(lp, i, &len)) != -1) {
+			vtputcp(cp);
+			i += len - 1;
+		} else
+			vtputc(c, wp);
+	}
+}
+
+/*
  * Put a character to the virtual screen in an extended line.  If we are not
  * yet on left edge, don't print it yet.  Check for overflow on the right
  * margin.
@@ -386,6 +423,25 @@ vtpute(int c, struct mgwin *wp)
 }
 
 /*
+ * Write an entire line to the virtual display as an extended
+ * line.  The UTF-8 counterpart of vtpute().
+ */
+void
+vtputel(struct line *lp, struct mgwin *wp)
+{
+	int	 c, cp, i, len;
+
+	for (i = 0; i < llength(lp); ++i) {
+		c = lgetc(lp, i);
+		if (c >= 0x80 && (cp = utf8_get(lp, i, &len)) != -1) {
+			vtputcp(cp);
+			i += len - 1;
+		} else
+			vtpute(c, wp);
+	}
+}
+
+/*
  * Erase from the end of the software cursor to the end of the line on which
  * the software cursor is located. The display routines will decide if a
  * hardware erase to end of line command should be used to display this.
@@ -416,7 +472,7 @@ update(int modelinecolor)
 	struct mgwin	*wp;
 	struct video	*vp1;
 	struct video	*vp2;
-	int	 c, i, j;
+	int	 i;
 	int	 hflag;
 	int	 currow, curcol;
 	int	 offs, size;
@@ -491,8 +547,7 @@ update(int modelinecolor)
 			vscreen[i]->v_color = CTEXT;
 			vscreen[i]->v_flag |= (VFCHG | VFHBAD);
 			vtmove(i, 0);
-			for (j = 0; j < llength(lp); ++j)
-				vtputc(lgetc(lp, j), wp);
+			vtputl(lp, wp);
 			vteeol();
 		} else if ((wp->w_rflag & (WFEDIT | WFFULL)) != 0) {
 			hflag = TRUE;
@@ -501,8 +556,7 @@ update(int modelinecolor)
 				vscreen[i]->v_flag |= (VFCHG | VFHBAD);
 				vtmove(i, 0);
 				if (lp != wp->w_bufp->b_headp) {
-					for (j = 0; j < llength(lp); ++j)
-						vtputc(lgetc(lp, j), wp);
+					vtputl(lp, wp);
 					lp = lforw(lp);
 				}
 				vteeol();
@@ -520,23 +574,7 @@ update(int modelinecolor)
 		++currow;
 		lp = lforw(lp);
 	}
-	curcol = 0;
-	i = 0;
-	while (i < curwp->w_doto) {
-		c = lgetc(lp, i++);
-		if (c == '\t') {
-			curcol = ntabstop(curcol, curwp->w_bufp->b_tabw);
-		} else if (ISCTRL(c) != FALSE)
-			curcol += 2;
-		else if (isprint(c))
-			curcol++;
-		else {
-			char bf[5];
-
-			snprintf(bf, sizeof(bf), "\\%o", c);
-			curcol += strlen(bf);
-		}
-	}
+	curcol = getcolpos(curwp);
 	if (curcol >= ncol - 1) {	/* extended line. */
 		/* flag we are extended and changed */
 		vscreen[currow]->v_flag |= VFEXT | VFCHG;
@@ -559,8 +597,7 @@ update(int modelinecolor)
 				if ((wp != curwp) || (lp != wp->w_dotp) ||
 				    (curcol < ncol - 1)) {
 					vtmove(i, 0);
-					for (j = 0; j < llength(lp); ++j)
-						vtputc(lgetc(lp, j), wp);
+					vtputl(lp, wp);
 					vteeol();
 					/* this line no longer is extended */
 					vscreen[i]->v_flag &= ~VFEXT;
@@ -662,7 +699,7 @@ ucopy(struct video *vvp, struct video *pvp)
 	pvp->v_hash = vvp->v_hash;
 	pvp->v_cost = vvp->v_cost;
 	pvp->v_color = vvp->v_color;
-	bcopy(vvp->v_text, pvp->v_text, ncol);
+	bcopy(vvp->v_text, pvp->v_text, ncol * sizeof(*vvp->v_text));
 }
 
 /*
@@ -674,7 +711,6 @@ void
 updext(int currow, int curcol)
 {
 	struct line	*lp;			/* pointer to current line */
-	int	 j;			/* index into line */
 
 	if (ncol < 2)
 		return;
@@ -691,8 +727,7 @@ updext(int currow, int curcol)
 	 */
 	vtmove(currow, -lbound);		/* start scanning offscreen */
 	lp = curwp->w_dotp;			/* line to output */
-	for (j = 0; j < llength(lp); ++j)	/* until the end-of-line */
-		vtpute(lgetc(lp, j), curwp);
+	vtputel(lp, curwp);			/* until the end-of-line */
 	vteeol();				/* truncate the virtual line */
 	vscreen[currow]->v_text[0] = '$';	/* and put a '$' in column 1 */
 }
@@ -709,11 +744,11 @@ updext(int currow, int curcol)
 void
 uline(int row, struct video *vvp, struct video *pvp)
 {
-	char  *cp1;
-	char  *cp2;
-	char  *cp3;
-	char  *cp4;
-	char  *cp5;
+	int   *cp1;
+	int   *cp2;
+	int   *cp3;
+	int   *cp4;
+	int   *cp5;
 	int    nbflag;
 
 	if (vvp->v_color != pvp->v_color) {	/* Wrong color, do a	 */
@@ -737,7 +772,7 @@ uline(int row, struct video *vvp, struct video *pvp)
 		cp2 = &vvp->v_text[ncol];
 #endif
 		while (cp1 != cp2) {
-			ttputc(*cp1++);
+			ttputcell(*cp1++);
 			++ttcol;
 		}
 		ttcolor(CTEXT);
@@ -780,7 +815,7 @@ uline(int row, struct video *vvp, struct video *pvp)
 #endif
 		ttcolor(vvp->v_color);
 	while (cp1 != cp5) {
-		ttputc(*cp1++);
+		ttputcell(*cp1++);
 		++ttcol;
 	}
 	if (cp5 != cp3)			/* Do erase.		 */
@@ -892,10 +927,19 @@ modeline(struct mgwin *wp, int modelinecolor)
 int
 vtputs(const char *s, struct mgwin *wp)
 {
-	int n = 0;
+	int cp, len, n = 0;
+	int avail = strlen(s);
 
 	while (*s != '\0') {
-		vtputc(*s++, wp);
+		if (utf8_mode &&
+		    (cp = utf8_decode(s, avail, &len)) != -1) {
+			vtputcp(cp);
+			s += len;
+			avail -= len;
+		} else {
+			vtputc(*s++, wp);
+			avail--;
+		}
 		++n;
 	}
 	return (n);
@@ -913,7 +957,7 @@ void
 hash(struct video *vp)
 {
 	int	i, n;
-	char   *s;
+	int    *s;
 
 	if ((vp->v_flag & VFHBAD) != 0) {	/* Hash bad.		 */
 		s = &vp->v_text[ncol - 1];

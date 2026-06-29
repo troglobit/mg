@@ -270,11 +270,18 @@ setgoal(void)
 int
 getgoal(struct line *dlp)
 {
-	int c, i, col = 0;
+	int c, i, len, col = 0;
 	char tmp[5];
 
 	for (i = 0; i < llength(dlp); i++) {
 		c = lgetc(dlp, i);
+		if (c >= 0x80 && utf8_get(dlp, i, &len) != -1) {
+			col++;
+			if (col > curgoal)
+				break;
+			i += len - 1;
+			continue;
+		}
 		if (c == '\t') {
 			col = ntabstop(col, curbp->b_tabw);
 		} else if (ISCTRL(c) != FALSE) {
