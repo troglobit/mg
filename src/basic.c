@@ -125,8 +125,10 @@ forwchar(int f, int n)
 int
 gotobob(int f, int n)
 {
-	if (!curwp->w_markp)
-		(void) setmark(f, n);
+	if (!curwp->w_markp) {
+		isetmark();
+		ewprintf("Mark set");
+	}
 	curwp->w_dotp = bfirstlp(curbp);
 	curwp->w_doto = 0;
 	curwp->w_rflag |= WFFULL;
@@ -152,8 +154,10 @@ gotoeob(int f, int n)
 	int		 ln;
 	struct line	*lp;
 
-	if (!curwp->w_markp)
-		(void) setmark(f, n);
+	if (!curwp->w_markp) {
+		isetmark();
+		ewprintf("Mark set");
+	}
 	curwp->w_dotp = blastlp(curbp);
 	curwp->w_doto = llength(curwp->w_dotp);
 	curwp->w_dotline = curwp->w_bufp->b_lines;
@@ -454,6 +458,7 @@ isetmark(void)
 	curwp->w_markp = curwp->w_dotp;
 	curwp->w_marko = curwp->w_doto;
 	curwp->w_markline = curwp->w_dotline;
+	curwp->w_markact = FALSE;
 }
 
 /*
@@ -465,6 +470,7 @@ int
 setmark(int f, int n)
 {
 	isetmark();
+	curwp->w_markact = TRUE;
 	ewprintf("Mark set");
 	return (TRUE);
 }
@@ -479,6 +485,10 @@ clearmark(int f, int n)
 	curwp->w_markp = NULL;
 	curwp->w_marko = 0;
 	curwp->w_markline = 0;
+	if (curwp->w_markact) {
+		curwp->w_markact = FALSE;
+		curwp->w_rflag |= WFFULL;
+	}
 
 	return (TRUE);
 }
@@ -508,6 +518,7 @@ swapmark(int f, int n)
 	curwp->w_markp = odotp;
 	curwp->w_marko = odoto;
 	curwp->w_markline = odotline;
+	curwp->w_markact = TRUE;
 	curwp->w_rflag |= WFMOVE;
 	return (TRUE);
 }

@@ -401,6 +401,7 @@ markbuffer(int f, int n)
 	(void) clearmark(f, n);
 	if (gotobob(f,n) == FALSE)
 		return (FALSE);
+	curwp->w_markact = TRUE;
 	return (TRUE);
 }
 

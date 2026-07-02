@@ -254,6 +254,7 @@ static struct funmap functnames[] = {
 	{upperregion, "upcase-region", 0, NULL},
 	{upperword, "upcase-word", 1, NULL},
 	{togglevisiblebell, "visible-bell", 0, NULL},
+	{visualmark, "visual-mark-mode", 0, NULL},
 #ifdef ENABLE_CTAGS
 	{tagsvisit, "visit-tags-table", 0, NULL},
 #endif

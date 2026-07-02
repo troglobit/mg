@@ -347,5 +347,9 @@ quit(int f, int n)
 int
 ctrlg(int f, int n)
 {
+	if (curwp->w_markact) {
+		curwp->w_markact = FALSE;
+		curwp->w_rflag |= WFFULL;
+	}
 	return (ABORT);
 }

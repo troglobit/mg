@@ -707,6 +707,7 @@ showbuffer(struct buffer *bp, struct mgwin *wp, int flags)
 	}
 	/* Now, attach the new buffer to the window */
 	wp->w_bufp = bp;
+	wp->w_markact = FALSE;
 
 	if (bp->b_nwnd++ == 0) {	/* First use.		 */
 		wp->w_dotp = bp->b_dotp;

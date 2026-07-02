@@ -43,6 +43,13 @@ struct video {
 #define VFEXT	0x0004			/* extended line (beyond ncol)	 */
 
 /*
+ * Cell attribute for the visual mark: set on cells inside the
+ * region between mark and dot, drawn in reverse video.  Codepoints
+ * use at most 21 bits, so the attribute rides in the same int.
+ */
+#define VREV	0x40000000
+
+/*
  * SCORE structures hold the optimal
  * trace trajectory, and the cost of redisplay, when
  * the dynamic programming redisplay code is used.
@@ -56,8 +63,8 @@ struct score {
 void	vtmove(int, int);
 void	vtputc(int, struct mgwin *);
 void	vtpute(int, struct mgwin *);
-void	vtputl(struct line *, struct mgwin *);
-void	vtputel(struct line *, struct mgwin *);
+void	vtputl(struct line *, struct mgwin *, int, int);
+void	vtputel(struct line *, struct mgwin *, int, int);
 int	vtputs(const char *, struct mgwin *);
 void	vteeol(void);
 void	updext(int, int);
@@ -98,6 +105,22 @@ static int	 linenos = TRUE;
 static int	 colnos  = TRUE;
 static int	 timesh  = FALSE;
 
+static int	 visual_mark = TRUE;	/* draw region after set-mark	*/
+
+static int	 vtrev = 0;		/* VREV while inside region	*/
+
+/*
+ * Region shown in the window being rendered, in line number and
+ * byte offset pairs, start before end.  Set up by hlsetup() and
+ * queried per line with hlrange().
+ */
+static struct {
+	int	 active;
+	int	 topln;			/* line number of w_linep	*/
+	int	 sline, soff;
+	int	 eline, eoff;
+} hl;
+
 /* Is macro recording enabled? */
 extern int macrodef;
 
@@ -129,6 +152,76 @@ colnotoggle(int f, int n)
 	sgarbf = TRUE;
 
 	return (TRUE);
+}
+
+int
+visualmark(int f, int n)
+{
+	if (f & FFARG)
+		visual_mark = n > 0;
+	else
+		visual_mark = !visual_mark;
+	ewprintf("Visual mark mode %sabled", visual_mark ? "en" : "dis");
+
+	sgarbf = TRUE;
+
+	return (TRUE);
+}
+
+/*
+ * True when the region between mark and dot should be shown in
+ * the given window.
+ */
+static int
+hlactive(struct mgwin *wp)
+{
+	return (visual_mark && wp->w_markact && wp->w_markp != NULL);
+}
+
+/*
+ * Prepare region drawing for the window being rendered: order the
+ * mark and dot endpoints by line number and byte offset.  Only
+ * valid after the window has been framed, since finding the line
+ * number of the top line walks w_dotp back to w_linep.
+ */
+static void
+hlsetup(struct mgwin *wp)
+{
+	struct line	*lp;
+
+	hl.active = hlactive(wp);
+	if (!hl.active)
+		return;
+	hl.topln = wp->w_dotline;
+	for (lp = wp->w_dotp; lp != wp->w_linep; lp = lback(lp))
+		hl.topln--;
+	if (wp->w_markline < wp->w_dotline ||
+	    (wp->w_markline == wp->w_dotline &&
+	     wp->w_marko <= wp->w_doto)) {
+		hl.sline = wp->w_markline;
+		hl.soff = wp->w_marko;
+		hl.eline = wp->w_dotline;
+		hl.eoff = wp->w_doto;
+	} else {
+		hl.sline = wp->w_dotline;
+		hl.soff = wp->w_doto;
+		hl.eline = wp->w_markline;
+		hl.eoff = wp->w_marko;
+	}
+}
+
+/*
+ * Byte range [s, e) of the region on line number ln, of len bytes.
+ * Empty unless the line is inside the region set up by hlsetup().
+ */
+static void
+hlrange(int ln, int len, int *s, int *e)
+{
+	*s = *e = 0;
+	if (!hl.active || ln < hl.sline || ln > hl.eline)
+		return;
+	*s = (ln == hl.sline) ? hl.soff : 0;
+	*e = (ln == hl.eline) ? hl.eoff : len;
 }
 
 int
@@ -336,7 +429,7 @@ vtputc(int c, struct mgwin *wp)
 		vtputc('^', wp);
 		vtputc(CCHR(c), wp);
 	} else if (isprint(c))
-		vp->v_text[vtcol++] = c;
+		vp->v_text[vtcol++] = c | vtrev;
 	else {
 		char bf[5];
 
@@ -360,7 +453,7 @@ vtputcp(int cp)
 		vp->v_text[ncol - 1] = '$';
 	else {
 		if (vtcol >= 0)
-			vp->v_text[vtcol] = cp;
+			vp->v_text[vtcol] = cp | vtrev;
 		++vtcol;
 	}
 }
@@ -368,14 +461,16 @@ vtputcp(int cp)
 /*
  * Write an entire line to the virtual display.  UTF-8 sequences
  * are decoded into one cell each; all other bytes go through
- * vtputc() as before.
+ * vtputc() as before.  Cells in the byte range [s, e) are marked
+ * with the region attribute; pass s == e for no region.
  */
 void
-vtputl(struct line *lp, struct mgwin *wp)
+vtputl(struct line *lp, struct mgwin *wp, int s, int e)
 {
 	int	 c, cp, i, len;
 
 	for (i = 0; i < llength(lp); ++i) {
+		vtrev = (i >= s && i < e) ? VREV : 0;
 		c = lgetc(lp, i);
 		if (c >= 0x80 && (cp = utf8_get(lp, i, &len)) != -1) {
 			vtputcp(cp);
@@ -383,6 +478,7 @@ vtputl(struct line *lp, struct mgwin *wp)
 		} else
 			vtputc(c, wp);
 	}
+	vtrev = 0;
 }
 
 /*
@@ -411,7 +507,7 @@ vtpute(int c, struct mgwin *wp)
 		vtpute(CCHR(c), wp);
 	} else if (isprint(c)) {
 		if (vtcol >= 0)
-			vp->v_text[vtcol] = c;
+			vp->v_text[vtcol] = c | vtrev;
 		++vtcol;
 	} else {
 		char bf[5], *cp;
@@ -424,14 +520,16 @@ vtpute(int c, struct mgwin *wp)
 
 /*
  * Write an entire line to the virtual display as an extended
- * line.  The UTF-8 counterpart of vtpute().
+ * line.  The UTF-8 counterpart of vtpute().  Cells in the byte
+ * range [s, e) are marked with the region attribute.
  */
 void
-vtputel(struct line *lp, struct mgwin *wp)
+vtputel(struct line *lp, struct mgwin *wp, int s, int e)
 {
 	int	 c, cp, i, len;
 
 	for (i = 0; i < llength(lp); ++i) {
+		vtrev = (i >= s && i < e) ? VREV : 0;
 		c = lgetc(lp, i);
 		if (c >= 0x80 && (cp = utf8_get(lp, i, &len)) != -1) {
 			vtputcp(cp);
@@ -439,6 +537,7 @@ vtputel(struct line *lp, struct mgwin *wp)
 		} else
 			vtpute(c, wp);
 	}
+	vtrev = 0;
 }
 
 /*
@@ -472,7 +571,7 @@ update(int modelinecolor)
 	struct mgwin	*wp;
 	struct video	*vp1;
 	struct video	*vp2;
-	int	 i;
+	int	 i, ln, s, e;
 	int	 hflag;
 	int	 currow, curcol;
 	int	 offs, size;
@@ -495,6 +594,13 @@ update(int modelinecolor)
 	}
 	hflag = FALSE;			/* Not hard. */
 	for (wp = wheadp; wp != NULL; wp = wp->w_wndp) {
+		/*
+		 * An active region follows dot around, so it must be
+		 * redrawn on plain movement too.
+		 */
+		if (hlactive(wp))
+			wp->w_rflag |= WFFULL;
+
 		/*
 		 * Nothing to be done.
 		 */
@@ -547,17 +653,21 @@ update(int modelinecolor)
 			vscreen[i]->v_color = CTEXT;
 			vscreen[i]->v_flag |= (VFCHG | VFHBAD);
 			vtmove(i, 0);
-			vtputl(lp, wp);
+			vtputl(lp, wp, 0, 0);
 			vteeol();
 		} else if ((wp->w_rflag & (WFEDIT | WFFULL)) != 0) {
 			hflag = TRUE;
+			hlsetup(wp);
+			ln = hl.topln;
 			while (i < wp->w_toprow + wp->w_ntrows) {
 				vscreen[i]->v_color = CTEXT;
 				vscreen[i]->v_flag |= (VFCHG | VFHBAD);
 				vtmove(i, 0);
 				if (lp != wp->w_bufp->b_headp) {
-					vtputl(lp, wp);
+					hlrange(ln, llength(lp), &s, &e);
+					vtputl(lp, wp, s, e);
 					lp = lforw(lp);
+					ln++;
 				}
 				vteeol();
 				++i;
@@ -590,6 +700,8 @@ update(int modelinecolor)
 	while (wp != NULL) {
 		lp = wp->w_linep;
 		i = wp->w_toprow;
+		hlsetup(wp);
+		ln = hl.topln;
 		while (i < wp->w_toprow + wp->w_ntrows) {
 			if (vscreen[i]->v_flag & VFEXT) {
 				/* always flag extended lines as changed */
@@ -597,13 +709,15 @@ update(int modelinecolor)
 				if ((wp != curwp) || (lp != wp->w_dotp) ||
 				    (curcol < ncol - 1)) {
 					vtmove(i, 0);
-					vtputl(lp, wp);
+					hlrange(ln, llength(lp), &s, &e);
+					vtputl(lp, wp, s, e);
 					vteeol();
 					/* this line no longer is extended */
 					vscreen[i]->v_flag &= ~VFEXT;
 				}
 			}
 			lp = lforw(lp);
+			ln++;
 			++i;
 		}
 		/* if garbaged then fix up mode lines */
@@ -711,6 +825,7 @@ void
 updext(int currow, int curcol)
 {
 	struct line	*lp;			/* pointer to current line */
+	int	 s, e;
 
 	if (ncol < 2)
 		return;
@@ -727,7 +842,9 @@ updext(int currow, int curcol)
 	 */
 	vtmove(currow, -lbound);		/* start scanning offscreen */
 	lp = curwp->w_dotp;			/* line to output */
-	vtputel(lp, curwp);			/* until the end-of-line */
+	hlsetup(curwp);
+	hlrange(curwp->w_dotline, llength(lp), &s, &e);
+	vtputel(lp, curwp, s, e);		/* until the end-of-line */
 	vteeol();				/* truncate the virtual line */
 	vscreen[currow]->v_text[0] = '$';	/* and put a '$' in column 1 */
 }
@@ -750,6 +867,7 @@ uline(int row, struct video *vvp, struct video *pvp)
 	int   *cp4;
 	int   *cp5;
 	int    nbflag;
+	int    rev = FALSE;
 
 	if (vvp->v_color != pvp->v_color) {	/* Wrong color, do a	 */
 		ttmove(row, 0);			/* full redraw.		 */
@@ -772,7 +890,11 @@ uline(int row, struct video *vvp, struct video *pvp)
 		cp2 = &vvp->v_text[ncol];
 #endif
 		while (cp1 != cp2) {
-			ttputcell(*cp1++);
+			if (((*cp1 & VREV) != 0) != rev) {
+				rev = !rev;
+				ttcolor(rev ? CMODE : vvp->v_color);
+			}
+			ttputcell(*cp1++ & ~VREV);
 			++ttcol;
 		}
 		ttcolor(CTEXT);
@@ -815,9 +937,15 @@ uline(int row, struct video *vvp, struct video *pvp)
 #endif
 		ttcolor(vvp->v_color);
 	while (cp1 != cp5) {
-		ttputcell(*cp1++);
+		if (((*cp1 & VREV) != 0) != rev) {
+			rev = !rev;
+			ttcolor(rev ? CMODE : vvp->v_color);
+		}
+		ttputcell(*cp1++ & ~VREV);
 		++ttcol;
 	}
+	if (rev)
+		ttcolor(vvp->v_color);
 	if (cp5 != cp3)			/* Do erase.		 */
 		tteeol();
 }

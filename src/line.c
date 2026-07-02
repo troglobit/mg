@@ -141,6 +141,10 @@ lchange(int flag)
 			wp->w_rflag |= flag;
 			if (wp != curwp)
 				wp->w_rflag |= WFFULL;
+			if (wp->w_markact) {
+				wp->w_markact = FALSE;
+				wp->w_rflag |= WFFULL;
+			}
 		}
 	}
 }
