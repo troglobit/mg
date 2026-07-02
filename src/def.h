@@ -303,6 +303,7 @@ struct mgwin {
 	struct line	*w_wrapline;
 	int		 w_dotline;	/* current line number of dot	*/
 	int		 w_markline;	/* current line number of mark	*/
+	int		 w_markact;	/* mark active, region is shown	*/
 };
 #define w_wndp	w_list.l_p.l_wp
 #define w_name	w_list.l_name
@@ -557,6 +558,7 @@ void		 update(int);
 int		 linenotoggle(int, int);
 int		 colnotoggle(int, int);
 int		 timetoggle(int, int);
+int		 visualmark(int, int);
 
 /* echo.c X */
 int		 helptoggle(int, int);

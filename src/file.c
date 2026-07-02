@@ -222,6 +222,7 @@ readin(char *fname)
 			wp->w_doto = 0;
 			wp->w_markp = NULL;
 			wp->w_marko = 0;
+			wp->w_markact = FALSE;
 		}
 	}
 

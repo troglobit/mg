@@ -26,6 +26,7 @@ new_window(struct buffer *bp)
 	wp->w_doto = 0;
 	wp->w_markp = NULL;
 	wp->w_marko = 0;
+	wp->w_markact = FALSE;
 	wp->w_rflag = 0;
 	wp->w_frame = 0;
 	wp->w_wrapline = NULL;

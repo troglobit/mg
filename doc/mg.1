@@ -1063,6 +1063,18 @@ Toggle the visible bell.
 If this toggle is on, the modeline will flash.
 .It Ic visit-tags-table
 Load tags file to be used for subsequent find-tag.
+.It Ic visual-mark-mode
+Toggle visual mark mode, enabled by default.
+When enabled, the region between mark and dot is drawn in reverse
+video after
+.Ic set-mark-command ,
+.Ic mark-whole-buffer ,
+.Ic mark-paragraph ,
+and
+.Ic exchange-point-and-mark .
+The highlight is removed when the buffer is modified, the command
+is aborted with C-g, or the region is copied.
+This is transient-mark-mode in GNU Emacs.
 .It Ic what-cursor-position
 Display a bunch of useful information about the current location of
 dot.
