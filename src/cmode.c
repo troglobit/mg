@@ -96,6 +96,16 @@ cmode_init(void)
 	funmap_add(cc_indent, "c-indent", 0);
 	funmap_add(cc_lfindent, "c-indent-and-newline", 0);
 	maps_add((KEYMAP *)&cmodemap, "c");
+#ifdef ENABLE_AUTOEXEC
+	(void)add_autoexec("*.c", "c-mode");
+	(void)add_autoexec("*.h", "c-mode");
+	(void)add_autoexec("*.cc", "c-mode");
+	(void)add_autoexec("*.cpp", "c-mode");
+	(void)add_autoexec("*.cxx", "c-mode");
+	(void)add_autoexec("*.hh", "c-mode");
+	(void)add_autoexec("*.hpp", "c-mode");
+	(void)add_autoexec("*.C", "c-mode");
+#endif
 }
 
 /*

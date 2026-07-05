@@ -43,11 +43,14 @@ struct video {
 #define VFEXT	0x0004			/* extended line (beyond ncol)	 */
 
 /*
- * Cell attribute for the visual mark: set on cells inside the
- * region between mark and dot, drawn in reverse video.  Codepoints
- * use at most 21 bits, so the attribute rides in the same int.
+ * Cell attributes, riding above the at most 21 bit codepoints in
+ * the same int: a syntax class in the VSYN bits, and VREV on cells
+ * inside the region between mark and dot, drawn in reverse video.
  */
-#define VREV	0x40000000
+#define VSYNSHIFT	24
+#define VSYNMASK	0x0f000000
+#define VREV		0x40000000
+#define VATTRMASK	(VSYNMASK | VREV)
 
 /*
  * SCORE structures hold the optimal
@@ -106,8 +109,24 @@ static int	 colnos  = TRUE;
 static int	 timesh  = FALSE;
 
 static int	 visual_mark = TRUE;	/* draw region after set-mark	*/
+static int	 font_lock = TRUE;	/* syntax highlighting		*/
 
-static int	 vtrev = 0;		/* VREV while inside region	*/
+static int	 vtattr = 0;		/* attributes of current byte	*/
+
+/*
+ * Syntax parser state for the window being rendered.  Lines fed to
+ * vtputl()/vtputel() in buffer order thread the multiline comment
+ * state from line to line; a line rendered out of order gets its
+ * state by a scan from the top of the buffer.
+ */
+static struct {
+	const struct syntax	*sy;
+	struct buffer	*bp;
+	struct line	*nextlp;
+	int		 incom;
+	char		*attr;
+	int		 attrsz;
+} vsyn;
 
 /*
  * Region shown in the window being rendered, in line number and
@@ -166,6 +185,58 @@ visualmark(int f, int n)
 	sgarbf = TRUE;
 
 	return (TRUE);
+}
+
+int
+fontlock(int f, int n)
+{
+	if (f & FFARG)
+		font_lock = n > 0;
+	else
+		font_lock = !font_lock;
+	ewprintf("Font lock mode %sabled", font_lock ? "en" : "dis");
+
+	sgarbf = TRUE;
+
+	return (TRUE);
+}
+
+/*
+ * Prepare syntax highlighting for the window being rendered.
+ */
+static void
+synsetup(struct mgwin *wp)
+{
+	vsyn.sy = font_lock ? syntax_lookup(wp->w_bufp) : NULL;
+	vsyn.bp = wp->w_bufp;
+	vsyn.nextlp = NULL;
+}
+
+/*
+ * Classify the bytes of lp for the display, threading the multiline
+ * comment state when lines arrive in buffer order.  Returns the
+ * attribute array, or NULL when no syntax rules apply.
+ */
+static char *
+synline(struct line *lp)
+{
+	char	*attr;
+
+	if (vsyn.sy == NULL)
+		return (NULL);
+	if (llength(lp) > vsyn.attrsz) {
+		if ((attr = realloc(vsyn.attr, llength(lp))) == NULL) {
+			vsyn.sy = NULL;
+			return (NULL);
+		}
+		vsyn.attr = attr;
+		vsyn.attrsz = llength(lp);
+	}
+	if (lp != vsyn.nextlp)
+		vsyn.incom = syn_state(vsyn.sy, vsyn.bp, lp);
+	vsyn.incom = syn_parse(vsyn.sy, lp, vsyn.incom, vsyn.attr);
+	vsyn.nextlp = lforw(lp);
+	return (vsyn.attr);
 }
 
 /*
@@ -429,7 +500,7 @@ vtputc(int c, struct mgwin *wp)
 		vtputc('^', wp);
 		vtputc(CCHR(c), wp);
 	} else if (isprint(c))
-		vp->v_text[vtcol++] = c | vtrev;
+		vp->v_text[vtcol++] = c | vtattr;
 	else {
 		char bf[5];
 
@@ -453,7 +524,7 @@ vtputcp(int cp)
 		vp->v_text[ncol - 1] = '$';
 	else {
 		if (vtcol >= 0)
-			vp->v_text[vtcol] = cp | vtrev;
+			vp->v_text[vtcol] = cp | vtattr;
 		++vtcol;
 	}
 }
@@ -467,10 +538,13 @@ vtputcp(int cp)
 void
 vtputl(struct line *lp, struct mgwin *wp, int s, int e)
 {
+	char	*attr;
 	int	 c, cp, i, len;
 
+	attr = synline(lp);
 	for (i = 0; i < llength(lp); ++i) {
-		vtrev = (i >= s && i < e) ? VREV : 0;
+		vtattr = ((i >= s && i < e) ? VREV : 0) |
+		    (attr != NULL ? attr[i] << VSYNSHIFT : 0);
 		c = lgetc(lp, i);
 		if (c >= 0x80 && (cp = utf8_get(lp, i, &len)) != -1) {
 			vtputcp(cp);
@@ -478,7 +552,7 @@ vtputl(struct line *lp, struct mgwin *wp, int s, int e)
 		} else
 			vtputc(c, wp);
 	}
-	vtrev = 0;
+	vtattr = 0;
 }
 
 /*
@@ -507,7 +581,7 @@ vtpute(int c, struct mgwin *wp)
 		vtpute(CCHR(c), wp);
 	} else if (isprint(c)) {
 		if (vtcol >= 0)
-			vp->v_text[vtcol] = c | vtrev;
+			vp->v_text[vtcol] = c | vtattr;
 		++vtcol;
 	} else {
 		char bf[5], *cp;
@@ -526,10 +600,13 @@ vtpute(int c, struct mgwin *wp)
 void
 vtputel(struct line *lp, struct mgwin *wp, int s, int e)
 {
+	char	*attr;
 	int	 c, cp, i, len;
 
+	attr = synline(lp);
 	for (i = 0; i < llength(lp); ++i) {
-		vtrev = (i >= s && i < e) ? VREV : 0;
+		vtattr = ((i >= s && i < e) ? VREV : 0) |
+		    (attr != NULL ? attr[i] << VSYNSHIFT : 0);
 		c = lgetc(lp, i);
 		if (c >= 0x80 && (cp = utf8_get(lp, i, &len)) != -1) {
 			vtputcp(cp);
@@ -537,7 +614,7 @@ vtputel(struct line *lp, struct mgwin *wp, int s, int e)
 		} else
 			vtpute(c, wp);
 	}
-	vtrev = 0;
+	vtattr = 0;
 }
 
 /*
@@ -596,9 +673,14 @@ update(int modelinecolor)
 	for (wp = wheadp; wp != NULL; wp = wp->w_wndp) {
 		/*
 		 * An active region follows dot around, so it must be
-		 * redrawn on plain movement too.
+		 * redrawn on plain movement too.  An edit can recolor
+		 * every line below it when the language has multiline
+		 * comments, so those cannot take the one-line path.
 		 */
-		if (hlactive(wp))
+		if (wp->w_rflag != 0 &&
+		    (hlactive(wp) ||
+		     (font_lock && (wp->w_rflag & WFEDIT) &&
+		      syn_multiline(wp->w_bufp))))
 			wp->w_rflag |= WFFULL;
 
 		/*
@@ -653,11 +735,13 @@ update(int modelinecolor)
 			vscreen[i]->v_color = CTEXT;
 			vscreen[i]->v_flag |= (VFCHG | VFHBAD);
 			vtmove(i, 0);
+			synsetup(wp);
 			vtputl(lp, wp, 0, 0);
 			vteeol();
 		} else if ((wp->w_rflag & (WFEDIT | WFFULL)) != 0) {
 			hflag = TRUE;
 			hlsetup(wp);
+			synsetup(wp);
 			ln = hl.topln;
 			while (i < wp->w_toprow + wp->w_ntrows) {
 				vscreen[i]->v_color = CTEXT;
@@ -701,6 +785,7 @@ update(int modelinecolor)
 		lp = wp->w_linep;
 		i = wp->w_toprow;
 		hlsetup(wp);
+		synsetup(wp);
 		ln = hl.topln;
 		while (i < wp->w_toprow + wp->w_ntrows) {
 			if (vscreen[i]->v_flag & VFEXT) {
@@ -843,6 +928,7 @@ updext(int currow, int curcol)
 	vtmove(currow, -lbound);		/* start scanning offscreen */
 	lp = curwp->w_dotp;			/* line to output */
 	hlsetup(curwp);
+	synsetup(curwp);
 	hlrange(curwp->w_dotline, llength(lp), &s, &e);
 	vtputel(lp, curwp, s, e);		/* until the end-of-line */
 	vteeol();				/* truncate the virtual line */
@@ -867,7 +953,7 @@ uline(int row, struct video *vvp, struct video *pvp)
 	int   *cp4;
 	int   *cp5;
 	int    nbflag;
-	int    rev = FALSE;
+	int    a, cur = 0;
 
 	if (vvp->v_color != pvp->v_color) {	/* Wrong color, do a	 */
 		ttmove(row, 0);			/* full redraw.		 */
@@ -890,13 +976,17 @@ uline(int row, struct video *vvp, struct video *pvp)
 		cp2 = &vvp->v_text[ncol];
 #endif
 		while (cp1 != cp2) {
-			if (((*cp1 & VREV) != 0) != rev) {
-				rev = !rev;
-				ttcolor(rev ? CMODE : vvp->v_color);
+			a = *cp1 & VATTRMASK;
+			if (a != cur) {
+				cur = a;
+				ttattr((a & VSYNMASK) >> VSYNSHIFT,
+				    a & VREV);
 			}
-			ttputcell(*cp1++ & ~VREV);
+			ttputcell(*cp1++ & ~VATTRMASK);
 			++ttcol;
 		}
+		if (cur)
+			ttattr(SYN_NONE, FALSE);
 		ttcolor(CTEXT);
 		return;
 	}
@@ -937,15 +1027,18 @@ uline(int row, struct video *vvp, struct video *pvp)
 #endif
 		ttcolor(vvp->v_color);
 	while (cp1 != cp5) {
-		if (((*cp1 & VREV) != 0) != rev) {
-			rev = !rev;
-			ttcolor(rev ? CMODE : vvp->v_color);
+		a = *cp1 & VATTRMASK;
+		if (a != cur) {
+			cur = a;
+			ttattr((a & VSYNMASK) >> VSYNSHIFT, a & VREV);
 		}
-		ttputcell(*cp1++ & ~VREV);
+		ttputcell(*cp1++ & ~VATTRMASK);
 		++ttcol;
 	}
-	if (rev)
+	if (cur) {
+		ttattr(SYN_NONE, FALSE);
 		ttcolor(vvp->v_color);
+	}
 	if (cp5 != cp3)			/* Do erase.		 */
 		tteeol();
 }

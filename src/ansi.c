@@ -10,6 +10,7 @@
 /* This file is in the public domain. */
 
 #include <poll.h>
+#include <stdarg.h>		/* va_list */
 #include <stdio.h>		/* FILE */
 #include <stdlib.h>		/* getenv() */
 #include <unistd.h>		/* write() */
@@ -138,6 +139,23 @@ int setupterm(const char *term, int filedes, int *errret)
 	}
 
 	return 0;
+}
+
+/*
+ * Enough of tparm() for the capabilities ansi.h defines, which only
+ * take a single numeric parameter in plain printf syntax.
+ */
+char *
+tparm(const char *cap, ...)
+{
+	static char buf[32];
+	va_list ap;
+
+	va_start(ap, cap);
+	vsnprintf(buf, sizeof(buf), cap, ap);
+	va_end(ap);
+
+	return buf;
 }
 
 char *

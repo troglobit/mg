@@ -438,6 +438,7 @@ void		 ttdell(int, int, int);
 void		 ttwindow(int, int);
 void		 ttnowindow(void);
 void		 ttcolor(int);
+void		 ttattr(int, int);
 void		 ttresize(void);
 
 extern volatile sig_atomic_t winch_flag;
@@ -559,6 +560,7 @@ int		 linenotoggle(int, int);
 int		 colnotoggle(int, int);
 int		 timetoggle(int, int);
 int		 visualmark(int, int);
+int		 fontlock(int, int);
 
 /* echo.c X */
 int		 helptoggle(int, int);
@@ -616,6 +618,23 @@ void		 panic(char *);
 
 /* cinfo.c */
 char		*getkeyname(char  *, size_t, int);
+
+/* syntax.c */
+#define SYN_NONE	0
+#define SYN_COMMENT	1
+#define SYN_KEYWORD	2
+#define SYN_TYPE	3
+#define SYN_STRING	4
+#define SYN_NUMBER	5
+#define SYN_PREPROC	6
+
+struct syntax;
+const struct syntax *syntax_lookup(struct buffer *);
+int		 syn_multiline(struct buffer *);
+int		 syn_parse(const struct syntax *, const struct line *,
+		     int, char *);
+int		 syn_state(const struct syntax *, struct buffer *,
+		     struct line *);
 
 /* utf8.c */
 void		 utf8_init(void);

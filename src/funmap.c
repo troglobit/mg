@@ -129,6 +129,7 @@ static struct funmap functnames[] = {
 #ifdef ENABLE_CTAGS
 	{findtag, "find-tag", 1, NULL},
 #endif
+	{fontlock, "font-lock-mode", 0, NULL},
 	{forwchar, "forward-char", 1, NULL},
 	{gotoeop, "forward-paragraph", 1, NULL},
 	{forwword, "forward-word", 1, NULL},

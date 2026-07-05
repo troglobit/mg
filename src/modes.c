@@ -26,6 +26,7 @@ changemode(int f, int n, char *newmode)
 {
 	int	 i;
 	struct maps_s	*m;
+	struct mgwin	*wp;
 
 	if ((m = name_mode(newmode)) == NULL) {
 		dobeep();
@@ -61,7 +62,10 @@ changemode(int f, int n, char *newmode)
 			curbp->b_modes[i] = curbp->b_modes[i + 1];
 		curbp->b_nmodes--;
 	}
-	upmodes(curbp);
+	/* the modes decide the syntax highlighting, redraw */
+	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
+		if (wp->w_bufp == curbp)
+			wp->w_rflag |= WFMODE | WFFULL;
 	return (TRUE);
 }
 
