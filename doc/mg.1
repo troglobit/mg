@@ -658,6 +658,14 @@ Opens the specified file in a second buffer.
 Splits the current window if necessary.
 .It Ic find-tag
 Jump to definition of tag at dot.
+.It Ic font-lock-mode
+Toggle syntax highlighting, enabled by default.
+Comments, strings, keywords, types, numbers, and preprocessor
+directives are colored in buffers with a language mode, such as
+.Ic c-mode .
+Language modes are typically enabled per file type with
+.Ic auto-execute .
+Terminals without color support show plain text.
 .It Ic forward-char
 Move cursor forwards (or backwards, if
 .Va n

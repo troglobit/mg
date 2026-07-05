@@ -408,6 +408,40 @@ ttcolor(int color)
 }
 
 /*
+ * Set the terminal rendition for a syntax class, and reverse video
+ * for the region.  Everything is reset first, so the caller only
+ * reports transitions.  Terminals without color get the reverse
+ * video only.  The reset clears standout too, so the ttcolor()
+ * state is invalidated.
+ */
+void
+ttattr(int class, int rev)
+{
+	static const int color[] = {
+		-1,	/* SYN_NONE			*/
+		6,	/* SYN_COMMENT, cyan		*/
+		3,	/* SYN_KEYWORD, yellow		*/
+		2,	/* SYN_TYPE, green		*/
+		5,	/* SYN_STRING, magenta		*/
+		1,	/* SYN_NUMBER, red		*/
+		4,	/* SYN_PREPROC, blue		*/
+	};
+
+	if (exit_attribute_mode == NULL) {
+		/* standout-only terminal, at least show the region */
+		ttcolor(rev ? CMODE : CTEXT);
+		return;
+	}
+	putpad(exit_attribute_mode, 1);
+	if (class > SYN_NONE && class <= SYN_PREPROC &&
+	    set_a_foreground != NULL && max_colors >= 8)
+		putpad(tparm(set_a_foreground, color[class]), 1);
+	if (rev && enter_standout_mode != NULL)
+		putpad(enter_standout_mode, 1);
+	tthue = CNONE;
+}
+
+/*
  * This routine is called by the "refresh the screen" command to try
  * to resize the display. Look in "window.c" to see how
  * the caller deals with a change.

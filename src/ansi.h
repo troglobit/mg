@@ -82,9 +82,14 @@ extern TERMINAL *cur_term;
 #define enter_standout_mode  CUR t_str[35]
 #define exit_standout_mode   CUR t_str[43]
 
+#define exit_attribute_mode  "\033[0m"
+#define set_a_foreground     "\033[3%dm"
+#define max_colors           8
+
 int   setupterm(const char *term, int filedes, int *errret);
 
 char *tgoto(const char *cap, int col, int row);
+char *tparm(const char *cap, ...);
 int   tputs(const char *str, int affcnt, int (*putc)(int));
 
 #endif /* ANSI_H */
