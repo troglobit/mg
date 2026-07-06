@@ -996,6 +996,21 @@ Execute external command from mini-buffer.  With a universal argument
 Provide the text in region to the shell command as input.  With a
 universal argument (C-u), this command replaces the marked region
 with the output from the command.
+.It Ic shell-script-mode
+Toggle shell script mode, which selects the shell rules for syntax
+highlighting: comments, strings, keywords, built-in commands, and
+variable references.
+Enabling it also sets the tab width to eight, turns off
+.Ic no-tab-mode ,
+since here documents with <<- only strip real tabs, and enables the
+indent mode so RET keeps the indentation of continuation lines.
+Files named *.sh, and files whose first line is a #! naming a
+Bourne compatible shell, get the mode automatically.
+Add other file types with
+.Ic auto-execute ,
+for example:
+.Pp
+.Dl auto-execute *.zsh shell-script-mode
 .It Ic shrink-window
 Shrink current window by one line.
 The window immediately below is expanded to pick up the slack.

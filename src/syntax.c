@@ -34,18 +34,33 @@ static const char *c_keywords[] = {
 	NULL
 };
 
+static const char *sh_keywords[] = {
+	"break", "case", "continue", "do", "done", "elif", "else",
+	"esac", "exit", "fi", "for", "function", "if", "in", "return",
+	"select", "shift", "then", "time", "until", "while",
+	"alias|", "bg|", "cd|", "command|", "echo|", "eval|", "exec|",
+	"export|", "false|", "fg|", "getopts|", "hash|", "jobs|",
+	"kill|", "local|", "printf|", "pwd|", "read|", "readonly|",
+	"set|", "test|", "trap|", "true|", "type|", "ulimit|", "umask|",
+	"unalias|", "unset|", "wait|",
+	NULL
+};
+
 struct syntax {
 	const char	 *sy_mode;	/* buffer mode this applies to	*/
 	const char	**sy_keywords;
 	const char	 *sy_slcomm;	/* single line comment starter	*/
+	int		  sy_slsep;	/* which needs a separator first */
 	const char	 *sy_mcs;	/* multiline comment start	*/
 	const char	 *sy_mce;	/* multiline comment end	*/
 	int		  sy_preproc;	/* #directive lines		*/
+	int		  sy_dollar;	/* $variable references		*/
 };
 
 static const struct syntax syntab[] = {
-	{ "c", c_keywords, "//", "/*", "*/", 1 },
-	{ NULL, NULL, NULL, NULL, NULL, 0 }
+	{ "c", c_keywords, "//", 0, "/*", "*/", 1, 0 },
+	{ "shell-script", sh_keywords, "#", 1, NULL, NULL, 0, 1 },
+	{ NULL, NULL, NULL, 0, NULL, NULL, 0, 0 }
 };
 
 /*
@@ -152,12 +167,15 @@ syn_parse(const struct syntax *sy, const struct line *lp, int incom,
 				i += 2;
 				continue;
 			}
-			if (c == instr)
+			if (c == instr) {
 				instr = 0;
+				prev_sep = 0;
+			}
 			i++;
 			continue;
 		}
 		if (sy->sy_slcomm != NULL &&
+		    (!sy->sy_slsep || prev_sep) &&
 		    matchat(lp, i, sy->sy_slcomm) != 0) {
 			for (j = i; j < len; j++)
 				setattr(attr, j, SYN_COMMENT);
@@ -180,6 +198,33 @@ syn_parse(const struct syntax *sy, const struct line *lp, int incom,
 		if (attr == NULL) {
 			/* only comment and string state is wanted */
 			i++;
+			continue;
+		}
+		if (sy->sy_dollar && c == '$' && i + 1 < len) {
+			setattr(attr, i, SYN_TYPE);
+			i++;
+			c = lgetc(lp, i);
+			if (c == '{') {
+				for (; i < len; i++) {
+					setattr(attr, i, SYN_TYPE);
+					if (lgetc(lp, i) == '}') {
+						i++;
+						break;
+					}
+				}
+			} else if (c == '#' || c == '?' || c == '@' ||
+			    c == '*' || c == '$' || c == '!' || c == '-') {
+				setattr(attr, i, SYN_TYPE);
+				i++;
+			} else {
+				for (; i < len; i++) {
+					c = lgetc(lp, i);
+					if (!isalnum(c) && c != '_')
+						break;
+					setattr(attr, i, SYN_TYPE);
+				}
+			}
+			prev_sep = 0;
 			continue;
 		}
 		if (sy->sy_preproc && c == '#' && prev_sep) {
