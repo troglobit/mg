@@ -233,10 +233,15 @@ readin(char *fname)
 	if ((ael = find_autoexec(fname)) != NULL) {
 		int i;
 
+		/*
+		 * FFARG forces the mode on; a plain call toggles it
+		 * off again when revert-buffer comes through here.
+		 */
 		for (i = 0; ael[i] != NULL; i++)
-			(*ael[i])(0, 1);
+			(*ael[i])(FFARG, 1);
 		free(ael);
 	}
+	shebang_execute();
 #endif
 
 	/* no change */

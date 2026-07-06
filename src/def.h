@@ -841,6 +841,7 @@ int		 undo(int, int);
 int		 auto_execute(int, int);
 PF		*find_autoexec(const char *);
 int		 add_autoexec(const char *, const char *);
+void		 shebang_execute(void);
 
 /* cmode.c X */
 int		 cmode(int, int);

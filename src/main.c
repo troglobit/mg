@@ -138,6 +138,7 @@ main(int argc, char **argv)
 		extern void grep_init(void);
 		extern void dired_init(void);
 		extern void cmode_init(void);
+		extern void shmode_init(void);
 
 #ifdef ENABLE_DIRED
 		dired_init();
@@ -148,6 +149,7 @@ main(int argc, char **argv)
 #ifdef ENABLE_CMODE
 		cmode_init();
 #endif
+		shmode_init();
 	}
 
 	if (init_fcn_name &&
