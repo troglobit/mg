@@ -297,6 +297,8 @@ struct mgwin {
 	int		 w_marko;	/* Byte offset for "mark"	*/
 	int		 w_toprow;	/* Origin 0 top row of window	*/
 	int		 w_ntrows;	/* # of rows of text in window	*/
+	int		 w_leftcol;	/* Origin 0 left column		*/
+	int		 w_ntcols;	/* # of columns in window	*/
 	int		 w_frame;	/* #lines to reframe by.	*/
 	char		 w_rflag;	/* Redisplay Flags.		*/
 	char		 w_flag;	/* Flags.			*/
@@ -519,6 +521,7 @@ int		 nextwind(int, int);
 int		 prevwind(int, int);
 int		 onlywind(int, int);
 int		 splitwind(int, int);
+int		 splitwindh(int, int);
 int		 enlargewind(int, int);
 int		 shrinkwind(int, int);
 int		 delwind(int, int);

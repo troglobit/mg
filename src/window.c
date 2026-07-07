@@ -31,9 +31,34 @@ new_window(struct buffer *bp)
 	wp->w_frame = 0;
 	wp->w_wrapline = NULL;
 	wp->w_dotline = wp->w_markline = 1;
+	wp->w_leftcol = 0;
+	wp->w_ntcols = ncol;
 	if (bp)
 		bp->b_nwnd++;
 	return (wp);
+}
+
+/*
+ * The window vertically adjacent to wp in the same column strip,
+ * above or below, or NULL.  With side by side windows the list
+ * neighbor is not necessarily the neighbor on screen, and rows can
+ * only move between windows of the same width without breaking the
+ * neighbors of the wider one.
+ */
+static struct mgwin *
+vneighbor(struct mgwin *wp)
+{
+	struct mgwin	*p;
+
+	for (p = wheadp; p != NULL; p = p->w_wndp) {
+		if (p->w_leftcol != wp->w_leftcol ||
+		    p->w_ntcols != wp->w_ntcols)
+			continue;
+		if (p->w_toprow == wp->w_toprow + wp->w_ntrows + 1 ||
+		    wp->w_toprow == p->w_toprow + p->w_ntrows + 1)
+			return (p);
+	}
+	return (NULL);
 }
 
 /*
@@ -81,6 +106,17 @@ do_redraw(int f, int n, int force)
 	oldncol = ncol;
 	ttresize();
 	if (nrow != oldnrow || ncol != oldncol || force) {
+
+		/* side by side windows do not survive a width change */
+		if (ncol != oldncol) {
+			for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
+				if (wp->w_leftcol != 0) {
+					onlywind(FFRAND, 0);
+					break;
+				}
+			for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
+				wp->w_ntcols = ncol;
+		}
 
 		/* find last */
 		wp = wheadp;
@@ -190,9 +226,41 @@ onlywind(int f, int n)
 
 	/* 2 = mode, echo */
 	curwp->w_ntrows = nrow - 2;
+	curwp->w_leftcol = 0;
+	curwp->w_ntcols = ncol;
 	curwp->w_linep = lp;
 	curwp->w_rflag |= WFMODE | WFFULL;
 	return (TRUE);
+}
+
+/*
+ * Allocate the second window of a split, showing the same buffer,
+ * with the same dot and mark, in the same column strip as the
+ * current window.
+ */
+static struct mgwin *
+splitstart(void)
+{
+	struct mgwin	*wp;
+
+	wp = new_window(curbp);
+	if (wp == NULL) {
+		dobeep();
+		ewprintf("Unable to create a window");
+		return (NULL);
+	}
+
+	/* use the current dot and mark */
+	wp->w_dotp = curwp->w_dotp;
+	wp->w_doto = curwp->w_doto;
+	wp->w_markp = curwp->w_markp;
+	wp->w_marko = curwp->w_marko;
+	wp->w_dotline = curwp->w_dotline;
+	wp->w_markline = curwp->w_markline;
+	wp->w_leftcol = curwp->w_leftcol;
+	wp->w_ntcols = curwp->w_ntcols;
+
+	return (wp);
 }
 
 /*
@@ -213,20 +281,8 @@ splitwind(int f, int n)
 		ewprintf("Cannot split a %d line window", curwp->w_ntrows);
 		return (FALSE);
 	}
-	wp = new_window(curbp);
-	if (wp == NULL) {
-		dobeep();
-		ewprintf("Unable to create a window");
+	if ((wp = splitstart()) == NULL)
 		return (FALSE);
-	}
-
-	/* use the current dot and mark */
-	wp->w_dotp = curwp->w_dotp;
-	wp->w_doto = curwp->w_doto;
-	wp->w_markp = curwp->w_markp;
-	wp->w_marko = curwp->w_marko;
-	wp->w_dotline = curwp->w_dotline;
-	wp->w_markline = curwp->w_markline;
 
 	/* figure out which half of the screen we're in */
 	ntru = (curwp->w_ntrows - 1) / 2;	/* Upper size */
@@ -286,6 +342,46 @@ splitwind(int f, int n)
 }
 
 /*
+ * Split the current window side by side.  The current window becomes
+ * the left half; the new window shows the same buffer to the right of
+ * a one column divider.
+ */
+int
+splitwindh(int f, int n)
+{
+	struct mgwin	*wp;
+	int		 ntcl;
+
+	if (curwp->w_ntcols < 8) {
+		dobeep();
+		ewprintf("Cannot split a %d column window",
+		    curwp->w_ntcols);
+		return (FALSE);
+	}
+	if ((wp = splitstart()) == NULL)
+		return (FALSE);
+
+	wp->w_toprow = curwp->w_toprow;
+	wp->w_ntrows = curwp->w_ntrows;
+	wp->w_linep = curwp->w_linep;
+
+	ntcl = (curwp->w_ntcols - 1) / 2;
+	wp->w_leftcol = curwp->w_leftcol + ntcl + 1;
+	wp->w_ntcols = curwp->w_ntcols - 1 - ntcl;
+	curwp->w_ntcols = ntcl;
+
+	wp->w_wndp = curwp->w_wndp;
+	curwp->w_wndp = wp;
+
+	curwp->w_rflag |= WFMODE | WFFULL;
+	wp->w_rflag |= WFMODE | WFFULL;
+	if (f & FFOTHARG)
+		wp->w_flag = n;
+
+	return (TRUE);
+}
+
+/*
  * Enlarge the current window.  Find the window that loses space.  Make sure
  * it is big enough.  If so, hack the window descriptions, and ask redisplay
  * to do all the hard work.  You don't just set "force reframe" because dot
@@ -305,10 +401,10 @@ enlargewind(int f, int n)
 		ewprintf("Only one window");
 		return (FALSE);
 	}
-	if ((adjwp = curwp->w_wndp) == NULL) {
-		adjwp = wheadp;
-		while (adjwp->w_wndp != curwp)
-			adjwp = adjwp->w_wndp;
+	if ((adjwp = vneighbor(curwp)) == NULL) {
+		dobeep();
+		ewprintf("No window above or below to take space from");
+		return (FALSE);
 	}
 	if (adjwp->w_ntrows <= n) {
 		dobeep();
@@ -317,7 +413,7 @@ enlargewind(int f, int n)
 	}
 
 	/* shrink below */
-	if (curwp->w_wndp == adjwp) {
+	if (adjwp->w_toprow > curwp->w_toprow) {
 		lp = adjwp->w_linep;
 		for (i = 0; i < n && lp != adjwp->w_bufp->b_headp; ++i)
 			lp = lforw(lp);
@@ -365,14 +461,17 @@ shrinkwind(int f, int n)
 		ewprintf("Impossible change");
 		return (FALSE);
 	}
-	if ((adjwp = curwp->w_wndp) == NULL) {
-		adjwp = wheadp;
-		while (adjwp->w_wndp != curwp)
-			adjwp = adjwp->w_wndp;
+	if ((adjwp = vneighbor(curwp)) == NULL) {
+		if (!(f & FFRAND)) {
+			dobeep();
+			ewprintf("No window above or below to give "
+			    "space to");
+		}
+		return (FALSE);
 	}
 
 	/* grow below */
-	if (curwp->w_wndp == adjwp) {
+	if (adjwp->w_toprow > curwp->w_toprow) {
 		lp = adjwp->w_linep;
 		for (i = 0; i < n && lback(lp) != adjwp->w_bufp->b_headp; ++i)
 			lp = lback(lp);
@@ -394,6 +493,49 @@ shrinkwind(int f, int n)
 }
 
 /*
+ * Give the columns of wp, and the divider, to the column-adjacent
+ * windows on one side.  Only safe when those windows tile wp's rows
+ * exactly; a window sticking out above or below would end up
+ * overlapping a third window, so that is checked first.
+ */
+static int
+hmerge(struct mgwin *wp, int toleft)
+{
+	struct mgwin	*p;
+	int		 rows = 0;
+
+	for (p = wheadp; p != NULL; p = p->w_wndp) {
+		if (toleft ? p->w_leftcol + p->w_ntcols + 1 != wp->w_leftcol
+		    : wp->w_leftcol + wp->w_ntcols + 1 != p->w_leftcol)
+			continue;
+		/* rows not shared with wp are not affected */
+		if (p->w_toprow >= wp->w_toprow + wp->w_ntrows + 1 ||
+		    wp->w_toprow >= p->w_toprow + p->w_ntrows + 1)
+			continue;
+		if (p->w_toprow < wp->w_toprow ||
+		    p->w_toprow + p->w_ntrows >
+		    wp->w_toprow + wp->w_ntrows)
+			return (FALSE);
+		rows += p->w_ntrows + 1;
+	}
+	if (rows != wp->w_ntrows + 1)
+		return (FALSE);
+	for (p = wheadp; p != NULL; p = p->w_wndp) {
+		if (toleft ? p->w_leftcol + p->w_ntcols + 1 != wp->w_leftcol
+		    : wp->w_leftcol + wp->w_ntcols + 1 != p->w_leftcol)
+			continue;
+		if (p->w_toprow >= wp->w_toprow + wp->w_ntrows + 1 ||
+		    wp->w_toprow >= p->w_toprow + p->w_ntrows + 1)
+			continue;
+		if (!toleft)
+			p->w_leftcol = wp->w_leftcol;
+		p->w_ntcols += wp->w_ntcols + 1;
+		p->w_rflag |= WFMODE | WFFULL;
+	}
+	return (TRUE);
+}
+
+/*
  * Delete current window. Call shrink-window to do the screen updating, then
  * throw away the window.
  */
@@ -404,9 +546,21 @@ delwind(int f, int n)
 
 	wp = curwp;		/* Cheap...		 */
 
-	/* shrinkwind returning false means only one window... */
-	if (shrinkwind(FFRAND, wp->w_ntrows + 1) == FALSE)
+	if (wheadp->w_wndp == NULL) {
+		dobeep();
+		ewprintf("Only one window");
 		return (FALSE);
+	}
+
+	if (vneighbor(wp) != NULL) {
+		if (shrinkwind(FFRAND, wp->w_ntrows + 1) == FALSE)
+			return (FALSE);
+	} else if (!hmerge(wp, TRUE) && !hmerge(wp, FALSE)) {
+		dobeep();
+		ewprintf("No window to give this window's space to, "
+		    "try delete-other-windows");
+		return (FALSE);
+	}
 	if (--wp->w_bufp->b_nwnd == 0) {
 		wp->w_bufp->b_dotp = wp->w_dotp;
 		wp->w_bufp->b_doto = wp->w_doto;

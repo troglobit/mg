@@ -114,6 +114,28 @@ static int	 font_lock = TRUE;	/* syntax highlighting		*/
 static int	 vtattr = 0;		/* attributes of current byte	*/
 
 /*
+ * Column bounds of the window being rendered.  Windows can sit side
+ * by side, so the virtual display writers must stay inside
+ * [vtleft, vtright) and leave the neighbor's cells alone.
+ */
+static int	 vtleft = 0;
+static int	 vtright = 0;
+
+/*
+ * The window owning the extended line, if any.  The VFEXT row flag
+ * is shared between side by side windows, so only the strip that
+ * drew the extension may de-extend it.
+ */
+static struct mgwin *extwp = NULL;
+
+static void
+vtbounds(struct mgwin *wp)
+{
+	vtleft = wp->w_leftcol;
+	vtright = wp->w_leftcol + wp->w_ntcols;
+}
+
+/*
  * Syntax parser state for the window being rendered.  Lines fed to
  * vtputl()/vtputel() in buffer order thread the multiline comment
  * state from line to line; a line rendered out of order gets its
@@ -489,13 +511,14 @@ vtputc(int c, struct mgwin *wp)
 	c &= 0xff;
 
 	vp = vscreen[vtrow];
-	if (vtcol >= ncol)
-		vp->v_text[ncol - 1] = '$';
+	if (vtcol >= vtright)
+		vp->v_text[vtright - 1] = '$';
 	else if (c == '\t') {
-		target = ntabstop(vtcol, wp->w_bufp->b_tabw);
+		target = vtleft + ntabstop(vtcol - vtleft,
+		    wp->w_bufp->b_tabw);
 		do {
 			vtputc(' ', wp);
-		} while (vtcol < ncol && vtcol < target);
+		} while (vtcol < vtright && vtcol < target);
 	} else if (ISCTRL(c)) {
 		vtputc('^', wp);
 		vtputc(CCHR(c), wp);
@@ -520,10 +543,10 @@ vtputcp(int cp)
 	struct video	*vp;
 
 	vp = vscreen[vtrow];
-	if (vtcol >= ncol)
-		vp->v_text[ncol - 1] = '$';
+	if (vtcol >= vtright)
+		vp->v_text[vtright - 1] = '$';
 	else {
-		if (vtcol >= 0)
+		if (vtcol >= vtleft)
 			vp->v_text[vtcol] = cp | vtattr;
 		++vtcol;
 	}
@@ -569,18 +592,19 @@ vtpute(int c, struct mgwin *wp)
 	c &= 0xff;
 
 	vp = vscreen[vtrow];
-	if (vtcol >= ncol)
-		vp->v_text[ncol - 1] = '$';
+	if (vtcol >= vtright)
+		vp->v_text[vtright - 1] = '$';
 	else if (c == '\t') {
-		target = ntabstop(vtcol + lbound, wp->w_bufp->b_tabw);
+		target = vtleft - lbound +
+		    ntabstop(vtcol - vtleft + lbound, wp->w_bufp->b_tabw);
 		do {
 			vtpute(' ', wp);
-		} while (((vtcol + lbound) < target) && vtcol < ncol);
+		} while (vtcol < target && vtcol < vtright);
 	} else if (ISCTRL(c) != FALSE) {
 		vtpute('^', wp);
 		vtpute(CCHR(c), wp);
 	} else if (isprint(c)) {
-		if (vtcol >= 0)
+		if (vtcol >= vtleft)
 			vp->v_text[vtcol] = c | vtattr;
 		++vtcol;
 	} else {
@@ -628,8 +652,11 @@ vteeol(void)
 	struct video *vp;
 
 	vp = vscreen[vtrow];
-	while (vtcol < ncol)
-		vp->v_text[vtcol++] = ' ';
+	while (vtcol < vtright)
+		vp->v_text[vtcol++] = ' ' | vtattr;
+	/* a divider between side by side windows */
+	if (vtright < ncol)
+		vp->v_text[vtright] = '|';
 }
 
 /*
@@ -727,6 +754,7 @@ update(int modelinecolor)
 	out:
 		lp = wp->w_linep;	/* Try reduced update.	 */
 		i = wp->w_toprow;
+		vtbounds(wp);
 		if ((wp->w_rflag & ~WFMODE) == WFEDIT) {
 			while (lp != wp->w_dotp) {
 				++i;
@@ -734,7 +762,7 @@ update(int modelinecolor)
 			}
 			vscreen[i]->v_color = CTEXT;
 			vscreen[i]->v_flag |= (VFCHG | VFHBAD);
-			vtmove(i, 0);
+			vtmove(i, vtleft);
 			synsetup(wp);
 			vtputl(lp, wp, 0, 0);
 			vteeol();
@@ -746,7 +774,7 @@ update(int modelinecolor)
 			while (i < wp->w_toprow + wp->w_ntrows) {
 				vscreen[i]->v_color = CTEXT;
 				vscreen[i]->v_flag |= (VFCHG | VFHBAD);
-				vtmove(i, 0);
+				vtmove(i, vtleft);
 				if (lp != wp->w_bufp->b_headp) {
 					hlrange(ln, llength(lp), &s, &e);
 					vtputl(lp, wp, s, e);
@@ -769,7 +797,7 @@ update(int modelinecolor)
 		lp = lforw(lp);
 	}
 	curcol = getcolpos(curwp);
-	if (curcol >= ncol - 1) {	/* extended line. */
+	if (curcol >= curwp->w_ntcols - 1) {	/* extended line. */
 		/* flag we are extended and changed */
 		vscreen[currow]->v_flag |= VFEXT | VFCHG;
 		updext(currow, curcol);	/* and output extended line */
@@ -784,16 +812,17 @@ update(int modelinecolor)
 	while (wp != NULL) {
 		lp = wp->w_linep;
 		i = wp->w_toprow;
+		vtbounds(wp);
 		hlsetup(wp);
 		synsetup(wp);
 		ln = hl.topln;
 		while (i < wp->w_toprow + wp->w_ntrows) {
-			if (vscreen[i]->v_flag & VFEXT) {
+			if ((vscreen[i]->v_flag & VFEXT) && wp == extwp) {
 				/* always flag extended lines as changed */
 				vscreen[i]->v_flag |= VFCHG;
 				if ((wp != curwp) || (lp != wp->w_dotp) ||
-				    (curcol < ncol - 1)) {
-					vtmove(i, 0);
+				    (curcol < curwp->w_ntcols - 1)) {
+					vtmove(i, vtleft);
 					hlrange(ln, llength(lp), &s, &e);
 					vtputl(lp, wp, s, e);
 					vteeol();
@@ -824,10 +853,14 @@ update(int modelinecolor)
 			uline(i, vscreen[i], &blanks);
 			ucopy(vscreen[i], pscreen[i]);
 		}
-		ttmove(currow, curcol - lbound);
+		ttmove(currow, curwp->w_leftcol + curcol - lbound);
 		ttflush();
 		return;
 	}
+	/* line scrolling moves both sides of side by side windows */
+	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
+		if (wp->w_ntcols != ncol)
+			hflag = FALSE;
 	if (hflag != FALSE) {			/* Hard update?		*/
 		for (i = 0; i < nrow - 1; ++i) {/* Compute hash data.	*/
 			hash(vscreen[i]);
@@ -845,7 +878,7 @@ update(int modelinecolor)
 			++offs;
 		}
 		if (offs == nrow - 1) {		/* Might get it all.	*/
-			ttmove(currow, curcol - lbound);
+			ttmove(currow, curwp->w_leftcol + curcol - lbound);
 			ttflush();
 			return;
 		}
@@ -866,7 +899,7 @@ update(int modelinecolor)
 		traceback(offs, size, size, size);
 		for (i = 0; i < size; ++i)
 			ucopy(vscreen[offs + i], pscreen[offs + i]);
-		ttmove(currow, curcol - lbound);
+		ttmove(currow, curwp->w_leftcol + curcol - lbound);
 		ttflush();
 		return;
 	}
@@ -878,7 +911,7 @@ update(int modelinecolor)
 			ucopy(vp1, vp2);
 		}
 	}
-	ttmove(currow, curcol - lbound);
+	ttmove(currow, curwp->w_leftcol + curcol - lbound);
 	ttflush();
 }
 
@@ -910,29 +943,32 @@ void
 updext(int currow, int curcol)
 {
 	struct line	*lp;			/* pointer to current line */
-	int	 s, e;
+	int	 s, e, width;
 
-	if (ncol < 2)
+	width = curwp->w_ntcols;
+	if (width < 2)
 		return;
 
 	/*
 	 * calculate what column the left bound should be
-	 * (force cursor into middle half of screen)
+	 * (force cursor into middle half of the window)
 	 */
-	lbound = curcol - (curcol % (ncol >> 1)) - (ncol >> 2);
+	lbound = curcol - (curcol % (width >> 1)) - (width >> 2);
 
 	/*
 	 * scan through the line outputting characters to the virtual screen
 	 * once we reach the left edge
 	 */
-	vtmove(currow, -lbound);		/* start scanning offscreen */
+	vtbounds(curwp);
+	extwp = curwp;
+	vtmove(currow, vtleft - lbound);	/* start scanning offscreen */
 	lp = curwp->w_dotp;			/* line to output */
 	hlsetup(curwp);
 	synsetup(curwp);
 	hlrange(curwp->w_dotline, llength(lp), &s, &e);
 	vtputel(lp, curwp, s, e);		/* until the end-of-line */
 	vteeol();				/* truncate the virtual line */
-	vscreen[currow]->v_text[0] = '$';	/* and put a '$' in column 1 */
+	vscreen[currow]->v_text[vtleft] = '$';	/* mark the left edge */
 }
 
 /*
@@ -1060,9 +1096,19 @@ modeline(struct mgwin *wp, int modelinecolor)
 	int len;
 
 	n = wp->w_toprow + wp->w_ntrows;	/* Location.		 */
-	vscreen[n]->v_color = modelinecolor;	/* Mode line color.	 */
 	vscreen[n]->v_flag |= (VFCHG | VFHBAD);	/* Recompute, display.	 */
-	vtmove(n, 0);				/* Seek to right line.	 */
+	vtbounds(wp);
+	/*
+	 * A narrow window can share this row with a neighbor's text,
+	 * so the row color cannot be used; the standout comes from
+	 * the per-cell attribute instead.
+	 */
+	if (wp->w_ntcols != ncol) {
+		vscreen[n]->v_color = CTEXT;
+		vtattr = (modelinecolor == CMODE) ? VREV : 0;
+	} else
+		vscreen[n]->v_color = modelinecolor;	/* Mode line color. */
+	vtmove(n, vtleft);			/* Seek to right line.	 */
 	bp = wp->w_bufp;
 	vtputc('-', wp);			/* Encoding in GNU Emacs */
 	vtputc(':', wp);			/* End-of-lline style    */
@@ -1136,10 +1182,8 @@ modeline(struct mgwin *wp, int modelinecolor)
 		n += vtputs(buf, wp);
 	}
 
-	while (n < ncol) {			/* Pad out.		 */
-		vtputc(' ', wp);
-		++n;
-	}
+	vteeol();				/* Pad out.		 */
+	vtattr = 0;
 }
 
 /*
