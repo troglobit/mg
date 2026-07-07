@@ -268,6 +268,8 @@ delete-window
 delete-other-windows
 .It C-x 2
 split-window-vertically
+.It C-x 3
+split-window-horizontally
 .It C-x 4 C-f
 find-file-other-window
 .It C-x 4 C-g
@@ -1018,6 +1020,18 @@ If only one window is present, this command has no effect.
 .It Ic space-to-tabstop
 Insert enough spaces to reach the next tab-stop position.
 By default, tab-stops occur every 8 characters.
+.It Ic split-window-horizontally
+Split the current window side by side.
+The current window becomes the left half; a window narrower than 8
+columns cannot be split.
+Rows can only be moved between windows of the same width, so
+.Ic delete-window
+and
+.Ic enlarge-window
+refuse layouts where that would misalign a neighbor;
+.Ic delete-other-windows
+always works.
+Side by side windows do not survive a change of terminal width.
 .It Ic split-window-vertically
 Split the current window.
 A window smaller than 3 lines cannot be split.
