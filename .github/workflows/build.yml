@@ -13,12 +13,14 @@ on:
 
 jobs:
   build:
-    # Verify we can build on latest Ubuntu with both gcc and clang
-    name: ${{ matrix.compiler }}
+    # Verify we can build on latest Ubuntu with both gcc and clang,
+    # both with the default curses backend and the stand-alone one
+    name: ${{ matrix.compiler }} ${{ matrix.curses }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
         compiler: [gcc, clang]
+        curses: [curses, no-curses]
       fail-fast: false
     env:
       MAKEFLAGS: -j3
@@ -28,11 +30,11 @@ jobs:
         run: |
           sudo apt-get -y update
           sudo apt-get -y install tree
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Configure
         run: |
           ./autogen.sh
-          ./configure --prefix=
+          ./configure --prefix= ${{ matrix.curses == 'no-curses' && '--without-curses' || '' }}
       - name: Build
         run: |
           make V=1
@@ -49,7 +51,7 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: msys2/setup-msys2@v2
         with:
           msystem: MINGW64
@@ -75,7 +77,7 @@ jobs:
     runs-on: ubuntu-latest
     container: debian:stable
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Installing dependencies
         run: |
           apt-get update

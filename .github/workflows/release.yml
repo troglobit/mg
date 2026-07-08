@@ -4,6 +4,10 @@ on:
   push:
     tags:
       - 'v[0-9]+.[0-9]+*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   release:
@@ -11,7 +15,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Setting release variables ...
         id: build
         run: |
@@ -33,9 +37,9 @@ jobs:
           ./configure --prefix=
       - name: Build release ...
         run: |
-          make release
+          make distcheck
           mkdir -p artifacts/
-          mv ../*.tar.* artifacts/
+          mv *.tar.* artifacts/
       - name: Extract ChangeLog entry ...
         run: |
           awk '/-----*/{if (x == 1) exit; x=1;next}x' ChangeLog.md \
