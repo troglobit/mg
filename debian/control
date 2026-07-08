@@ -2,8 +2,9 @@ Source: mg2a
 Section: editors
 Priority: optional
 Maintainer: Joachim Wiberg <troglobit@gmail.com>
-Build-Depends: debhelper (>= 10), libncurses-dev
-Standards-Version: 4.3.0
+Build-Depends: debhelper-compat (= 13), libncurses-dev
+Standards-Version: 4.6.2
+Rules-Requires-Root: no
 Homepage: https://github.com/troglobit/mg/
 Vcs-Git: https://github.com/troglobit/mg.git
 Vcs-Browser: https://github.com/troglobit/mg.git
