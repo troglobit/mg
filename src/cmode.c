@@ -154,6 +154,10 @@ cc_tab(int f, int n)
 {
 	int inwhitep = FALSE;	/* In leading whitespace? */
 
+	/* an active region indents all of its lines, like GNU Emacs */
+	if (curwp->w_markact)
+		return (regionlines(cc_indent));
+
 	inwhitep = in_whitespace(curwp->w_dotp, llength(curwp->w_dotp));
 
 	/* If empty line, or in whitespace */

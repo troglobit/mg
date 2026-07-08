@@ -9,6 +9,7 @@
  *	auto-execute *.sh shell-script-mode
  */
 
+#include <ctype.h>
 #include <signal.h>
 #include <stdio.h>
 
@@ -19,17 +20,76 @@
 /* Pull in from modes.c */
 extern int changemode(int, int, char *);
 
+static int	 sh_indent(int, int);
+static int	 sh_tab(int, int);
+
+static PF shmode_tab[] = {
+	sh_tab		/* ^I */
+};
+
 static struct KEYMAPE (1) shmodemap = {
-	0,
-	1,		/* 1 to avoid 0 sized array */
+	1,
+	1,
 	rescan,
 	{
-		/* unused dummy entry, see keymap.c */
 		{
-			(KCHAR)0, (KCHAR)0, NULL, NULL
+			CCHR('I'), CCHR('I'), shmode_tab, NULL
 		}
 	}
 };
+
+/*
+ * Indent the current line like the previous non-blank line.
+ */
+static int
+sh_indent(int f, int n)
+{
+	struct line	*lp;
+	int	 c, col, i, s;
+
+	col = 0;
+	for (lp = lback(curwp->w_dotp); lp != curbp->b_headp;
+	     lp = lback(lp)) {
+		for (i = 0; i < llength(lp); i++) {
+			c = lgetc(lp, i);
+			if (c == ' ')
+				col++;
+			else if (c == '\t')
+				col = ntabstop(col, curbp->b_tabw);
+			else
+				break;
+		}
+		if (i < llength(lp))
+			break;		/* non-blank line found */
+		col = 0;
+	}
+
+	/* one undo record for the delete and insert of whitespace */
+	undo_boundary_enable(FFRAND, 0);
+	s = indent(FFARG, col);
+	undo_boundary_enable(FFRAND, 1);
+
+	return (s);
+}
+
+/*
+ * On a blank line insert a literal tab, for here documents;
+ * otherwise indent the line, or all the lines in the region when
+ * the mark is active.  Like c-tab-or-indent.
+ */
+static int
+sh_tab(int f, int n)
+{
+	int	 i;
+
+	if (curwp->w_markact)
+		return (regionlines(sh_indent));
+
+	for (i = 0; i < llength(curwp->w_dotp); i++)
+		if (!isspace(lgetc(curwp->w_dotp, i)))
+			return (sh_indent(FFRAND, 1));
+	return (selfinsert(f, n));
+}
 
 static int
 shmode(int f, int n)
@@ -61,6 +121,8 @@ void
 shmode_init(void)
 {
 	funmap_add(shmode, "shell-script-mode", 0);
+	funmap_add(sh_indent, "sh-indent", 0);
+	funmap_add(sh_tab, "sh-tab-or-indent", 0);
 	maps_add((KEYMAP *)&shmodemap, "shell-script");
 #ifdef ENABLE_AUTOEXEC
 	(void)add_autoexec("*.sh", "shell-script-mode");
