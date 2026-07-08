@@ -485,6 +485,8 @@ Toggle bsmap mode, where DEL and C-h are swapped.  This may be needed on
 some systems if the backspace key doesn't work correctly.
 .It Ic c-mode
 Toggle a KNF-compliant mode for editing C program files.
+TAB indents the current line, or every line in the region when the
+mark is active, like in GNU Emacs.
 .It Ic call-last-kbd-macro
 Invoke the keyboard macro.
 .It Ic capitalize-word
@@ -1006,6 +1008,9 @@ Enabling it also sets the tab width to eight, turns off
 .Ic no-tab-mode ,
 since here documents with <<- only strip real tabs, and enables the
 indent mode so RET keeps the indentation of continuation lines.
+TAB indents the line like the previous non-blank line, or every line
+in the region when the mark is active; on a blank line it inserts a
+real tab, for here documents.
 Files named *.sh, and files whose first line is a #! naming a
 Bourne compatible shell, get the mode automatically.
 Add other file types with

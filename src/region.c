@@ -389,6 +389,34 @@ region_put_data(const char *buf, int len)
 }
 
 /*
+ * Run a function once for every line the region touches, with dot
+ * at the start of the line.  A region ending in column zero does
+ * not reach onto that last line.  Dot is left on the last line.
+ */
+int
+regionlines(int (*fn)(int, int))
+{
+	int	 last, s;
+
+	if (curwp->w_markp == NULL) {
+		dobeep();
+		ewprintf("No mark set in this window");
+		return (FALSE);
+	}
+	if (curwp->w_dotline > curwp->w_markline)
+		(void)swapmark(FFRAND, 0);
+	last = curwp->w_markline;
+	if (curwp->w_marko == 0 && last > curwp->w_dotline)
+		last--;
+	(void)gotobol(FFRAND, 1);
+	while ((s = fn(FFRAND, 1)) == TRUE && curwp->w_dotline < last) {
+		(void)forwline(FFRAND, 1);
+		(void)gotobol(FFRAND, 1);
+	}
+	return (s);
+}
+
+/*
  * Mark whole buffer by first traversing to end-of-buffer
  * and then to beginning-of-buffer. Mark, dot are implicitly
  * set to eob, bob respectively during traversal.
