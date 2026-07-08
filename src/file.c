@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <libgen.h>
+#include <limits.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -416,9 +417,15 @@ retry:
 				char	*cp;
 				int	newsize;
 
+				if (linesize > INT_MAX / 2) {
+					dobeep();
+					ewprintf("Line too long, %d bytes",
+					    linesize);
+					s = FIOERR;
+					goto endoffile;
+				}
 				newsize = linesize * 2;
-				if (newsize < 0 ||
-				    (cp = malloc(newsize)) == NULL) {
+				if ((cp = malloc(newsize)) == NULL) {
 					dobeep();
 					ewprintf("Could not allocate %d bytes",
 					    newsize);
