@@ -255,6 +255,7 @@ static struct funmap functnames[] = {
 	{universal_argument, "universal-argument", 1, NULL},
 	{upperregion, "upcase-region", 0, NULL},
 	{upperword, "upcase-word", 1, NULL},
+	{useshortanswers, "use-short-answers", 0, NULL},
 	{togglevisiblebell, "visible-bell", 0, NULL},
 	{visualmark, "visual-mark-mode", 0, NULL},
 #ifdef ENABLE_CTAGS

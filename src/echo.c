@@ -36,6 +36,8 @@ static struct list	*copy_list(struct list *);
 int		epresf = FALSE;		/* stuff in echo line flag */
 int		helpsh = TRUE;		/* help-text in echo buffer */
 
+static int	shortanswers = TRUE;	/* y/n answers yes/no prompts */
+
 /*
  * Toggle permanent display of short help text in echo buffer
  */
@@ -150,6 +152,8 @@ eyesno(const char *sp)
 
 	if (inmacro)
 		return (TRUE);
+	if (shortanswers)
+		return (eyorn(sp));
 
 	rep = eread("%s? (yes or no) ", buf, sizeof(buf),
 	    EFNUL | EFNEW | EFCR, sp);
@@ -179,6 +183,22 @@ eyesno(const char *sp)
 		    buf, sizeof(buf), EFNUL | EFNEW | EFCR, sp);
 	}
 	/* NOTREACHED */
+}
+
+/*
+ * Toggle short answers to yes-or-no prompts, like use-short-answers
+ * in GNU Emacs: a single y or n instead of spelling it out.
+ */
+int
+useshortanswers(int f, int n)
+{
+	if (f & FFARG)
+		shortanswers = n > 0;
+	else
+		shortanswers = !shortanswers;
+	ewprintf("Short answers %sabled", shortanswers ? "en" : "dis");
+
+	return (TRUE);
 }
 
 /*
