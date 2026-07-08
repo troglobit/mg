@@ -592,8 +592,15 @@ Process a numerical argument for keyboard-invoked functions.
 .It Ic dired-jump
 Open a dired buffer containing the current buffer's directory location.
 .It Ic display-help-mode
-Toggle permanent display of short help text in status area.  Enabled by
-default.
+Toggle permanent display of short help text in status area.  By default
+the text is only shown at startup, until the first key press or for at
+most ten seconds.  Keep it with
+.Dq display-help-mode 1
+in
+.Pa ~/.mg ;
+a bare
+.Dq display-help-mode
+there toggles the default off.
 .It Ic display-time-mode
 Toggle whether the current time is displayed in the modeline.
 .It Ic downcase-region

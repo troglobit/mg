@@ -244,7 +244,20 @@ notnum:
 	if (nfiles > 2)
 		listbuffers(0, 1);
 
-	ewprintf(" %s", hlp);
+	/*
+	 * The startup help is a courtesy to beginners: dismiss it on
+	 * the first key press, or after ten seconds, unless the user
+	 * asked to keep it with display-help-mode.
+	 */
+	update(CMODE);
+	if (helpsh == TRUE) {
+		ewprintf(" %s", hlp);
+		if (helpset == FALSE) {
+			(void)ttwait(10000);
+			helpsh = FALSE;
+			eerase();
+		}
+	}
 
 	/* fake last flags */
 	thisflag = 0;

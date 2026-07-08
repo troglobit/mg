@@ -908,6 +908,8 @@ extern int		 dovisiblebell;
 extern int		 dblspace;
 extern int		 allbro;
 extern int		 utf8_mode;
+extern int		 helpsh;
+extern int		 helpset;
 extern int		 batch;
 extern char	 	 cinfo[];
 extern char		*keystrings[];

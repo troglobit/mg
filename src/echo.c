@@ -35,6 +35,7 @@ static struct list	*copy_list(struct list *);
 
 int		epresf = FALSE;		/* stuff in echo line flag */
 int		helpsh = TRUE;		/* help-text in echo buffer */
+int		helpset = FALSE;	/* user set it, keep hands off */
 
 static int	shortanswers = TRUE;	/* y/n answers yes/no prompts */
 
@@ -48,6 +49,7 @@ helptoggle(int f, int n)
 		helpsh = n > 0;
 	else
 		helpsh = !helpsh;
+	helpset = TRUE;
 
 	sgarbf = TRUE;
 
