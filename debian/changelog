@@ -1,3 +1,60 @@
+mg2a (4.0) unstable; urgency=medium
+
+  * Initial UTF-8 support, active in UTF-8 locales: multibyte characters
+    display as single characters, cursor motion and delete operate on
+    whole characters, and files round trip byte for byte
+  * 8-bit character input works out of the box: meta-key-mode is now
+    disabled by default, use (meta-key-mode 1) in ~/.mg for old behavior
+  * Character class table updated from DEC multinational to Latin-1
+  * New visual mark mode: the region between mark and dot is drawn in
+    reverse video, like transient-mark-mode in GNU Emacs.  New command
+    visual-mark-mode toggles it, enabled by default
+  * Syntax highlighting of comments, strings, keywords, types, numbers,
+    and preprocessor directives in buffers with a language mode, such
+    as c-mode.  New command font-lock-mode toggles it
+  * New command shell-script-mode with shell highlighting rules, tab
+    width 8 with hard tabs, and RET keeps the indent; enabled
+    automatically for *.sh files and #!-lines naming a shell
+  * New command split-window-horizontally, bound to C-x 3 like GNU
+    Emacs: side by side windows, freely mixed with C-x 2
+  * New command require-final-newline <nil | T | ask>
+  * New command use-short-answers: a single y or n answers important
+    questions, enabled by default
+  * The startup help text is dismissed on the first key press, or
+    after ten seconds; keep it with display-help-mode 1 in ~/.mg
+  * Smart TAB in c-mode and shell-script-mode: indents the current
+    line, or the region lines when the mark is active
+  * New command dired-up-directory, bound to ^, from OpenBSD
+  * C-u M-! and C-u M-| insert shell command output in the current
+    buffer, from OpenBSD
+  * c-mode: respect user defined tab width in indentation, by Daniel
+    Hennigar
+  * Sync with OpenBSD, as of March 2026: replace-regexp fixes, memory
+    leak fixes, strdup() failure handling, -flto build fix
+  * Fix auto-indent-mode with custom tab widths, from OpenBSD
+  * Packaging: modernize for debhelper 13, drop obsolete menu file
+
+ -- Joachim Wiberg <troglobit@gmail.com>  Wed, 08 Jul 2026 13:04:46 +0200
+
+mg2a (3.7) unstable; urgency=medium
+
+  * New command display-help-toggle, ensures the quick-help text is
+    always shown in the status area, enabled by default
+  * New command apply-macro-to-region-lines, by Ben Scuron
+  * New command end-or-call-last-kbd-macro, used in key bindings
+  * Map function keys F1-F4 + F10 to common functions
+  * Sync with OpenBSD as of April 21, 2023:
+    + Add command set-tab-width to change per-buffer tab width
+    + Sync manual changes: grammar, visual improvements
+    + Fixes to no-tab-mode: indent next line with spaces
+    + Fix buffer overflow when no match is found for a search
+  * Drop support for disabling no-tab-mode when calling configure
+    script, not needed anymore since it is enabled by default upstream
+  * Fix Home/End key for builds both with and without curses
+  * Fix current markline not reset after being cleared, by Ben Scuron
+
+ -- Joachim Wiberg <troglobit@gmail.com>  Sun, 13 Aug 2023 17:31:28 +0200
+
 mg2a (3.6) unstable; urgency=medium
 
   * Add support for exuberant/universal Ctags tags file format
