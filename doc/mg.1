@@ -1,7 +1,7 @@
 .\"	$OpenBSD: mg.1,v 1.138 2024/07/09 14:51:37 op Exp $
 .\" This file is in the public domain.
 .\"
-.Dd $Mdocdate: July 9 2024 $
+.Dd $Mdocdate: July 8 2026 $
 .Dt MG 1
 .Os
 .Sh NAME
@@ -260,7 +260,7 @@ exchange-point-and-mark
 start-kbd-macro
 .It C-x \&)
 end-kbd-macro
-.Id F4
+.It F4
 end-or-call-last-kbd-macro
 .It C-x 0
 delete-window
@@ -1315,4 +1315,9 @@ On terminals that signal the Meta key by setting the eighth bit,
 Meta bindings only work after enabling
 .Ic meta-key-mode .
 .Pp
-Multi-byte character sets, such as UTF-8, are not supported.
+In UTF-8 locales, multibyte characters are edited and displayed as
+single characters.
+Every character is drawn one column wide, so double-width and
+combining characters render incorrectly.
+Case conversion and case-insensitive search fold only ASCII in UTF-8
+locales, and mini-buffer editing still works on bytes.
