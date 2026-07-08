@@ -3,6 +3,93 @@ Change Log
 
 All relevant changes to the project are documented in this file.
 
+[v4.0][] - 2026-07-10
+---------------------
+
+The UTF-8 release: multibyte text can now be typed, displayed, and
+edited in UTF-8 locales.  Also new: syntax highlighting, a visible
+region, and side by side windows.
+
+### Changes
+
+- Initial UTF-8 support, active in UTF-8 locales:
+  - Multibyte characters display as single characters, cursor motion
+    and delete operate on whole characters, and files always round
+    trip byte for byte
+  - Limitations, see mg(1): every character is drawn one column wide,
+    mini-buffer editing is still byte-wise, case folding is ASCII only
+- 8-bit character input works out of the box: `meta-key-mode` is now
+  disabled by default, use `(meta-key-mode 1)` in `~/.mg` to get the
+  old behavior back.  Terminals that send Meta as an ESC prefix, which
+  is all of them these days, are unaffected
+- Character class table updated from DEC multinational to Latin-1:
+  word motion, case conversion, and case-insensitive search now treat
+  Ð, Þ, ð, þ as letters, and no longer the × and ÷ signs
+- Visual mark mode: the region between mark and dot is drawn in
+  reverse video, like transient-mark-mode in GNU Emacs.  New command
+  `visual-mark-mode` toggles it, enabled by default
+- Syntax highlighting of comments, strings, keywords, types, numbers,
+  and preprocessor directives in buffers with a language mode, such as
+  `c-mode`.  New command `font-lock-mode` toggles it, enabled by
+  default.  Terminals without color show plain text
+- New command `shell-script-mode` with shell highlighting rules:
+  POSIX reserved words, builtins, and `$variables`.  Also sets tab
+  width 8 with hard tabs, for here documents, and RET keeps the
+  indent.  Enabled automatically for *.sh files and files with a #!
+  line naming a Bourne compatible shell
+- New command `python-mode` with python highlighting rules: comments,
+  strings including the triple-quoted kind, keywords, built-ins, and
+  decorators.  Also sets four column indent steps with spaces only,
+  RET keeps the indent, and TAB indents like the previous line, one
+  level deeper after a colon; TAB again steps back one level at a
+  time and wraps around.  Enabled automatically for *.py files and
+  #! lines naming python
+- New command `markdown-mode` with highlighting rules for the common
+  markdown core: headings, fenced and indented code blocks, block
+  quotes, horizontal rules, list markers, inline code, emphasis, and
+  links.  Headings are drawn in bold.  Enabled automatically for
+  *.md and *.markdown files
+- New command `split-window-horizontally`, bound to `C-x 3` like GNU
+  Emacs: side by side windows, freely mixed with `C-x 2`
+- Resizing the terminal grows or shrinks the focused window; the
+  other windows keep their size and move.  Pop-ups like the quick
+  help no longer swallow the new rows, and side by side layouts
+  survive width and height changes
+- New command `balance-windows`, bound to `C-x +` like GNU Emacs:
+  evens out the window heights in any layout, side by side windows
+  keep their widths
+- New command `require-final-newline <nil | T | ask>`
+- New command `use-short-answers`: a single y or n answers important
+  questions.  Enabled by default, unlike GNU Emacs; get the strict
+  behavior back with `use-short-answers 0` in `~/.mg`.  From PR #37
+  by Glubbfreund
+- The startup help text in the echo line is dismissed on the first
+  key press, or after ten seconds.  Keep the old always-on behavior
+  with `display-help-mode 1` in `~/.mg`
+- Smart TAB in c-mode and shell-script-mode: TAB indents the current
+  line, or every line in the region when the mark is active, like in
+  GNU Emacs.  Shell scripts indent like the previous non-blank line
+- Dired: new command `dired-up-directory`, bound to `^`, also used by
+  `dired-jump`, from OpenBSD
+- `C-u M-!` and `C-u M-|` insert the shell command output in the
+  current buffer instead of a separate one, from OpenBSD
+- C-mode: respect user defined tab width in indentation, by Daniel
+  Hennigar
+
+### Fixes
+
+- Sync with OpenBSD, as of March 2026:
+  - Fix `replace-regexp` looping forever on `(replace-regexp "^.*$"
+    "")` and replacing anchored patterns more than once per line
+  - Saving the `*scratch*` buffer no longer prompts for a file path
+    when there are no changes to save
+  - Plug memory leaks in the interpreter and word handling routines,
+    from Han Boetes
+  - Handle `strdup()` failure in several places, from Han Boetes
+  - Fix wrongly sized externs, found by Gentoo building with `-flto`
+  - Fix `auto-indent-mode` with custom tab widths
+- Fix build with dired disabled
+- Fix missing mini-buffer help texts
 
 [v3.7][] - 2023-08-13
 ---------------------
@@ -302,6 +389,7 @@ set as Mg3a.
   - Fix missing initialization of stack variables
 
 [UNRELEASED]: https://github.com/troglobit/mg/compare/v3.7...HEAD
+[v4.0]:       https://github.com/troglobit/mg/compare/v3.7...v4.0
 [v3.7]:       https://github.com/troglobit/mg/compare/v3.6...v3.7
 [v3.6]:       https://github.com/troglobit/mg/compare/v3.5...v3.6
 [v3.5]:       https://github.com/troglobit/mg/compare/v3.4...v3.5
