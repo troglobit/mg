@@ -571,6 +571,7 @@ void		 eerase(void);
 int		 eyorn(const char *);
 int		 eynorr(const char *);
 int		 eyesno(const char *);
+int		 useshortanswers(int, int);
 void		 ewprintf(const char *fmt, ...);
 char		*eread(const char *, char *, size_t, int, ...)
 				__attribute__((__format__ (printf, 1, 5)));
