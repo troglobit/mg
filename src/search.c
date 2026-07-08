@@ -907,9 +907,14 @@ zap(int including, int n)
 
 	if (!including) {
 		if (backward)
-			forwchar(FFARG, 1);
+			s = forwchar(FFARG, 1);
 		else
-			backchar(FFARG, 1);
+			s = backchar(FFARG, 1);
+		if (s != TRUE) {
+			swapmark(FFARG, 0);
+			clearmark(FFARG, 0);
+			return (s);
+		}
 	}
 
 	killregion(FFARG, 0);
