@@ -775,7 +775,8 @@ excline(char *line, int llen, int lnum)
 			} else
 				key.k_count = 0;
 			while (*argp != '"' && *argp != '\0') {
-				if (key.k_count >= MAXKEY) {
+				if (bind == BINDARG &&
+				    key.k_count >= MAXKEY) {
 					status = FALSE;
 					goto cleanup;
 				}
