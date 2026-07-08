@@ -10,6 +10,7 @@
  */
 
 #include <sys/stat.h>
+#include <errno.h>
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
@@ -111,8 +112,7 @@ ask_makedir(void)
 int
 do_makedir(char *path)
 {
-	struct stat	 sb;
-	int		 finished, ishere;
+	int		 finished, save_errno;
 	mode_t		 dir_mode, f_mode, oumask;
 	char		*slash;
 
@@ -137,34 +137,27 @@ do_makedir(char *path)
 		finished = (*slash == '\0');
 		*slash = '\0';
 
-		ishere = !stat(path, &sb);
-		if (finished && ishere) {
-			dobeep();
-			ewprintf("Cannot create directory %s: file exists",
-			     path);
-			return(FALSE);
-		} else if (!finished && ishere && S_ISDIR(sb.st_mode)) {
-			*slash = '/';
-			continue;
-		}
-
+		/*
+		 * An existing intermediate component is fine, and if
+		 * it is not a directory the next mkdir() below fails
+		 * with a telling errno.
+		 */
 		if (mkdir(path, finished ? f_mode : dir_mode) == 0) {
 			if (f_mode > 0777 && chmod(path, f_mode) == -1) {
 				umask(oumask);
 				return (ABORT);
 			}
-		} else {
-			if (!ishere || !S_ISDIR(sb.st_mode)) {
-				if (!ishere) {
-					dobeep();
-					ewprintf("Creating directory: "
-					    "permission denied, %s", path);
-				} else
-					eerase();
-
-				umask(oumask);
-				return (FALSE);
-			}
+		} else if (errno != EEXIST) {
+			save_errno = errno;
+			dobeep();
+			ewprintf("Creating directory %s: %s", path,
+			    strerror(save_errno));
+			goto fail;
+		} else if (finished) {
+			dobeep();
+			ewprintf("Cannot create directory %s: file exists",
+			     path);
+			goto fail;
 		}
 
 		if (finished)
@@ -176,4 +169,7 @@ do_makedir(char *path)
 	eerase();
 	umask(oumask);
 	return (TRUE);
+fail:
+	umask(oumask);
+	return (FALSE);
 }
