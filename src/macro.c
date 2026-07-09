@@ -145,6 +145,10 @@ applymacro(int f, int n)
 	tmarkline = curwp->w_markline;
 
 	while (curwp->w_dotline < curwp->w_markline) {
+		/* each line starts a fresh command chain */
+		lastflag = thisflag;
+		thisflag = 0;
+
 		gotobol(FFRAND, 1);
 		executemacro(FFRAND, 1);
 		forwline(FFRAND, 1);
