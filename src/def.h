@@ -911,6 +911,7 @@ extern int		 thisflag;
 extern int		 lastflag;
 extern int		 curgoal;
 extern int		 startrow;
+extern int		 startcol;
 extern int		 epresf;
 extern int		 sgarbf;
 extern int		 nrow;
