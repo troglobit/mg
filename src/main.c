@@ -29,6 +29,7 @@ int		 thisflag;			/* flags, this command	*/
 int		 lastflag;			/* flags, last command	*/
 int		 curgoal;			/* goal column		*/
 int		 startrow;			/* row to start		*/
+int		 startcol;			/* col to start		*/
 int		 doaudiblebell;			/* audible bell toggle	*/
 int		 dovisiblebell;			/* visible bell toggle	*/
 int		 dblspace;			/* sentence end #spaces	*/
@@ -49,7 +50,7 @@ static __dead void
 usage(int code)
 {
 	fprintf(stderr, "usage: %s [-hnR] [-b file] [-f mode] [-u file] "
-	    "[+number] [file ...]\n",
+	    "[+number] [+number:col] [file ...]\n",
 	    PACKAGE_NAME);
 	exit(code);
 }
@@ -206,8 +207,29 @@ main(int argc, char **argv)
 			const char *errstr;
 
 			lval = strtonum(&argv[i][1], INT_MIN, INT_MAX, &errstr);
-			if (argv[i][1] == '\0' || errstr != NULL)
+			if (argv[i][1] == '\0' || errstr != NULL) {
+				/* Maybe +LINE:COLUMN format */
+				char *colon;
+
+				colon = strchr(&argv[i][1], ':');
+				if (colon != NULL && colon != &argv[i][1]) {
+					*colon = '\0';
+					lval = strtonum(&argv[i][1],
+					    INT_MIN, INT_MAX, &errstr);
+					if (errstr != NULL)
+						goto notnum;
+					startrow = lval;
+					colon++;
+					if (*colon != '\0') {
+						lval = strtonum(colon,
+						    0, INT_MAX, &errstr);
+						if (errstr == NULL)
+							startcol = (int)lval;
+					}
+					continue;
+				}
 				goto notnum;
+			}
 			startrow = lval;
 		} else {
 notnum:

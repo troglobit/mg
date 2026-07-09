@@ -280,6 +280,12 @@ readin(char *fname)
 		gotoline(FFARG, startrow);
 		startrow = 0;
 	}
+	if (startcol > 1) {
+		curgoal = startcol - 1;
+		curwp->w_doto = getgoal(curwp->w_dotp);
+		curwp->w_rflag |= WFMOVE;
+		startcol = 0;
+	}
 
 	undo_add_modified();
 	return (status);
