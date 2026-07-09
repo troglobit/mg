@@ -12,6 +12,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "def.h"
 
@@ -21,6 +22,74 @@ static int	fillcol = 70;
 
 static int	findpara(void);
 static int 	do_gotoeop(int, int, int *);
+static int	listitem(const struct line *);
+static int	fillprefix(const struct line *, char *, int);
+
+/*
+ * A list item begins a paragraph of its own: optional indent,
+ * then a bullet or a number with a delimiter, and a space.
+ * Returns the width of the marker, indent included, or zero.
+ */
+static int
+listitem(const struct line *lp)
+{
+	int	 c, i, j;
+
+	for (i = 0; i < llength(lp) &&
+	    ((c = lgetc(lp, i)) == ' ' || c == '\t'); i++)
+		;
+	if (i >= llength(lp))
+		return (0);
+	c = lgetc(lp, i);
+	if (c == '-' || c == '+' || c == '*')
+		i++;
+	else if (isdigit(c)) {
+		/* at most three digits: 1990. starts a year, not a list */
+		for (j = i; i < llength(lp) && isdigit(lgetc(lp, i)); i++)
+			;
+		if (i - j > 3 || i >= llength(lp) ||
+		    (lgetc(lp, i) != '.' && lgetc(lp, i) != ')'))
+			return (0);
+		i++;
+	} else
+		return (0);
+	if (i >= llength(lp) || lgetc(lp, i) != ' ')
+		return (0);
+	return (i + 1);
+}
+
+/*
+ * Derive the fill prefix for continuation lines from the first
+ * line of the paragraph: a block quote prefix is kept literally,
+ * a list marker is blanked out so the text aligns under the item.
+ * Plain paragraphs get no prefix and fill flush left as before.
+ */
+static int
+fillprefix(const struct line *lp, char *pref, int size)
+{
+	int	 c, i, j, n = 0;
+
+	for (i = 0; i < llength(lp) && n < size - 1 &&
+	    ((c = lgetc(lp, i)) == ' ' || c == '\t'); i++)
+		pref[n++] = c;
+	if (i >= llength(lp))
+		return (0);
+	c = lgetc(lp, i);
+	if (c == '>') {
+		while (i < llength(lp) && n < size - 1 &&
+		    ((c = lgetc(lp, i)) == '>' || c == ' ')) {
+			pref[n++] = c;
+			i++;
+		}
+		return (n);
+	}
+	if ((j = listitem(lp)) != 0) {
+		while (n < j && n < size - 1)
+			pref[n++] = ' ';
+		return (n);
+	}
+	return (0);
+}
 
 /*
  * Move to start of paragraph.
@@ -32,7 +101,7 @@ static int 	do_gotoeop(int, int, int *);
 int
 gotobop(int f, int n)
 {
-	int col, nospace;
+	int col, nospace, atstart;
 
 	/* the other way... */
 	if (n < 0)
@@ -40,6 +109,7 @@ gotobop(int f, int n)
 
 	while (n-- > 0) {
 		nospace = 0;
+		atstart = curwp->w_doto == 0;
 		while (lback(curwp->w_dotp) != curbp->b_headp) {
 			curwp->w_doto = 0;
 			col = 0;
@@ -51,13 +121,24 @@ gotobop(int f, int n)
 			if (col >= llength(curwp->w_dotp)) {
 				if (nospace)
 					break;
-			} else
+			} else {
 				nospace = 1;
+				/*
+				 * A list item starts its own paragraph,
+				 * unless dot was already at its start.
+				 */
+				if (!atstart && listitem(curwp->w_dotp))
+					break;
+			}
 
+			atstart = FALSE;
 			curwp->w_dotline--;
 			curwp->w_dotp = lback(curwp->w_dotp);
 		}
 	}
+	/* a paragraph starts at column zero, also on the first line */
+	curwp->w_doto = 0;
+
 	/* force screen update */
 	curwp->w_rflag |= WFMOVE;
 	return (TRUE);
@@ -105,6 +186,10 @@ do_gotoeop(int f, int n, int *i)
 			curwp->w_dotp = lforw(curwp->w_dotp);
 			curwp->w_dotline++;
 
+			/* the next list item ends this paragraph */
+			if (nospace && listitem(curwp->w_dotp))
+				break;
+
 			/* do not continue after end of buffer */
 			if (lforw(curwp->w_dotp) == curbp->b_headp) {
 				gotoeol(FFRAND, 1);
@@ -135,8 +220,13 @@ fillpara(int f, int n)
 	int	 newlength;	/* tentative new line length		*/
 	int	 eolflag;	/* was at end of line			*/
 	int	 retval;	/* return value				*/
+	int	 preflen;	/* fill prefix length			*/
+	int	 quoted;	/* prefix is a block quote?		*/
+	int	 skipquote;	/* dropping a quote prefix?		*/
+	struct line	*startlp;	/* line dot started on		*/
 	struct line	*eopline;	/* pointer to line just past EOP	*/
 	char	 wbuf[MAXWORD];	/* buffer for current word		*/
+	char	 pref[MAXWORD];	/* prefix for continuation lines	*/
 
 	if (n == 0)
 		return (TRUE);
@@ -144,13 +234,20 @@ fillpara(int f, int n)
 	undo_boundary_enable(FFRAND, 0);
 
 	/* record the pointer to the line just past the EOP */
+	startlp = curwp->w_dotp;
 	(void)gotoeop(FFRAND, 1);
-	if (curwp->w_doto != 0) {
+	if (curwp->w_doto != 0 ||
+	    (curwp->w_dotp == startlp && llength(startlp) > 0)) {
 		/* paragraph ends at end of buffer */
+		(void)gotoeol(FFRAND, 1);
 		(void)lnewline();
 		eopline = lforw(curwp->w_dotp);
-	} else
+	} else {
 		eopline = curwp->w_dotp;
+		/* a following item: back into the paragraph we fill */
+		if (listitem(curwp->w_dotp))
+			(void)backchar(FFRAND, 1);
+	}
 
 	/* and back top the beginning of the paragraph */
 	(void)gotobop(FFRAND, 1);
@@ -158,6 +255,9 @@ fillpara(int f, int n)
 	/* initialize various info */
 	while (inword() == 0 && forwchar(FFRAND, 1));
 
+	preflen = fillprefix(curwp->w_dotp, pref, sizeof(pref));
+	quoted = memchr(pref, '>', preflen) != NULL;
+	skipquote = 0;
 	clength = curwp->w_doto;
 	wordlen = 0;
 
@@ -171,6 +271,8 @@ fillpara(int f, int n)
 			c = ' ';
 			if (lforw(curwp->w_dotp) == eopline)
 				eopflag = TRUE;
+			else if (quoted)
+				skipquote = 1;
 		} else
 			c = lgetc(curwp->w_dotp, curwp->w_doto);
 
@@ -178,6 +280,13 @@ fillpara(int f, int n)
 		if (ldelete((RSIZE) 1, KNONE) == FALSE && !eopflag) {
 			retval = FALSE;
 			goto cleanup;
+		}
+
+		/* drop the quote prefix of a continuation line */
+		if (skipquote && !eolflag) {
+			if (c == '>' || c == ' ' || c == '\t')
+				continue;
+			skipquote = 0;
 		}
 
 		/* if not a separator, just add it in */
@@ -227,9 +336,11 @@ fillpara(int f, int n)
 					curwp->w_doto -= 1;
 					(void)ldelete((RSIZE) 1, KNONE);
 				}
-				/* start a new line */
+				/* start a new line, with the prefix */
 				(void)lnewline();
-				clength = 0;
+				for (i = 0; i < preflen; i++)
+					(void)linsert(1, pref[i]);
+				clength = preflen;
 			}
 
 			/* and add the word in in either case */
@@ -271,8 +382,9 @@ killpara(int f, int n)
 	if (findpara() == FALSE)
 		return (TRUE);
 
-	/* go to the beginning of the paragraph */
-	(void)gotobop(FFRAND, 1);
+	/* go to the beginning of the paragraph, unless already there */
+	if (curwp->w_doto != 0 || !listitem(curwp->w_dotp))
+		(void)gotobop(FFRAND, 1);
 
 	/* take a note of the line number for after deletions and set mark */
 	lineno = curwp->w_dotline;
@@ -336,7 +448,8 @@ transposepara(int f, int n)
 	undo_boundary_enable(FFRAND, 0);
 
 	/* find a paragraph, set mark, then goto the end */
-	gotobop(FFRAND, 1);
+	if (curwp->w_doto != 0 || !listitem(curwp->w_dotp))
+		gotobop(FFRAND, 1);
 	curwp->w_markp = curwp->w_dotp;
 	curwp->w_marko = curwp->w_doto;
 	(void)gotoeop(FFRAND, 1);
