@@ -53,6 +53,7 @@ static struct funmap functnames[] = {
 	{delbword, "backward-kill-word", 1, NULL},
 	{gotobop, "backward-paragraph", 1, NULL},
 	{backword, "backward-word", 1, NULL},
+	{balancewind, "balance-windows", 0, NULL},
 	{gotobob, "beginning-of-buffer", 0, NULL},
 	{gotobol, "beginning-of-line", 0, NULL},
 	{showmatch, "blink-and-insert", 1, NULL},

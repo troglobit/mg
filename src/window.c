@@ -12,6 +12,178 @@
 
 #include "def.h"
 
+/*
+ * True when the window lies inside the given edge rectangle: rows
+ * top to bot and columns left to right, both bounds included, the
+ * bottom and right edge being the mode line and divider.
+ */
+static int
+balin(const struct mgwin *wp, int top, int bot, int left, int right)
+{
+	return (wp->w_toprow >= top && wp->w_toprow + wp->w_ntrows <= bot &&
+	    wp->w_leftcol >= left && wp->w_leftcol + wp->w_ntcols <= right);
+}
+
+/*
+ * Find the lowest cut through the rectangle: a mode line row (or,
+ * for vertical cuts, a divider column) that no window straddles.
+ * Returns 0 when there is none.
+ */
+static int
+balcut(int top, int bot, int left, int right, int horiz)
+{
+	struct mgwin	*wp, *p;
+	int	 e, best = 0;
+
+	for (wp = wheadp; wp != NULL; wp = wp->w_wndp) {
+		if (!balin(wp, top, bot, left, right))
+			continue;
+		e = horiz ? wp->w_toprow + wp->w_ntrows :
+		    wp->w_leftcol + wp->w_ntcols;
+		if (e >= (horiz ? bot : right))
+			continue;
+		for (p = wheadp; p != NULL; p = p->w_wndp) {
+			if (!balin(p, top, bot, left, right))
+				continue;
+			if (horiz ? p->w_toprow <= e &&
+			    p->w_toprow + p->w_ntrows > e :
+			    p->w_leftcol <= e &&
+			    p->w_leftcol + p->w_ntcols > e)
+				break;
+		}
+		if (p == NULL && (best == 0 || e < best))
+			best = e;
+	}
+	return (best);
+}
+
+/*
+ * The number of windows in the tallest stack in the rectangle,
+ * each of which needs two rows to be shown at all.  Returns zero
+ * for a layout the cuts cannot take apart.
+ */
+static int
+balweight(int top, int bot, int left, int right)
+{
+	struct mgwin	*wp;
+	int	 e, a, b;
+
+	if ((e = balcut(top, bot, left, right, TRUE)) != 0) {
+		a = balweight(top, e, left, right);
+		b = balweight(e + 1, bot, left, right);
+		return (a == 0 || b == 0 ? 0 : a + b);
+	}
+	if ((e = balcut(top, bot, left, right, FALSE)) != 0) {
+		a = balweight(top, bot, left, e);
+		b = balweight(top, bot, e + 1, right);
+		return (a == 0 || b == 0 ? 0 : a > b ? a : b);
+	}
+	a = 0;
+	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
+		if (balin(wp, top, bot, left, right))
+			a++;
+	return (a == 1);
+}
+
+/*
+ * Retile the windows of the old rectangle into the new rows.  The
+ * sections at a horizontal cut get room in proportion to their
+ * tallest stack, so the window heights come out even; sections at
+ * a vertical cut keep their columns.
+ */
+static void
+balassign(int ot, int ob, int nt, int nb, int left, int right)
+{
+	struct mgwin	*wp;
+	int	 e, w1, w2, c;
+
+	if ((e = balcut(ot, ob, left, right, TRUE)) != 0) {
+		w1 = balweight(ot, e, left, right);
+		w2 = balweight(e + 1, ob, left, right);
+		if (w1 <= 0 || w2 <= 0)
+			return;		/* balancewind() refused these */
+		c = nt - 1 + (nb - nt + 1) * w1 / (w1 + w2);
+		balassign(ot, e, nt, c, left, right);
+		balassign(e + 1, ob, c + 1, nb, left, right);
+		return;
+	}
+	if ((e = balcut(ot, ob, left, right, FALSE)) != 0) {
+		balassign(ot, ob, nt, nb, left, e);
+		balassign(ot, ob, nt, nb, e + 1, right);
+		return;
+	}
+	/*
+	 * Park the new position as negative until every window has
+	 * one: the cut and weight scans judge the windows still to
+	 * be placed by their old rows, which a window moved into an
+	 * unvisited rectangle would corrupt.
+	 */
+	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
+		if (balin(wp, ot, ob, left, right)) {
+			wp->w_toprow = -nt - 1;
+			wp->w_ntrows = nb - nt;
+			wp->w_rflag |= WFFULL | WFMODE;
+		}
+}
+
+/*
+ * Even out the window heights, like balance-windows in GNU Emacs.
+ * Bound to C-x +.
+ */
+int
+balancewind(int f, int n)
+{
+	struct mgwin	*wp;
+	int	 w;
+
+	if (wheadp->w_wndp == NULL)
+		return (TRUE);
+	if ((w = balweight(0, nrow - 2, 0, ncol)) == 0)
+		return (dobeep_msg("Cannot balance this window layout"));
+	if (nrow - 1 < 2 * w)
+		return (dobeep_msg("Not enough room to balance"));
+	balassign(0, nrow - 2, 0, nrow - 2, 0, ncol);
+	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
+		if (wp->w_toprow < 0)
+			wp->w_toprow = -wp->w_toprow - 1;
+	return (TRUE);
+}
+
+/*
+ * Shift every window edge at or below the given seam row by delta
+ * rows, or, with horiz false, at or right of the seam column by
+ * delta columns: windows on the seam grow or shrink, windows past
+ * it move as they are, the rest stay put.  All edges move by the
+ * same amount, so any tiling of the screen survives.  Refuses,
+ * without changing anything, when a window would come out below
+ * one text row or two columns.
+ */
+static int
+shiftedges(int seam, int delta, int horiz)
+{
+	struct mgwin	*wp;
+	int	*pos, *size;
+
+	for (wp = wheadp; wp != NULL; wp = wp->w_wndp) {
+		pos = horiz ? &wp->w_toprow : &wp->w_leftcol;
+		size = horiz ? &wp->w_ntrows : &wp->w_ntcols;
+		if (*pos <= seam && *pos + *size >= seam &&
+		    *size + delta < (horiz ? 1 : 2))
+			return (FALSE);
+	}
+
+	for (wp = wheadp; wp != NULL; wp = wp->w_wndp) {
+		pos = horiz ? &wp->w_toprow : &wp->w_leftcol;
+		size = horiz ? &wp->w_ntrows : &wp->w_ntcols;
+		if (*pos > seam)
+			*pos += delta;
+		else if (*pos + *size >= seam)
+			*size += delta;
+		wp->w_rflag |= WFFULL | WFMODE;
+	}
+	return (TRUE);
+}
+
 struct mgwin *
 new_window(struct buffer *bp)
 {
@@ -100,36 +272,45 @@ int
 do_redraw(int f, int n, int force)
 {
 	struct mgwin	*wp;
-	int		 oldnrow, oldncol;
+	int		 oldnrow, oldncol, delta, bot, rgt;
 
 	oldnrow = nrow;
 	oldncol = ncol;
 	ttresize();
 	if (nrow != oldnrow || ncol != oldncol || force) {
 
-		/* side by side windows do not survive a width change */
-		if (ncol != oldncol) {
-			for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
-				if (wp->w_leftcol != 0) {
-					onlywind(FFRAND, 0);
-					break;
+		/*
+		 * Each delta is measured against the actual tiling, not
+		 * the old terminal size, so a refused resize heals on
+		 * the next one.  The focused window absorbs the delta,
+		 * else the windows on the far edge, else the layout
+		 * collapses to a single window.
+		 */
+		rgt = 0;
+		for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
+			if (wp->w_leftcol + wp->w_ntcols > rgt)
+				rgt = wp->w_leftcol + wp->w_ntcols;
+		if ((delta = ncol - rgt) != 0) {
+			if (!shiftedges(curwp->w_leftcol + curwp->w_ntcols,
+			    delta, FALSE) && !shiftedges(rgt, delta, FALSE))
+				(void)onlywind(FFRAND, 0);
+		}
+
+		bot = 0;
+		for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
+			if (wp->w_toprow + wp->w_ntrows > bot)
+				bot = wp->w_toprow + wp->w_ntrows;
+		if ((delta = nrow - 2 - bot) != 0) {
+			if (!shiftedges(curwp->w_toprow + curwp->w_ntrows,
+			    delta, TRUE) && !shiftedges(bot, delta, TRUE)) {
+				if (nrow < 3) {
+					dobeep();
+					ewprintf("Display unusable");
+					return (FALSE);
 				}
-			for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
-				wp->w_ntcols = ncol;
+				(void)onlywind(FFRAND, 0);
+			}
 		}
-
-		/* find last */
-		wp = wheadp;
-		while (wp->w_wndp != NULL)
-			wp = wp->w_wndp;
-
-		/* check if too small */
-		if (nrow < wp->w_toprow + 3) {
-			dobeep();
-			ewprintf("Display unusable");
-			return (FALSE);
-		}
-		wp->w_ntrows = nrow - wp->w_toprow - 2;
 		sgarbf = TRUE;
 		update(CMODE);
 	} else

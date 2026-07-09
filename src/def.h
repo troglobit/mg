@@ -522,6 +522,7 @@ int		 prevwind(int, int);
 int		 onlywind(int, int);
 int		 splitwind(int, int);
 int		 splitwindh(int, int);
+int		 balancewind(int, int);
 int		 enlargewind(int, int);
 int		 shrinkwind(int, int);
 int		 delwind(int, int);

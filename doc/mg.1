@@ -262,6 +262,8 @@ start-kbd-macro
 end-kbd-macro
 .It F4
 end-or-call-last-kbd-macro
+.It C-x +
+balance-windows
 .It C-x 0
 delete-window
 .It C-x 1
@@ -463,6 +465,9 @@ paragraphs.
 Paragraphs are delimited by <NL><NL> or <NL><TAB> or <NL><SPACE>.
 .It Ic backward-word
 Move cursor backwards by the specified number of words.
+.It Ic balance-windows
+Even out the heights of all windows, like in GNU Emacs.
+Side by side windows keep their widths.
 .It Ic beginning-of-buffer
 Move cursor to the top of the buffer.
 If set, keep mark's position, otherwise set at current position.

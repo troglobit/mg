@@ -178,7 +178,9 @@ static PF cXcJ[] = {
 
 static PF cXlp[] = {
 	definemacro,		/* ( */
-	finishmacro		/* ) */
+	finishmacro,		/* ) */
+	rescan,			/* * */
+	balancewind		/* + */
 };
 
 static PF cX0[] = {
@@ -236,7 +238,7 @@ struct KEYMAPE (6) cXmap = {
 			CCHR('J'), CCHR('X'), cXcJ, NULL
 		},
 		{
-			'(', ')', cXlp, NULL
+			'(', '+', cXlp, NULL
 		},
 		{
 			'0', '4', cX0, (KEYMAP *) & cX4map
