@@ -319,7 +319,9 @@ delleadwhite(int f, int n)
 	soff -= ls;
 	if (soff < 0)
 		soff = 0;
-	(void)forwchar(FFRAND, soff);
+	/* soff is a byte offset; forwchar() counts characters */
+	curwp->w_doto = soff;
+	curwp->w_rflag |= WFMOVE;
 
 	return (TRUE);
 }
@@ -466,7 +468,9 @@ indent(int f, int n)
 	if ( doindent(n) == FALSE)
 		return (FALSE);
 
-	(void)forwchar(FFRAND, soff);
+	/* soff is a byte offset; forwchar() counts characters */
+	curwp->w_doto += soff;
+	curwp->w_rflag |= WFMOVE;
 
 	return (TRUE);
 }
