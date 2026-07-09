@@ -7,7 +7,8 @@ endif
 bin_PROGRAMS     = mg
 mg_SOURCES       = basic.c bell.c buffer.c cinfo.c dir.c display.c echo.c 	\
 		   extend.c file.c fileio.c funmap.c help.c interpreter.c	\
-		   kbd.c keymap.c line.c macro.c main.c match.c modes.c		\
+		   kbd.c keymap.c line.c macro.c main.c match.c mdmode.c	\
+		   modes.c							\
 		   paragraph.c region.c search.c shmode.c spawn.c syntax.c	\
 		   tty.c ttyio.c ttykbd.c					\
 		   ttydef.h undo.c utf8.c util.c version.c window.c word.c	\

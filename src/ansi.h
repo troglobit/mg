@@ -84,6 +84,7 @@ extern TERMINAL *cur_term;
 
 #define exit_attribute_mode  "\033[0m"
 #define set_a_foreground     "\033[3%dm"
+#define enter_bold_mode      "\033[1m"
 #define max_colors           8
 
 int   setupterm(const char *term, int filedes, int *errret);

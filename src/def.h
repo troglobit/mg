@@ -631,6 +631,7 @@ char		*getkeyname(char  *, size_t, int);
 #define SYN_STRING	4
 #define SYN_NUMBER	5
 #define SYN_PREPROC	6
+#define SYN_HEADING	7
 
 struct syntax;
 const struct syntax *syntax_lookup(struct buffer *);

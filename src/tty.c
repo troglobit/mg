@@ -425,6 +425,7 @@ ttattr(int class, int rev)
 		5,	/* SYN_STRING, magenta		*/
 		1,	/* SYN_NUMBER, red		*/
 		4,	/* SYN_PREPROC, blue		*/
+		3,	/* SYN_HEADING, bold yellow	*/
 	};
 
 	if (exit_attribute_mode == NULL) {
@@ -433,9 +434,11 @@ ttattr(int class, int rev)
 		return;
 	}
 	putpad(exit_attribute_mode, 1);
-	if (class > SYN_NONE && class <= SYN_PREPROC &&
+	if (class > SYN_NONE && class <= SYN_HEADING &&
 	    set_a_foreground != NULL && max_colors >= 8)
 		putpad(tparm(set_a_foreground, color[class]), 1);
+	if (class == SYN_HEADING && enter_bold_mode != NULL)
+		putpad(enter_bold_mode, 1);
 	if (rev && enter_standout_mode != NULL)
 		putpad(enter_standout_mode, 1);
 	tthue = CNONE;
