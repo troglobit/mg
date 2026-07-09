@@ -46,6 +46,20 @@ static const char *sh_keywords[] = {
 	NULL
 };
 
+static const char *py_keywords[] = {
+	"and", "as", "assert", "async", "await", "break", "class",
+	"continue", "def", "del", "elif", "else", "except", "finally",
+	"for", "from", "global", "if", "import", "in", "is", "lambda",
+	"nonlocal", "not", "or", "pass", "raise", "return", "try",
+	"while", "with", "yield",
+	"False", "None", "True",
+	"abs|", "bool|", "bytes|", "dict|", "enumerate|", "float|",
+	"int|", "isinstance|", "len|", "list|", "max|", "min|", "open|",
+	"print|", "range|", "repr|", "self|", "set|", "sorted|", "str|",
+	"sum|", "super|", "tuple|", "type|", "zip|",
+	NULL
+};
+
 static int	 md_parse(const struct line *, int, char *);
 
 struct syntax {
@@ -57,15 +71,23 @@ struct syntax {
 	const char	 *sy_mce;	/* multiline comment end	*/
 	int		  sy_preproc;	/* #directive lines		*/
 	int		  sy_dollar;	/* $variable references		*/
+	int		  sy_atword;	/* @decorator words		*/
+	const char	 *sy_mstr[2];	/* multiline string delimiters	*/
 	/* the keyword machinery does not fit all languages */
 	int		(*sy_parse)(const struct line *, int, char *);
 };
 
 static const struct syntax syntab[] = {
-	{ "c", c_keywords, "//", 0, "/*", "*/", 1, 0, NULL },
-	{ "shell-script", sh_keywords, "#", 1, NULL, NULL, 0, 1, NULL },
-	{ "markdown", NULL, NULL, 0, NULL, NULL, 0, 0, md_parse },
-	{ NULL, NULL, NULL, 0, NULL, NULL, 0, 0, NULL }
+	{ "c", c_keywords, "//", 0, "/*", "*/", 1, 0, 0,
+	    { NULL, NULL }, NULL },
+	{ "shell-script", sh_keywords, "#", 1, NULL, NULL, 0, 1, 0,
+	    { NULL, NULL }, NULL },
+	{ "python", py_keywords, "#", 0, NULL, NULL, 0, 0, 1,
+	    { "\"\"\"", "'''" }, NULL },
+	{ "markdown", NULL, NULL, 0, NULL, NULL, 0, 0, 0,
+	    { NULL, NULL }, md_parse },
+	{ NULL, NULL, NULL, 0, NULL, NULL, 0, 0, 0,
+	    { NULL, NULL }, NULL }
 };
 
 /*
@@ -97,7 +119,8 @@ syn_multiline(struct buffer *bp)
 	const struct syntax	*sy;
 
 	sy = syntax_lookup(bp);
-	return (sy != NULL && (sy->sy_mcs != NULL || sy->sy_parse != NULL));
+	return (sy != NULL && (sy->sy_mcs != NULL || sy->sy_mstr[0] != NULL ||
+	    sy->sy_parse != NULL));
 }
 
 static int
@@ -131,10 +154,12 @@ matchat(const struct line *lp, int i, const char *s)
 
 /*
  * Classify the bytes of one line.  incom is the open multiline
- * comment state at the start of the line; the state after the line
- * is returned.  attr, when not NULL, receives one SYN_* class per
- * byte and must hold llength(lp) bytes.  With a NULL attr only the
- * comment and string state is tracked, for syn_state().
+ * comment or string state at the start of the line: 1 in a comment,
+ * the delimiter index plus 2 in a multiline string.  The state
+ * after the line is returned.  attr, when not NULL, receives one
+ * SYN_* class per byte and must hold llength(lp) bytes.  With a
+ * NULL attr only the comment and string state is tracked, for
+ * syn_state().
  */
 int
 syn_parse(const struct syntax *sy, const struct line *lp, int incom,
@@ -155,7 +180,7 @@ syn_parse(const struct syntax *sy, const struct line *lp, int incom,
 	i = 0;
 	while (i < len) {
 		c = lgetc(lp, i);
-		if (incom) {
+		if (incom == 1) {
 			if ((n = matchat(lp, i, sy->sy_mce)) != 0) {
 				for (j = 0; j < n; j++)
 					setattr(attr, i + j, SYN_COMMENT);
@@ -164,6 +189,27 @@ syn_parse(const struct syntax *sy, const struct line *lp, int incom,
 				prev_sep = 1;
 			} else {
 				setattr(attr, i, SYN_COMMENT);
+				i++;
+			}
+			continue;
+		}
+		if (incom >= 2) {
+			/* in a multiline string, state is delimiter + 2 */
+			if (c == '\\' && i + 1 < len) {
+				setattr(attr, i, SYN_STRING);
+				setattr(attr, i + 1, SYN_STRING);
+				i += 2;
+				continue;
+			}
+			if (c == sy->sy_mstr[incom - 2][0] &&
+			    (n = matchat(lp, i, sy->sy_mstr[incom - 2])) != 0) {
+				for (j = 0; j < n; j++)
+					setattr(attr, i + j, SYN_STRING);
+				i += n;
+				incom = 0;
+				prev_sep = 0;
+			} else {
+				setattr(attr, i, SYN_STRING);
 				i++;
 			}
 			continue;
@@ -196,6 +242,20 @@ syn_parse(const struct syntax *sy, const struct line *lp, int incom,
 			i += n;
 			incom = 1;
 			continue;
+		}
+		if (sy->sy_mstr[0] != NULL) {
+			for (j = 0; j < 2; j++)
+				if (sy->sy_mstr[j] != NULL &&
+				    c == sy->sy_mstr[j][0] &&
+				    (n = matchat(lp, i, sy->sy_mstr[j])) != 0)
+					break;
+			if (j < 2) {
+				incom = j + 2;
+				for (j = 0; j < n; j++)
+					setattr(attr, i + j, SYN_STRING);
+				i += n;
+				continue;
+			}
 		}
 		if (c == '"' || c == '\'') {
 			setattr(attr, i, SYN_STRING);
@@ -231,6 +291,17 @@ syn_parse(const struct syntax *sy, const struct line *lp, int incom,
 						break;
 					setattr(attr, i, SYN_TYPE);
 				}
+			}
+			prev_sep = 0;
+			continue;
+		}
+		if (sy->sy_atword && c == '@' && prev_sep) {
+			setattr(attr, i, SYN_PREPROC);
+			for (i++; i < len; i++) {
+				c = lgetc(lp, i);
+				if (!isalnum(c) && c != '_' && c != '.')
+					break;
+				setattr(attr, i, SYN_PREPROC);
 			}
 			prev_sep = 0;
 			continue;
@@ -499,7 +570,8 @@ syn_state(const struct syntax *sy, struct buffer *bp, struct line *stop)
 	struct line	*lp;
 	int	 incom = 0;
 
-	if (sy->sy_mcs == NULL && sy->sy_parse == NULL)
+	if (sy->sy_mcs == NULL && sy->sy_mstr[0] == NULL &&
+	    sy->sy_parse == NULL)
 		return (0);
 	for (lp = bfirstlp(bp); lp != stop && lp != bp->b_headp;
 	     lp = lforw(lp))

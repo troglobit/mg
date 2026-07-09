@@ -21,6 +21,23 @@ int	 defb_nmodes = 0;
 struct maps_s	*defb_modes[PBMODES] = { &fundamental_mode };
 int	 defb_flag = 0;
 
+/*
+ * True when the buffer has the named mode enabled.
+ */
+int
+buf_hasmode(struct buffer *bp, const char *name)
+{
+	struct maps_s	*m;
+	int	 i;
+
+	if ((m = name_mode(name)) == NULL)
+		return (FALSE);
+	for (i = 0; i <= bp->b_nmodes; i++)
+		if (bp->b_modes[i] == m)
+			return (TRUE);
+	return (FALSE);
+}
+
 int
 changemode(int f, int n, char *newmode)
 {

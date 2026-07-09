@@ -147,6 +147,7 @@ typedef int	(*PF)(int, int);	/* generally useful type */
 #define CFCPCN	0x0001		/* Last command was C-p or C-n	 */
 #define CFKILL	0x0002		/* Last command was a kill	 */
 #define CFINS	0x0004		/* Last command was self-insert	 */
+#define CFINDT	0x0008		/* Last command was an indent cycle */
 
 /*
  * File I/O.
@@ -686,6 +687,8 @@ int		 delleadwhite(int, int);
 int		 deltrailwhite(int, int);
 int		 lfindent(int, int);
 int		 indent(int, int);
+int		 lineindent(const struct line *, int *);
+int		 prevlineindent(struct line **);
 int		 forwdel(int, int);
 int		 backdel(int, int);
 int		 space_to_tabstop(int, int);
@@ -811,6 +814,7 @@ int		 applymacro(int, int);
 
 /* modes.c X */
 int		 indentmode(int, int);
+int		 buf_hasmode(struct buffer *, const char *);
 int		 fillmode(int, int);
 int		 notabmode(int, int);
 int		 overwrite_mode(int, int);

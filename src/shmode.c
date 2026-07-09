@@ -44,29 +44,11 @@ static struct KEYMAPE (1) shmodemap = {
 static int
 sh_indent(int f, int n)
 {
-	struct line	*lp;
-	int	 c, col, i, s;
-
-	col = 0;
-	for (lp = lback(curwp->w_dotp); lp != curbp->b_headp;
-	     lp = lback(lp)) {
-		for (i = 0; i < llength(lp); i++) {
-			c = lgetc(lp, i);
-			if (c == ' ')
-				col++;
-			else if (c == '\t')
-				col = ntabstop(col, curbp->b_tabw);
-			else
-				break;
-		}
-		if (i < llength(lp))
-			break;		/* non-blank line found */
-		col = 0;
-	}
+	int	 s;
 
 	/* one undo record for the delete and insert of whitespace */
 	undo_boundary_enable(FFRAND, 0);
-	s = indent(FFARG, col);
+	s = indent(FFARG, prevlineindent(NULL));
 	undo_boundary_enable(FFRAND, 1);
 
 	return (s);
@@ -94,17 +76,11 @@ sh_tab(int f, int n)
 static int
 shmode(int f, int n)
 {
-	struct maps_s	*m;
-	int		 i, s;
+	int		 s;
 
 	if ((s = changemode(f, n, "shell-script")) != TRUE)
 		return (s);
-
-	m = name_mode("shell-script");
-	for (i = 0; i <= curbp->b_nmodes; i++)
-		if (curbp->b_modes[i] == m)
-			break;
-	if (i > curbp->b_nmodes)
+	if (!buf_hasmode(curbp, "shell-script"))
 		return (TRUE);	/* mode was toggled off */
 
 	/*

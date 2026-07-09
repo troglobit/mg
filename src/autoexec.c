@@ -132,6 +132,9 @@ static const struct {
 	{ "ksh",	"shell-script-mode" },
 	{ "mksh",	"shell-script-mode" },
 	{ "zsh",	"shell-script-mode" },
+	{ "python",	"python-mode" },
+	{ "python2",	"python-mode" },
+	{ "python3",	"python-mode" },
 	{ NULL,		NULL }
 };
 

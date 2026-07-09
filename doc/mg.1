@@ -876,6 +876,21 @@ Suspend
 and switch to alternate screen, if available.
 .It Ic pwd
 Display current (global) working directory in the status area.
+.It Ic python-mode
+Toggle python mode, which selects the python rules for syntax
+highlighting: comments, strings including the triple-quoted kind,
+keywords, built-in functions, and decorators.
+Enabling it also sets the tab width to four, turns on
+.Ic no-tab-mode ,
+since whitespace is structure in python and a stray tab is a syntax
+error, and enables the indent mode so RET keeps the indentation.
+TAB indents the line like the previous non-blank line, one level
+deeper after a line ending in a colon, or every line in the region
+when the mark is active.
+Pressing TAB again steps the line back one level at a time and
+wraps around, since the line may belong to any enclosing block.
+Files named *.py and files with a #! line naming python get the
+mode automatically.
 .It Ic query-replace
 Query Replace.
 Search and replace strings selectively, prompting after each match.

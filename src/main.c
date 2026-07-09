@@ -140,6 +140,7 @@ main(int argc, char **argv)
 		extern void cmode_init(void);
 		extern void shmode_init(void);
 		extern void mdmode_init(void);
+		extern void pymode_init(void);
 
 #ifdef ENABLE_DIRED
 		dired_init();
@@ -152,6 +153,7 @@ main(int argc, char **argv)
 #endif
 		shmode_init();
 		mdmode_init();
+		pymode_init();
 	}
 
 	if (init_fcn_name &&

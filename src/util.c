@@ -374,7 +374,7 @@ doindent(int cols)
 int
 lfindent(int f, int n)
 {
-	int	c, i, nicol;
+	int	nicol;
 	int	s = TRUE;
 
 	if (n < 0)
@@ -382,16 +382,7 @@ lfindent(int f, int n)
 
 	undo_boundary_enable(FFRAND, 0);
 	while (n--) {
-		nicol = 0;
-		for (i = 0; i < llength(curwp->w_dotp); ++i) {
-			c = lgetc(curwp->w_dotp, i);
-			if (c != ' ' && c != '\t')
-				break;
-			if (c == '\t')
-				nicol = ntabstop(nicol, curwp->w_bufp->b_tabw);
-			else
-				++nicol;
-		}
+		nicol = lineindent(curwp->w_dotp, NULL);
 		delwhite(FFRAND, 1);
 		if (lnewline() == FALSE || doindent(nicol) == FALSE) {
 			s = FALSE;
@@ -400,6 +391,54 @@ lfindent(int f, int n)
 	}
 	undo_boundary_enable(FFRAND, 1);
 	return (s);
+}
+
+/*
+ * The indentation column of the line.  Sets *ip, when given, to
+ * the offset of the first character after the indentation.
+ */
+int
+lineindent(const struct line *lp, int *ip)
+{
+	int	 c, col, i;
+
+	col = 0;
+	for (i = 0; i < llength(lp); i++) {
+		c = lgetc(lp, i);
+		if (c == ' ')
+			col++;
+		else if (c == '\t')
+			col = ntabstop(col, curbp->b_tabw);
+		else
+			break;
+	}
+	if (ip != NULL)
+		*ip = i;
+	return (col);
+}
+
+/*
+ * The indentation column of the previous non-blank line, zero when
+ * there is none.  Sets *lpp, when given, to the line found, or to
+ * the buffer head line.
+ */
+int
+prevlineindent(struct line **lpp)
+{
+	struct line	*lp;
+	int	 col, i;
+
+	col = 0;
+	for (lp = lback(curwp->w_dotp); lp != curbp->b_headp;
+	     lp = lback(lp)) {
+		col = lineindent(lp, &i);
+		if (i < llength(lp))
+			break;		/* non-blank line found */
+		col = 0;
+	}
+	if (lpp != NULL)
+		*lpp = lp;
+	return (col);
 }
 
 /*
