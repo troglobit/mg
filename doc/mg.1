@@ -1,7 +1,7 @@
 .\"	$OpenBSD: mg.1,v 1.138 2024/07/09 14:51:37 op Exp $
 .\" This file is in the public domain.
 .\"
-.Dd $Mdocdate: July 8 2026 $
+.Dd $Mdocdate: July 9 2026 $
 .Dt MG 1
 .Os
 .Sh NAME
@@ -13,7 +13,7 @@
 .Op Fl b Ar file
 .Op Fl f Ar mode
 .Op Fl u Ar file
-.Op + Ns Ar number
+.Op + Ns Ar line Ns Oo : Ns Ar column Oc
 .Op Ar
 .Sh DESCRIPTION
 .Nm
@@ -36,11 +36,11 @@ support may be disabled.
 .Pp
 The options are as follows:
 .Bl -tag -width Ds
-.It + Ns Ar number
-Go to the line specified by number (do not insert
+.It + Ns Ar line Ns Oo : Ns Ar column Oc
+Go to the specified line, and optionally column (do not insert
 a space between the
 .Sq +
-sign and the number).
+sign and the line number, or around the colon).
 If a negative number is specified, the line number counts
 backwards from the end of the file i.e. +-1 will be the last
 line of the file, +-2 will be second last, and so on.
