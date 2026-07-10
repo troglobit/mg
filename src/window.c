@@ -146,6 +146,7 @@ balancewind(int f, int n)
 	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
 		if (wp->w_toprow < 0)
 			wp->w_toprow = -wp->w_toprow - 1;
+	sgarbf = TRUE;
 	return (TRUE);
 }
 
@@ -677,6 +678,7 @@ enlargewind(int f, int n)
 	adjwp->w_ntrows -= n;
 	curwp->w_rflag |= WFMODE | WFFULL;
 	adjwp->w_rflag |= WFMODE | WFFULL;
+	sgarbf = TRUE;
 	return (TRUE);
 }
 
@@ -735,6 +737,7 @@ shrinkwind(int f, int n)
 	adjwp->w_ntrows += n;
 	curwp->w_rflag |= WFMODE | WFFULL;
 	adjwp->w_rflag |= WFMODE | WFFULL;
+	sgarbf = TRUE;
 	return (TRUE);
 }
 
