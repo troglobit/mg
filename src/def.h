@@ -148,6 +148,8 @@ typedef int	(*PF)(int, int);	/* generally useful type */
 #define CFKILL	0x0002		/* Last command was a kill	 */
 #define CFINS	0x0004		/* Last command was self-insert	 */
 #define CFINDT	0x0008		/* Last command was an indent cycle */
+#define CFSHIFT	0x0010		/* Last command was a shifted move */
+#define CFMARK	0x0020		/* Last command activated the mark */
 
 /*
  * File I/O.
@@ -667,6 +669,7 @@ int		 forw1page(int, int);
 int		 back1page(int, int);
 int		 pagenext(int, int);
 void		 isetmark(void);
+void		 mark_deactivate(struct mgwin *);
 int		 setmark(int, int);
 int		 clearmark(int, int);
 int		 swapmark(int, int);

@@ -471,8 +471,22 @@ setmark(int f, int n)
 {
 	isetmark();
 	curwp->w_markact = TRUE;
+	thisflag |= CFMARK;
 	ewprintf("Mark set");
 	return (TRUE);
+}
+
+/*
+ * Deactivate the mark; hiding the region needs a full repaint of
+ * the window.
+ */
+void
+mark_deactivate(struct mgwin *wp)
+{
+	if (wp->w_markact) {
+		wp->w_markact = FALSE;
+		wp->w_rflag |= WFFULL;
+	}
 }
 
 /* Clear the mark, if set. */
@@ -485,10 +499,7 @@ clearmark(int f, int n)
 	curwp->w_markp = NULL;
 	curwp->w_marko = 0;
 	curwp->w_markline = 0;
-	if (curwp->w_markact) {
-		curwp->w_markact = FALSE;
-		curwp->w_rflag |= WFFULL;
-	}
+	mark_deactivate(curwp);
 
 	return (TRUE);
 }
@@ -519,6 +530,7 @@ swapmark(int f, int n)
 	curwp->w_marko = odoto;
 	curwp->w_markline = odotline;
 	curwp->w_markact = TRUE;
+	thisflag |= CFMARK;
 	curwp->w_rflag |= WFMOVE;
 	return (TRUE);
 }

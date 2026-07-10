@@ -425,6 +425,7 @@ markpara(int f, int n)
 	curwp->w_marko = curwp->w_doto;
 	curwp->w_markline = curwp->w_dotline;
 	curwp->w_markact = TRUE;
+	thisflag |= CFMARK;
 
 	(void)gotobop(FFRAND, i);
 

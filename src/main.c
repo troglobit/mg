@@ -65,6 +65,7 @@ main(int argc, char **argv)
 	int	 	 o, i, nfiles;
 	int	  	 nobackups = 0;
 	struct buffer	*bp = NULL;
+	struct mgwin	*wp, *selwp;
 
 #ifdef __OpenBSD__
 	if (pledge("stdio rpath wpath cpath fattr chown getpw tty proc exec", NULL) == -1)
@@ -275,6 +276,7 @@ notnum:
 		update(CMODE);
 		lastflag = thisflag;
 		thisflag = 0;
+		selwp = curwp;
 
 		switch (doin()) {
 		case TRUE:
@@ -286,6 +288,17 @@ notnum:
 		default:
 			macrodef = FALSE;
 		}
+
+		/*
+		 * The first unshifted command drops a shift selection,
+		 * in the window it was made in: the command may have
+		 * switched away from it, or deleted it.
+		 */
+		if ((lastflag & CFSHIFT) != 0 &&
+		    (thisflag & (CFSHIFT | CFMARK)) == 0)
+			for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
+				if (wp == selwp)
+					mark_deactivate(wp);
 	}
 }
 
@@ -366,9 +379,6 @@ quit(int f, int n)
 int
 ctrlg(int f, int n)
 {
-	if (curwp->w_markact) {
-		curwp->w_markact = FALSE;
-		curwp->w_rflag |= WFFULL;
-	}
+	mark_deactivate(curwp);
 	return (ABORT);
 }

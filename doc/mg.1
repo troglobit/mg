@@ -1052,6 +1052,23 @@ Add other file types with
 for example:
 .Pp
 .Dl auto-execute *.zsh shell-script-mode
+.It Ic shift-backward-char
+.It Ic shift-forward-char
+.It Ic shift-next-line
+.It Ic shift-previous-line
+.It Ic shift-beginning-of-line
+.It Ic shift-end-of-line
+.It Ic shift-backward-word
+.It Ic shift-forward-word
+.It Ic shift-backward-paragraph
+.It Ic shift-forward-paragraph
+Move like the unshifted command, activating the mark at dot first,
+so holding shift with the arrow and Home/End keys marks text like
+in GNU Emacs, by word and paragraph with control held too.
+The first unshifted command drops the selection again; a mark set
+with C-SPC is left alone.
+Bound to the shifted keys on terminals that send xterm style
+sequences.
 .It Ic shrink-window
 Shrink current window by one line.
 The window immediately below is expanded to pick up the slack.
