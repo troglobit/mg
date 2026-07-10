@@ -336,16 +336,18 @@ end-of-buffer
 delete-horizontal-space
 .It M-^
 join-line
-.It M-b, C-left, M-left
+.It M-b, C-left
 backward-word
 .It M-c
 capitalize-word
 .It M-d
 kill-word
-.It M-f, C-right, M-right
+.It M-f, C-right
 forward-word
 .It M-h
 mark-paragraph
+.It M-up, M-down, M-left, M-right
+windmove-up, windmove-down, windmove-left, windmove-right
 .It M-l
 downcase-word
 .It M-m
@@ -1180,6 +1182,16 @@ and column, and approximate position of the cursor in the file (as a
 percentage) is displayed.
 The column position assumes an infinite
 position display; it does not truncate just because the screen does.
+.It Ic windmove-down
+.It Ic windmove-left
+.It Ic windmove-right
+.It Ic windmove-up
+Select the window beside the current one in the given direction,
+like windmove in GNU Emacs.
+With several neighbors the topmost, or leftmost, is chosen.
+Bound to Meta and an arrow key on terminals that send xterm style
+sequences; note that some terminals grab these keys for their own
+split panes.
 .It Ic write-file
 Ask for a file name and write the contents of the current buffer to
 that file.

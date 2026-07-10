@@ -263,6 +263,10 @@ static struct funmap functnames[] = {
 	{tagsvisit, "visit-tags-table", 0, NULL},
 #endif
 	{showcpos, "what-cursor-position", 0, NULL},
+	{windmovedown, "windmove-down", 0, NULL},
+	{windmoveleft, "windmove-left", 0, NULL},
+	{windmoveright, "windmove-right", 0, NULL},
+	{windmoveup, "windmove-up", 0, NULL},
 	{filewrite, "write-file", 1, NULL},
 	{yank, "yank", 1, NULL},
 	{NULL, NULL, 0, NULL}

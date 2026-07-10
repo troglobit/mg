@@ -30,6 +30,8 @@ char	*key_cup    = "\e[1;5A";
 char	*key_cdown  = "\e[1;5B";
 char	*key_cright = "\e[1;5C";
 char	*key_cleft  = "\e[1;5D";
+char	*key_aup    = "\e[1;3A";
+char	*key_adown  = "\e[1;3B";
 char	*key_aright = "\e[1;3C";
 char	*key_aleft  = "\e[1;3D";
 char	*key_cpgup  = "\e[5;5~";
@@ -181,10 +183,14 @@ ttykeymapinit(void)
 	if (key_cleft)
 		dobindkey(fundamental_map, "backward-word", key_cleft);
 
+	if (key_aup)
+		dobindkey(fundamental_map, "windmove-up", key_aup);
+	if (key_adown)
+		dobindkey(fundamental_map, "windmove-down", key_adown);
 	if (key_aright)
-		dobindkey(fundamental_map, "forward-word", key_aright);
+		dobindkey(fundamental_map, "windmove-right", key_aright);
 	if (key_aleft)
-		dobindkey(fundamental_map, "backward-word", key_aleft);
+		dobindkey(fundamental_map, "windmove-left", key_aleft);
 
 	if (key_cpgup)
 		dobindkey(fundamental_map, "beginning-of-buffer", key_cpgup);

@@ -319,6 +319,71 @@ do_redraw(int f, int n, int force)
 }
 
 /*
+ * Select the window beside the current one, like windmove in GNU
+ * Emacs: the neighbor sharing the edge in the given direction,
+ * with overlapping rows or columns.
+ */
+static int
+gotowind(int dx, int dy)
+{
+	struct mgwin	*wp;
+
+	for (wp = wheadp; wp != NULL; wp = wp->w_wndp) {
+		if (wp == curwp)
+			continue;
+		if (dx > 0 &&
+		    wp->w_leftcol != curwp->w_leftcol + curwp->w_ntcols + 1)
+			continue;
+		if (dx < 0 &&
+		    curwp->w_leftcol != wp->w_leftcol + wp->w_ntcols + 1)
+			continue;
+		if (dy > 0 &&
+		    wp->w_toprow != curwp->w_toprow + curwp->w_ntrows + 1)
+			continue;
+		if (dy < 0 &&
+		    curwp->w_toprow != wp->w_toprow + wp->w_ntrows + 1)
+			continue;
+		/* text rows or columns must overlap, edges do not count */
+		if (dx != 0 &&
+		    (wp->w_toprow >= curwp->w_toprow + curwp->w_ntrows ||
+		    curwp->w_toprow >= wp->w_toprow + wp->w_ntrows))
+			continue;
+		if (dy != 0 &&
+		    (wp->w_leftcol >= curwp->w_leftcol + curwp->w_ntcols ||
+		    curwp->w_leftcol >= wp->w_leftcol + wp->w_ntcols))
+			continue;
+		curwp = wp;
+		curbp = wp->w_bufp;
+		return (TRUE);
+	}
+	return (dobeep_msg("No window there"));
+}
+
+int
+windmoveleft(int f, int n)
+{
+	return (gotowind(-1, 0));
+}
+
+int
+windmoveright(int f, int n)
+{
+	return (gotowind(1, 0));
+}
+
+int
+windmoveup(int f, int n)
+{
+	return (gotowind(0, -1));
+}
+
+int
+windmovedown(int f, int n)
+{
+	return (gotowind(0, 1));
+}
+
+/*
  * The command to make the next window (next => down the screen) the current
  * window. There are no real errors, although the command does nothing if
  * there is only 1 window on the screen.
