@@ -209,6 +209,10 @@ ttykeymapinit(void)
 	if (key_cpgdn)
 		dobindkey(fundamental_map, "end-of-buffer", key_cpgdn);
 
+	/* The goto-line prefix from newer GNU Emacs; C-x g remains */
+	dobindkey(fundamental_map, "goto-line", "\egg");
+	dobindkey(fundamental_map, "goto-line", "\eg\eg");
+
 	/* Shift and an arrow key mark text, like in GNU Emacs */
 	funmap_add(shiftleft, "shift-backward-char", 0);
 	funmap_add(shiftright, "shift-forward-char", 0);
