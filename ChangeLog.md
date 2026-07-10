@@ -28,10 +28,14 @@ region, and side by side windows.
 - Visual mark mode: the region between mark and dot is drawn in
   reverse video, like transient-mark-mode in GNU Emacs.  New command
   `visual-mark-mode` toggles it, enabled by default
+- Shift and the arrow keys mark text, like in GNU Emacs, by word and
+  paragraph with control held too.  The first unshifted command drops
+  the selection; a mark set with `C-SPC` is left alone
 - Syntax highlighting of comments, strings, keywords, types, numbers,
   and preprocessor directives in buffers with a language mode, such as
   `c-mode`.  New command `font-lock-mode` toggles it, enabled by
-  default.  Terminals without color show plain text
+  default.  Terminals without color show plain text.  C and C++
+  files enable `c-mode` automatically
 - New command `shell-script-mode` with shell highlighting rules:
   POSIX reserved words, builtins, and `$variables`.  Also sets tab
   width 8 with hard tabs, for here documents, and RET keeps the
@@ -58,6 +62,18 @@ region, and side by side windows.
 - New command `balance-windows`, bound to `C-x +` like GNU Emacs:
   evens out the window heights in any layout, side by side windows
   keep their widths
+- Move between windows with Meta and the arrow keys: new commands
+  `windmove-up`, `-down`, `-left` and `-right` select the window in
+  that direction, like windmove in GNU Emacs.  `M-left` and `M-right`
+  no longer do word motion; `C-left` and `C-right` still do
+- Resize windows with Meta, Shift and the arrow keys: the window
+  divider travels with the arrow.  Also new: GNU Emacs' commands
+  `enlarge-window-horizontally` and `shrink-window-horizontally`, on
+  `C-x }` and `C-x {`
+- Pop-up buffers, like the quick help, open below the current window
+  instead of replacing the other one in side by side layouts.  The
+  quick help is dismissed with `q` and no longer disturbs the window
+  layout when closed
 - New command `require-final-newline <nil | T | ask>`
 - New command `use-short-answers`: a single y or n answers important
   questions.  Enabled by default, unlike GNU Emacs; get the strict
@@ -69,12 +85,20 @@ region, and side by side windows.
 - Smart TAB in c-mode and shell-script-mode: TAB indents the current
   line, or every line in the region when the mark is active, like in
   GNU Emacs.  Shell scripts indent like the previous non-blank line
+- `M-q` reflows one list item at a time instead of the whole list,
+  with continuation lines aligned under the item text, and refills
+  block quotes keeping the > prefix.  Paragraph motion, mark and
+  kill treat list items as paragraphs too
+- `M-g g` and `M-g M-g` run goto-line, like GNU Emacs 22 and later.
+  The old `C-x g` binding remains
 - Dired: new command `dired-up-directory`, bound to `^`, also used by
   `dired-jump`, from OpenBSD
 - `C-u M-!` and `C-u M-|` insert the shell command output in the
   current buffer instead of a separate one, from OpenBSD
 - C-mode: respect user defined tab width in indentation, by Daniel
   Hennigar
+- Mg tutorial updated and converted to Markdown format
+- Support `+LINE:COLUMN FILE` startup postion, by Delyan Angelov
 
 ### Fixes
 
