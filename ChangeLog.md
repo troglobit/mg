@@ -60,8 +60,8 @@ region, and side by side windows.
   help no longer swallow the new rows, and side by side layouts
   survive width and height changes
 - New command `balance-windows`, bound to `C-x +` like GNU Emacs:
-  evens out the window heights in any layout, side by side windows
-  keep their widths
+  evens out the window sizes in any layout, heights and widths
+  alike; the quick help pop-up keeps its height
 - Move between windows with Meta and the arrow keys: new commands
   `windmove-up`, `-down`, `-left` and `-right` select the window in
   that direction, like windmove in GNU Emacs.  `M-left` and `M-right`
@@ -99,6 +99,9 @@ region, and side by side windows.
   Hennigar
 - Mg tutorial updated and converted to Markdown format
 - Support `+LINE:COLUMN FILE` startup postion, by Delyan Angelov
+- The mini-buffer now displays the initial help text for 10 seconds,
+  or until the user starts typing.  Also, the cursor is now shown in
+  the main edit window instead of the mini-buffer
 
 ### Fixes
 
