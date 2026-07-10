@@ -259,11 +259,16 @@ quickhelp(int f, int n)
 	bp->b_nmodes = 1;
 
 	addline(bp, "FILE             BUFFER          WINDOW           MARK/KILL       MISC");
-	addline(bp, "C-x C-c exit     C-x b   switch  C-x 0 only other C-space mark    C-_ undo");
-	addline(bp, "C-x C-f find     C-x k   close   C-x 1 only this  C-w     kill-rg C-s search");
-	addline(bp, "C-x C-s save     C-x C-b list    C-x 2 split two  C-k     kill-ln C-r r-search");
-	addline(bp, "C-x s   save-all C-x h   mark    C-x ^ enlarge    C-y     yank    M-% replace");
-	addline(bp, "C-x i   insert   C-x g   goto-ln C-x o other win  C-x C-x swap    M-q reformat");
+	addline(bp, "C-x C-c exit     C-x b   switch  C-x 2/3 split    C-SPC mark      C-_ undo");
+	addline(bp, "C-x C-f find     C-x k   close   C-x 0/1 del/only C-w   kill-reg. C-s search");
+	addline(bp, "C-x C-s save     C-x C-b list    C-x +   balance  C-k   kill-line C-r r-search");
+	if (utf8_mode) {
+		addline(bp, "C-x s   save-all C-x h   mark    M-\xe2\x86\x94/\xe2\x86\x95   move     C-y     yank    M-% replace");
+		addline(bp, "C-x i   insert   C-x g   goto-ln M-S-\xe2\x86\x94/\xe2\x86\x95 resize   C-x C-x swap    M-q reformat");
+	} else {
+		addline(bp, "C-x s   save-all C-x h   mark    M-arrows move    C-y     yank    M-% replace");
+		addline(bp, "C-x i   insert   C-x g   goto-ln M-S-arrows size  C-x C-x swap    M-q reformat");
+	}
 
 	nwind = 0;
 	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
