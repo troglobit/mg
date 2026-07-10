@@ -331,14 +331,22 @@ quickdismiss(int f, int n)
 int
 tutorial(int f, int n)
 {
+	static char *variants[] = {
+		DATADIR "/tutorial.md",
+		DATADIR "/tutorial.md.gz",
+		DATADIR "/tutorial.gz",
+		DOCDIR "/tutorial.md",
+		DOCDIR "/tutorial.md.gz",
+		DOCDIR "/tutorial.gz",
+	};
 	struct buffer	*bp, *oldbp = curbp;
-	char		*fn;
+	char		*fn = NULL;
+	size_t		 i;
 
 	bp = bfind("*tutorial*", TRUE);
 	if (bclear(bp) != TRUE) {
 		return (FALSE);
 	}
-	bp->b_flag |= BFREADONLY;
 
 	curbp = bp;
 	if (showbuffer(bp, curwp, WFFULL) != TRUE) {
@@ -348,24 +356,34 @@ tutorial(int f, int n)
 		return (FALSE);
 	}
 
-	while (1) {
-		fn = DATADIR "/tutorial.gz";
-		if (!access(fn, R_OK))
+	for (i = 0; i < NELEMS(variants); i++) {
+		fn = variants[i];
+		if (access(fn, R_OK))
+			fn = NULL;
+		else
 			break;
-		fn = DATADIR "/tutorial";
-		if (!access(fn, R_OK))
-			break;
-		fn = DOCDIR "/tutorial.gz";
-		if (!access(fn, R_OK))
-			break;
-		fn = DOCDIR "/tutorial";
-		if (!access(fn, R_OK))
-			break;
+	}
+
+	if (!fn) {
 		ewprintf("Sorry, cannot find the tutorial on this system.");
 		goto fail;
 	}
+
 	if (readin(fn) != TRUE)
 		goto fail;
+
+	/*
+	 * The tutorial is markdown, show it with the colors on.  It
+	 * is the reader's own copy: editable, for the exercises, and
+	 * detached from the installed file so it cannot be saved
+	 * back over it.
+	 */
+	bp->b_modes[0] = name_mode("fundamental");
+	bp->b_modes[1] = name_mode("markdown");
+	bp->b_nmodes = 1;
+	bp->b_flag &= ~BFREADONLY;
+	bp->b_fname[0] = '\0';
+	curwp->w_rflag |= WFFULL;
 
 	return (TRUE);
 }

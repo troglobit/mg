@@ -1,6 +1,6 @@
 if DOCS
 dist_man1_MANS = mg.1
-dist_doc_DATA  = tutorial .mg mg.png utf8.txt
+dist_doc_DATA  = tutorial.md .mg mg.png utf8.txt
 endif
 EXTRA_DIST     = AUTHORS
 
@@ -10,6 +10,6 @@ pkgdata_DATA   = tutorial.gz
 clean-local:
 	-rm -f $(builddir)/tutorial.gz
 
-%.gz: %
+tutorial.gz: tutorial.md
 	gzip -c $< >$(builddir)/$@
 endif

@@ -130,6 +130,7 @@ typedef int	(*PF)(int, int);	/* generally useful type */
  * Universal.
  */
 #define FALSE	0		/* False, no, bad, etc.		 */
+#define NELEMS(a) (sizeof(a) / sizeof((a)[0]))
 #define TRUE	1		/* True, yes, good, etc.	 */
 #define ABORT	2		/* Death, ^G, abort, etc.	 */
 #define UERROR	3		/* User Error.			 */
