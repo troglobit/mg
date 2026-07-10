@@ -1,7 +1,7 @@
 .\"	$OpenBSD: mg.1,v 1.138 2024/07/09 14:51:37 op Exp $
 .\" This file is in the public domain.
 .\"
-.Dd $Mdocdate: July 9 2026 $
+.Dd $Mdocdate: July 10 2026 $
 .Dt MG 1
 .Os
 .Sh NAME
@@ -354,6 +354,13 @@ goto-line
 mark-paragraph
 .It M-up, M-down, M-left, M-right
 windmove-up, windmove-down, windmove-left, windmove-right
+.It M-S-up, M-S-down, M-S-left, M-S-right
+resize-window-up, resize-window-down, resize-window-left,
+resize-window-right
+.It S-up, S-down, S-left, S-right, S-Home, S-End
+mark text while moving, like shift-select-mode in GNU Emacs
+.It C-S-up, C-S-down, C-S-left, C-S-right
+mark text by word and paragraph
 .It M-l
 downcase-word
 .It M-m
@@ -669,6 +676,8 @@ command if it is found, passing arguments as necessary.
 Print an error if there is anything wrong.
 .It Ic fill-paragraph
 Justify a paragraph, wrapping text at the current fill column.
+A list item is filled by itself with the continuation lines aligned
+under its text, and a block quote keeps its > prefix on every line.
 .It Ic find-file
 Select a file for editing.
 First check if the file can be found
