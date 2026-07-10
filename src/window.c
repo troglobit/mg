@@ -58,25 +58,28 @@ balcut(int top, int bot, int left, int right, int horiz)
 }
 
 /*
- * The number of windows in the tallest stack in the rectangle,
- * each of which needs two rows to be shown at all.  Returns zero
- * for a layout the cuts cannot take apart.
+ * The number of windows in the tallest stack in the rectangle, or,
+ * with rows false, in the widest row.  A stacked window needs two
+ * rows to be shown at all, a side by side one two columns and a
+ * divider.  Returns zero for a layout the cuts cannot take apart.
  */
 static int
-balweight(int top, int bot, int left, int right)
+balweight(int top, int bot, int left, int right, int rows)
 {
 	struct mgwin	*wp;
 	int	 e, a, b;
 
 	if ((e = balcut(top, bot, left, right, TRUE)) != 0) {
-		a = balweight(top, e, left, right);
-		b = balweight(e + 1, bot, left, right);
-		return (a == 0 || b == 0 ? 0 : a + b);
+		a = balweight(top, e, left, right, rows);
+		b = balweight(e + 1, bot, left, right, rows);
+		return (a == 0 || b == 0 ? 0 :
+		    rows ? a + b : a > b ? a : b);
 	}
 	if ((e = balcut(top, bot, left, right, FALSE)) != 0) {
-		a = balweight(top, bot, left, e);
-		b = balweight(top, bot, e + 1, right);
-		return (a == 0 || b == 0 ? 0 : a > b ? a : b);
+		a = balweight(top, bot, left, e, rows);
+		b = balweight(top, bot, e + 1, right, rows);
+		return (a == 0 || b == 0 ? 0 :
+		    rows ? (a > b ? a : b) : a + b);
 	}
 	a = 0;
 	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
@@ -86,30 +89,35 @@ balweight(int top, int bot, int left, int right)
 }
 
 /*
- * Retile the windows of the old rectangle into the new rows.  The
- * sections at a horizontal cut get room in proportion to their
- * tallest stack, so the window heights come out even; sections at
- * a vertical cut keep their columns.
+ * Retile the windows of the old rectangle into the new one.  The
+ * sections at a cut get room in proportion to their tallest stack,
+ * or widest row, so the window sizes come out even on both axes.
  */
 static void
-balassign(int ot, int ob, int nt, int nb, int left, int right)
+balassign(int ot, int ob, int ol, int or, int nt, int nb, int nl,
+    int nr)
 {
 	struct mgwin	*wp;
 	int	 e, w1, w2, c;
 
-	if ((e = balcut(ot, ob, left, right, TRUE)) != 0) {
-		w1 = balweight(ot, e, left, right);
-		w2 = balweight(e + 1, ob, left, right);
+	if ((e = balcut(ot, ob, ol, or, TRUE)) != 0) {
+		w1 = balweight(ot, e, ol, or, TRUE);
+		w2 = balweight(e + 1, ob, ol, or, TRUE);
 		if (w1 <= 0 || w2 <= 0)
 			return;		/* balancewind() refused these */
 		c = nt - 1 + (nb - nt + 1) * w1 / (w1 + w2);
-		balassign(ot, e, nt, c, left, right);
-		balassign(e + 1, ob, c + 1, nb, left, right);
+		balassign(ot, e, ol, or, nt, c, nl, nr);
+		balassign(e + 1, ob, ol, or, c + 1, nb, nl, nr);
 		return;
 	}
-	if ((e = balcut(ot, ob, left, right, FALSE)) != 0) {
-		balassign(ot, ob, nt, nb, left, e);
-		balassign(ot, ob, nt, nb, e + 1, right);
+	if ((e = balcut(ot, ob, ol, or, FALSE)) != 0) {
+		w1 = balweight(ot, ob, ol, e, FALSE);
+		w2 = balweight(ot, ob, e + 1, or, FALSE);
+		if (w1 <= 0 || w2 <= 0)
+			return;		/* balancewind() refused these */
+		c = nl - 1 + (nr - nl + 1) * w1 / (w1 + w2);
+		balassign(ot, ob, ol, e, nt, nb, nl, c);
+		balassign(ot, ob, e + 1, or, nt, nb, c + 1, nr);
 		return;
 	}
 	/*
@@ -119,9 +127,11 @@ balassign(int ot, int ob, int nt, int nb, int left, int right)
 	 * unvisited rectangle would corrupt.
 	 */
 	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
-		if (balin(wp, ot, ob, left, right)) {
+		if (balin(wp, ot, ob, ol, or)) {
 			wp->w_toprow = -nt - 1;
 			wp->w_ntrows = nb - nt;
+			wp->w_leftcol = nl;
+			wp->w_ntcols = nr - nl;
 			wp->w_rflag |= WFFULL | WFMODE;
 		}
 }
@@ -138,15 +148,17 @@ balancewind(int f, int n)
 
 	if (wheadp->w_wndp == NULL)
 		return (TRUE);
-	if ((w = balweight(0, nrow - 2, 0, ncol)) == 0)
+	if ((w = balweight(0, nrow - 2, 0, ncol, TRUE)) == 0)
 		return (dobeep_msg("Cannot balance this window layout"));
-	if (nrow - 1 < 2 * w)
+	if (nrow - 1 < 2 * w ||
+	    ncol + 1 < 3 * balweight(0, nrow - 2, 0, ncol, FALSE))
 		return (dobeep_msg("Not enough room to balance"));
-	balassign(0, nrow - 2, 0, nrow - 2, 0, ncol);
+	balassign(0, nrow - 2, 0, ncol, 0, nrow - 2, 0, ncol);
 	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
 		if (wp->w_toprow < 0)
 			wp->w_toprow = -wp->w_toprow - 1;
 	sgarbf = TRUE;
+	quickresize();
 	return (TRUE);
 }
 
@@ -327,7 +339,7 @@ do_redraw(int f, int n, int force)
  * anything, when a window would come out below one text row or
  * two columns.
  */
-static int
+int
 moveseam(int seam, int delta, int horiz)
 {
 	struct mgwin	*wp;

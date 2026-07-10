@@ -527,6 +527,7 @@ int		 onlywind(int, int);
 int		 splitwind(int, int);
 int		 splitwindh(int, int);
 int		 balancewind(int, int);
+int		 moveseam(int, int, int);
 int		 enlargewindh(int, int);
 int		 resizewindleft(int, int);
 int		 resizewindright(int, int);
@@ -752,6 +753,7 @@ int		 wallchart(int, int);
 int		 help_help(int, int);
 int		 apropos_command(int, int);
 int		 quickhelp(int, int);
+void		 quickresize(void);
 int		 tutorial(int, int);
 
 /* paragraph.c X */

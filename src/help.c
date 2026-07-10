@@ -237,7 +237,7 @@ quickhelp(int f, int n)
 {
 	static int	 initialized = 0;
 	struct buffer	*bp;
-	struct mgwin	*wp, *owp;
+	struct mgwin	*wp;
 	int	 nwind;
 
 	/* If already displayed, toggle off */
@@ -279,19 +279,33 @@ quickhelp(int f, int n)
 		nwind--;
 	quick_split = nwind < 0;
 
-	/* shrink the pop-up window to the help text */
+	quickresize();
+	return (TRUE);
+}
+
+/*
+ * Shrink the quick help pop-up back to the height of its text, by
+ * moving its top seam, or at the top of the screen its bottom one.
+ * Also called after balance-windows, which would otherwise resize
+ * it like any other window.
+ */
+void
+quickresize(void)
+{
+	struct buffer	*bp;
+	struct mgwin	*wp;
+	int	 delta;
+
+	if ((bp = bfind("*quick*", FALSE)) == NULL)
+		return;
 	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
 		if (wp->w_bufp == bp)
 			break;
-	if (wp != NULL && wp != curwp && wp->w_ntrows > 6) {
-		owp = curwp;
-		curwp = wp;
-		curbp = wp->w_bufp;
-		(void)shrinkwind(FFRAND, wp->w_ntrows - 6);
-		curwp = owp;
-		curbp = owp->w_bufp;
-	}
-	return (TRUE);
+	if (wp == NULL || (delta = wp->w_ntrows - 6) <= 0)
+		return;
+	if (!moveseam(wp->w_toprow - 1, delta, FALSE))
+		(void)moveseam(wp->w_toprow + wp->w_ntrows, -delta, FALSE);
+	wp->w_linep = lforw(bp->b_headp);
 }
 
 /*
