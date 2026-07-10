@@ -312,6 +312,10 @@ previous-window
 save-some-buffers
 .It C-x u
 undo
+.It C-x {
+shrink-window-horizontally
+.It C-x }
+enlarge-window-horizontally
 .It C-y
 yank
 .It C-z
@@ -636,6 +640,9 @@ progress, call the last keyboard macro.
 .It Ic enlarge-window
 Enlarge the current window by shrinking either the window above
 or below it.
+.It Ic enlarge-window-horizontally
+Widen the current window by taking columns from the window beside
+it, like in GNU Emacs.
 .It Ic eval-current-buffer
 Evaluate the current buffer as a series of
 .Nm
@@ -937,6 +944,15 @@ is negative, it is that line from the bottom.
 .It Ic redraw-display
 Refresh the display.
 Recomputes all window sizes in case something has changed.
+.It Ic resize-window-down
+.It Ic resize-window-left
+.It Ic resize-window-right
+.It Ic resize-window-up
+Move a window edge in the given direction: the edge on that side
+of the current window when it is a divider, otherwise the opposite
+one, so the arrow and the divider travel together.
+Bound to Meta, shift and an arrow key on terminals that send xterm
+style sequences.
 .It Ic require-final-newline <nil | T | ask>
 Require files to have a final newline added when saving.  By default
 this is disabled (nil).  To always add a missing newline set to
@@ -1075,6 +1091,9 @@ sequences.
 Shrink current window by one line.
 The window immediately below is expanded to pick up the slack.
 If only one window is present, this command has no effect.
+.It Ic shrink-window-horizontally
+Narrow the current window, giving the columns to the window beside
+it, like in GNU Emacs.
 .It Ic space-to-tabstop
 Insert enough spaces to reach the next tab-stop position.
 By default, tab-stops occur every 8 characters.

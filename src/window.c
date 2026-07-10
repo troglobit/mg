@@ -320,6 +320,167 @@ do_redraw(int f, int n, int force)
 }
 
 /*
+ * Move the window divider at the given column, or with horiz
+ * false the mode line at the given row, by delta: windows ending
+ * on it grow or shrink, windows starting just past it follow,
+ * with their content anchored.  Refuses, without changing
+ * anything, when a window would come out below one text row or
+ * two columns.
+ */
+static int
+moveseam(int seam, int delta, int horiz)
+{
+	struct mgwin	*wp;
+	struct line	*lp;
+	int	 i, min, size;
+
+	min = horiz ? 2 : 1;
+	if (seam <= 0 || seam >= (horiz ? ncol : nrow - 2))
+		return (FALSE);	/* the screen edge, not a divider */
+	for (wp = wheadp; wp != NULL; wp = wp->w_wndp) {
+		size = horiz ? wp->w_ntcols : wp->w_ntrows;
+		if ((horiz ? wp->w_leftcol + wp->w_ntcols :
+		    wp->w_toprow + wp->w_ntrows) == seam &&
+		    size + delta < min)
+			return (FALSE);
+		if ((horiz ? wp->w_leftcol : wp->w_toprow) == seam + 1 &&
+		    size - delta < min)
+			return (FALSE);
+	}
+	for (wp = wheadp; wp != NULL; wp = wp->w_wndp) {
+		if ((horiz ? wp->w_leftcol + wp->w_ntcols :
+		    wp->w_toprow + wp->w_ntrows) == seam) {
+			if (horiz)
+				wp->w_ntcols += delta;
+			else
+				wp->w_ntrows += delta;
+		} else if ((horiz ? wp->w_leftcol : wp->w_toprow) ==
+		    seam + 1) {
+			if (horiz) {
+				wp->w_leftcol += delta;
+				wp->w_ntcols -= delta;
+			} else {
+				/* keep the content where it is */
+				lp = wp->w_linep;
+				if (delta > 0)
+					for (i = 0; i < delta &&
+					    lp != wp->w_bufp->b_headp; i++)
+						lp = lforw(lp);
+				else
+					for (i = 0; i > delta &&
+					    lback(lp) != wp->w_bufp->b_headp;
+					    i--)
+						lp = lback(lp);
+				wp->w_linep = lp;
+				wp->w_toprow += delta;
+				wp->w_ntrows -= delta;
+			}
+		} else
+			continue;
+		wp->w_rflag |= WFFULL | WFMODE;
+	}
+	sgarbf = TRUE;
+	return (TRUE);
+}
+
+/*
+ * Move a window edge in the given direction, for the Meta, shift
+ * and arrow key bindings: the edge on that side of the current
+ * window when it is a divider, otherwise the opposite one, so the
+ * arrow and the divider always travel together.
+ */
+static int
+resizewind(int dir, int horiz, int n)
+{
+	int	 seam, lo, hi, limit;
+
+	limit = horiz ? ncol : nrow - 2;
+	lo = horiz ? curwp->w_leftcol - 1 : curwp->w_toprow - 1;
+	hi = horiz ? curwp->w_leftcol + curwp->w_ntcols :
+	    curwp->w_toprow + curwp->w_ntrows;
+	seam = dir > 0 ? hi : lo;
+	if (seam <= 0 || seam >= limit)
+		seam = dir > 0 ? lo : hi;
+	if (seam <= 0 || seam >= limit)
+		return (dobeep_msg("No window beside"));
+	if (!moveseam(seam, dir * n, horiz))
+		return (dobeep_msg("Impossible change"));
+	return (TRUE);
+}
+
+int
+resizewindleft(int f, int n)
+{
+	return (resizewind(-1, TRUE, n));
+}
+
+int
+resizewindright(int f, int n)
+{
+	return (resizewind(1, TRUE, n));
+}
+
+int
+resizewindup(int f, int n)
+{
+	return (resizewind(-1, FALSE, n));
+}
+
+int
+resizewinddown(int f, int n)
+{
+	return (resizewind(1, FALSE, n));
+}
+
+/*
+ * Widen the current window by moving the divider beside it, like
+ * enlarge-window-horizontally in GNU Emacs.  The right-most
+ * window widens leftward.
+ */
+int
+enlargewindh(int f, int n)
+{
+	int	 seam;
+
+	if (n < 0)
+		return (shrinkwindh(f, -n));
+	seam = curwp->w_leftcol + curwp->w_ntcols;
+	if (seam >= ncol) {
+		seam = curwp->w_leftcol - 1;
+		n = -n;
+	}
+	if (seam <= 0)
+		return (dobeep_msg("No window beside"));
+	if (!moveseam(seam, n, TRUE))
+		return (dobeep_msg("Impossible change"));
+	return (TRUE);
+}
+
+/*
+ * Narrow the current window, giving the columns to the windows
+ * across the divider, like shrink-window-horizontally in GNU
+ * Emacs.
+ */
+int
+shrinkwindh(int f, int n)
+{
+	int	 seam;
+
+	if (n < 0)
+		return (enlargewindh(f, -n));
+	seam = curwp->w_leftcol + curwp->w_ntcols;
+	if (seam >= ncol) {
+		seam = curwp->w_leftcol - 1;
+		n = -n;
+	}
+	if (seam <= 0)
+		return (dobeep_msg("No window beside"));
+	if (!moveseam(seam, -n, TRUE))
+		return (dobeep_msg("Impossible change"));
+	return (TRUE);
+}
+
+/*
  * Select the window beside the current one, like windmove in GNU
  * Emacs: the neighbor sharing the edge in the given direction,
  * with overlapping rows or columns.

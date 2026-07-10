@@ -223,7 +223,15 @@ static PF cXcar[] = {
 	rescan,			/* r */
 	savebuffers,		/* s */
 	rescan,			/* t */
-	undo			/* u */
+	undo,			/* u */
+	rescan,			/* v */
+	rescan,			/* w */
+	rescan,			/* x */
+	rescan,			/* y */
+	rescan,			/* z */
+	shrinkwindh,		/* { */
+	rescan,			/* | */
+	enlargewindh		/* } */
 };
 
 struct KEYMAPE (6) cXmap = {
@@ -247,7 +255,7 @@ struct KEYMAPE (6) cXmap = {
 			'=', '=', cXeq, NULL
 		},
 		{
-			'^', 'u', cXcar, NULL
+			'^', '}', cXcar, NULL
 		}
 	}
 };

@@ -42,6 +42,10 @@ char	*key_shiftright = "\e[1;2C";
 char	*key_shiftleft  = "\e[1;2D";
 char	*key_shifthome  = "\e[1;2H";
 char	*key_shiftend   = "\e[1;2F";
+char	*key_asup       = "\e[1;4A";
+char	*key_asdown     = "\e[1;4B";
+char	*key_asright    = "\e[1;4C";
+char	*key_asleft     = "\e[1;4D";
 char	*key_csup       = "\e[1;6A";
 char	*key_csdown     = "\e[1;6B";
 char	*key_csright    = "\e[1;6C";
@@ -183,6 +187,14 @@ ttykeymapinit(void)
 	if (key_cleft)
 		dobindkey(fundamental_map, "backward-word", key_cleft);
 
+	if (key_asup)
+		dobindkey(fundamental_map, "resize-window-up", key_asup);
+	if (key_asdown)
+		dobindkey(fundamental_map, "resize-window-down", key_asdown);
+	if (key_asright)
+		dobindkey(fundamental_map, "resize-window-right", key_asright);
+	if (key_asleft)
+		dobindkey(fundamental_map, "resize-window-left", key_asleft);
 	if (key_aup)
 		dobindkey(fundamental_map, "windmove-up", key_aup);
 	if (key_adown)
