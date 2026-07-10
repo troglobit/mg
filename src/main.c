@@ -277,6 +277,7 @@ notnum:
 	update(CMODE);
 	if (helpsh == TRUE) {
 		ewprintf(" %s", hlp);
+		update(CMODE);	/* park the cursor in the buffer */
 		if (helpset == FALSE) {
 			(void)ttwait(10000);
 			helpsh = FALSE;
