@@ -213,18 +213,40 @@ apropos_command(int f, int n)
 /*
  * Show quick help to get started with Mg
  */
+static int	 quickdismiss(int, int);
+
+static PF quick_q[] = {
+	quickdismiss		/* q */
+};
+
+static struct KEYMAPE (1) quickmap = {
+	1,
+	1,
+	rescan,
+	{
+		{
+			'q', 'q', quick_q, NULL
+		}
+	}
+};
+
+static int	 quick_split;	/* the pop-up window is our own */
+
 int
 quickhelp(int f, int n)
 {
+	static int	 initialized = 0;
 	struct buffer	*bp;
-	int		 rc;
+	struct mgwin	*wp, *owp;
+	int	 nwind;
 
 	/* If already displayed, toggle off */
-	bp = bfind("*quick*", FALSE);
-	if (bp) {
-		killbuffer(bp);
-		onlywind(f, n);
-		return (TRUE);
+	if (bfind("*quick*", FALSE) != NULL)
+		return (quickdismiss(f, n));
+
+	if (!initialized) {
+		maps_add((KEYMAP *)&quickmap, "quick");
+		initialized = 1;
 	}
 
 	/* Create new */
@@ -232,6 +254,9 @@ quickhelp(int f, int n)
 	if (bclear(bp) != TRUE)
 		return (FALSE);
 	bp->b_flag |= BFREADONLY;
+	bp->b_modes[0] = name_mode("fundamental");
+	bp->b_modes[1] = name_mode("quick");
+	bp->b_nmodes = 1;
 
 	addline(bp, "FILE             BUFFER          WINDOW           MARK/KILL       MISC");
 	addline(bp, "C-x C-c exit     C-x b   switch  C-x 0 only other C-space mark    C-_ undo");
@@ -240,21 +265,59 @@ quickhelp(int f, int n)
 	addline(bp, "C-x s   save-all C-x h   mark    C-x ^ enlarge    C-y     yank    M-% replace");
 	addline(bp, "C-x i   insert   C-x g   goto-ln C-x o other win  C-x C-x swap    M-q reformat");
 
-	rc = popbuftop(bp, WNONE);
-	if (rc == TRUE) {
-		int n;
+	nwind = 0;
+	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
+		nwind++;
+	if (popbuftop(bp, WNONE) != TRUE)
+		return (FALSE);
+	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
+		nwind--;
+	quick_split = nwind < 0;
 
-		prevwind(0, 0);
-
-		/* Attempt to shkrink window to size fo quick help */
-		n = curwp->w_ntrows - 6;
-		shrinkwind(FFRAND, n);
-
-		prevwind(0, 0);
+	/* shrink the pop-up window to the help text */
+	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
+		if (wp->w_bufp == bp)
+			break;
+	if (wp != NULL && wp != curwp && wp->w_ntrows > 6) {
+		owp = curwp;
+		curwp = wp;
+		curbp = wp->w_bufp;
+		(void)shrinkwind(FFRAND, wp->w_ntrows - 6);
+		curwp = owp;
+		curbp = owp->w_bufp;
 	}
-
-	return rc;
+	return (TRUE);
 }
+
+/*
+ * Close the quick help: delete its window, keeping the rest of
+ * the layout, and drop the buffer.  Bound to q in the pop-up.
+ */
+static int
+quickdismiss(int f, int n)
+{
+	struct buffer	*bp;
+	struct mgwin	*wp, *owp;
+
+	if ((bp = bfind("*quick*", FALSE)) == NULL)
+		return (TRUE);
+	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
+		if (wp->w_bufp == bp)
+			break;
+	if (wp != NULL && quick_split && wheadp->w_wndp != NULL) {
+		owp = curwp == wp ? NULL : curwp;
+		curwp = wp;
+		curbp = wp->w_bufp;
+		(void)delwind(FFRAND, 1);
+		if (owp != NULL) {
+			curwp = owp;
+			curbp = owp->w_bufp;
+		}
+	}
+	/* a reused window gets another buffer from killbuffer */
+	return (killbuffer(bp));
+}
+
 
 /*
  * This function tries to locate the 'tutorial' file, opens a buffer
