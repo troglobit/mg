@@ -359,6 +359,8 @@ resize-window-up, resize-window-down, resize-window-left,
 resize-window-right
 .It S-up, S-down, S-left, S-right, S-Home, S-End
 mark text while moving, like shift-select-mode in GNU Emacs
+.It S-PgUp, S-PgDn
+mark text by page
 .It C-S-up, C-S-down, C-S-left, C-S-right
 mark text by word and paragraph
 .It M-l
@@ -1092,9 +1094,11 @@ for example:
 .It Ic shift-forward-word
 .It Ic shift-backward-paragraph
 .It Ic shift-forward-paragraph
+.It Ic shift-scroll-down
+.It Ic shift-scroll-up
 Move like the unshifted command, activating the mark at dot first,
-so holding shift with the arrow and Home/End keys marks text like
-in GNU Emacs, by word and paragraph with control held too.
+so holding shift with the arrow, Home/End, and PgUp/PgDn keys marks
+text like in GNU Emacs, by word and paragraph with control held too.
 The first unshifted command drops the selection again; a mark set
 with C-SPC is left alone.
 Bound to the shifted keys on terminals that send xterm style

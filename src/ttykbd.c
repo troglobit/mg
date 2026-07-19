@@ -42,6 +42,8 @@ char	*key_shiftright = "\e[1;2C";
 char	*key_shiftleft  = "\e[1;2D";
 char	*key_shifthome  = "\e[1;2H";
 char	*key_shiftend   = "\e[1;2F";
+char	*key_shiftpgup  = "\e[5;2~";
+char	*key_shiftpgdn  = "\e[6;2~";
 char	*key_asup       = "\e[1;4A";
 char	*key_asdown     = "\e[1;4B";
 char	*key_asright    = "\e[1;4C";
@@ -102,6 +104,18 @@ static int
 shiftend(int f, int n)
 {
 	return (shiftmove(gotoeol, f, n));
+}
+
+static int
+shiftpgup(int f, int n)
+{
+	return (shiftmove(backpage, f, n));
+}
+
+static int
+shiftpgdn(int f, int n)
+{
+	return (shiftmove(forwpage, f, n));
 }
 
 static int
@@ -220,6 +234,8 @@ ttykeymapinit(void)
 	funmap_add(shiftdown, "shift-next-line", 0);
 	funmap_add(shifthome, "shift-beginning-of-line", 0);
 	funmap_add(shiftend, "shift-end-of-line", 0);
+	funmap_add(shiftpgup, "shift-scroll-down", 0);
+	funmap_add(shiftpgdn, "shift-scroll-up", 0);
 	funmap_add(shiftbword, "shift-backward-word", 0);
 	funmap_add(shiftfword, "shift-forward-word", 0);
 	funmap_add(shiftbpara, "shift-backward-paragraph", 0);
@@ -230,6 +246,8 @@ ttykeymapinit(void)
 	dobindkey(fundamental_map, "shift-next-line", key_shiftdown);
 	dobindkey(fundamental_map, "shift-beginning-of-line", key_shifthome);
 	dobindkey(fundamental_map, "shift-end-of-line", key_shiftend);
+	dobindkey(fundamental_map, "shift-scroll-down", key_shiftpgup);
+	dobindkey(fundamental_map, "shift-scroll-up", key_shiftpgdn);
 	dobindkey(fundamental_map, "shift-backward-word", key_csleft);
 	dobindkey(fundamental_map, "shift-forward-word", key_csright);
 	dobindkey(fundamental_map, "shift-backward-paragraph", key_csup);
