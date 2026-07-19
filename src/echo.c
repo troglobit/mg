@@ -648,7 +648,7 @@ complt(int flags, int c, char *buf, size_t nbuf, int cpos, int *nx)
 	nxtra = HUGE;
 
 	for (; lh != NULL; lh = lh->l_next) {
-		if (memcmp(buf, lh->l_name, cpos) != 0)
+		if (strncmp(buf, lh->l_name, cpos) != 0)
 			continue;
 		if (nhits == 0)
 			lh2 = lh;
