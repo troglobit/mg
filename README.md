@@ -230,7 +230,7 @@ Please report any bugs and problems using the GitHub issue tracker
 [mg2a]:            https://texteditors.org/cgi-bin/wiki.pl?MG
 [libbsd]:          https://libbsd.freedesktop.org/wiki/
 [Ncurses]:         https://invisible-island.net/ncurses/
-[upstream]:        http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/mg/
+[upstream]:        https://cvsweb.openbsd.org/src/usr.bin/mg/
 [repo]:            https://github.com/troglobit/mg
 [AUTHORS]:         https://github.com/troglobit/mg/blob/master/doc/AUTHORS
 [License]:         https://unlicense.org/

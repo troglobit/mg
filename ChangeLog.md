@@ -427,6 +427,6 @@ set as Mg3a.
 [v3.0.2]:     https://github.com/troglobit/mg/compare/v3.0.1..v3.0.2
 [v3.0.1]:     https://github.com/troglobit/mg/compare/v3.0..v3.0.1
 [v3.0]:       https://github.com/troglobit/mg/compare/TAIL...v3.0
-[Mg2a]:       http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/mg/
-[Mg3a]:       http://www.bengtl.net/files/mg3a/
+[Mg2a]:       https://cvsweb.openbsd.org/src/usr.bin/mg/
+[Mg3a]:       https://web.archive.org/web/20170413230721/http://www.bengtl.net/files/mg3a/
 [libite]:     https://github.com/troglobit/libite/
