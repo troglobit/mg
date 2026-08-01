@@ -3,6 +3,22 @@ Change Log
 
 All relevant changes to the project are documented in this file.
 
+[v4.1][UNRELEASED]
+---------------------
+
+### Changes
+
+- Shift and PgUp/PgDn mark text a page at a time, completing the shift-select
+  support from v4.0: new commands `shift-scroll-down` and `shift-scroll-up`
+
+### Fixes
+
+- Fix marking text with shifted keys in VTE-based terminals when built
+  `--without-curses`: the ansi backend now enters the alternate screen like
+  the terminfo backend.  As a side effect the shell's content and scrollback
+  survive an editing session
+- Update stale links in documentation, issue #40
+
 [v4.0][] - 2026-07-10
 ---------------------
 
@@ -415,7 +431,7 @@ set as Mg3a.
 	functions.  Some simply marked as "don't care"
   - Fix missing initialization of stack variables
 
-[UNRELEASED]: https://github.com/troglobit/mg/compare/v3.7...HEAD
+[UNRELEASED]: https://github.com/troglobit/mg/compare/v4.0...HEAD
 [v4.0]:       https://github.com/troglobit/mg/compare/v3.7...v4.0
 [v3.7]:       https://github.com/troglobit/mg/compare/v3.6...v3.7
 [v3.6]:       https://github.com/troglobit/mg/compare/v3.5...v3.6
