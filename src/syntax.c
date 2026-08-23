@@ -47,6 +47,16 @@ static const char *sh_keywords[] = {
 	NULL
 };
 
+static const char *mk_keywords[] = {
+	"define", "else", "endef", "endif", "export", "ifdef", "ifeq",
+	"ifndef", "ifneq", "include", "override", "sinclude", "undefine",
+	"unexport", "vpath",
+	".DEFAULT|", ".DELETE_ON_ERROR|", ".EXPORT_ALL_VARIABLES|",
+	".INTERMEDIATE|", ".NOTPARALLEL|", ".ONESHELL|", ".PHONY|",
+	".POSIX|", ".PRECIOUS|", ".SECONDARY|", ".SUFFIXES|",
+	NULL
+};
+
 static const char *py_keywords[] = {
 	"and", "as", "assert", "async", "await", "break", "class",
 	"continue", "def", "del", "elif", "else", "except", "finally",
@@ -84,6 +94,8 @@ static const struct syntax syntab[] = {
 	{ "c", c_keywords, "//", 0, "/*", "*/", 1, NULL, 0,
 	    { NULL, NULL }, NULL },
 	{ "shell-script", sh_keywords, "#", 1, NULL, NULL, 0, "{#?@*$!-", 0,
+	    { NULL, NULL }, NULL },
+	{ "makefile", mk_keywords, "#", 0, NULL, NULL, 0, "({@<^?*+$%|", 0,
 	    { NULL, NULL }, NULL },
 	{ "python", py_keywords, "#", 0, NULL, NULL, 0, NULL, 1,
 	    { "\"\"\"", "'''" }, NULL },

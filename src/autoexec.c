@@ -143,6 +143,8 @@ static const struct {
 	{ "python",	"python-mode" },
 	{ "python2",	"python-mode" },
 	{ "python3",	"python-mode" },
+	{ "make",	"makefile-mode" },
+	{ "gmake",	"makefile-mode" },
 	{ NULL,		NULL }
 };
 

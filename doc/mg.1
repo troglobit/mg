@@ -826,6 +826,17 @@ Toggle generation of backup files.
 Enabled by default.
 .It Ic make-directory
 Prompt the user for a path or directory name which is then created.
+.It Ic makefile-mode
+Toggle makefile mode, which selects the makefile rules for syntax
+highlighting: comments, strings, directives like include and ifdef,
+special targets like .PHONY, and variable references, both $(VAR)
+and automatic variables like $@ and $<.
+Enabling it also sets the tab width to eight and turns off
+.Ic no-tab-mode ,
+since recipe lines must start with a real tab.
+Files named Makefile, makefile, GNUmakefile, *.mk, and *.make, and
+files whose first line is a #! naming make, get the mode
+automatically.
 .It Ic mark-paragraph
 Mark
 .Va n
