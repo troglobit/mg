@@ -10,6 +10,14 @@ All relevant changes to the project are documented in this file.
 
 - Shift and PgUp/PgDn mark text a page at a time, completing the shift-select
   support from v4.0: new commands `shift-scroll-down` and `shift-scroll-up`
+- New `makefile-mode` with syntax highlighting and hard tabs, detected for
+  Makefile, GNUmakefile, *.mk, *.make, and `#!/usr/bin/make -f` scripts
+- `shell-script-mode` is now also detected for *.bash, *.ksh, *.zsh, and
+  rc files like `~/.bashrc` and `~/.profile`
+- `auto-execute` patterns now also match against the file's basename, so
+  `auto-execute .bashrc shell-script-mode` works without a leading `*/`
+- Syntax highlighting: `$(...)` variable references are now colored like
+  `${...}`, including nested ones in makefiles
 
 ### Fixes
 
