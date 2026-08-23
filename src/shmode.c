@@ -102,5 +102,15 @@ shmode_init(void)
 	maps_add((KEYMAP *)&shmodemap, "shell-script");
 #ifdef ENABLE_AUTOEXEC
 	(void)add_autoexec("*.sh", "shell-script-mode");
+	(void)add_autoexec("*.bash", "shell-script-mode");
+	(void)add_autoexec("*.ksh", "shell-script-mode");
+	(void)add_autoexec("*.zsh", "shell-script-mode");
+	/* rc files have no extension and usually no #! line */
+	(void)add_autoexec(".profile", "shell-script-mode");
+	(void)add_autoexec(".bash*", "shell-script-mode");
+	(void)add_autoexec(".kshrc", "shell-script-mode");
+	(void)add_autoexec(".zsh*", "shell-script-mode");
+	(void)add_autoexec(".zprofile", "shell-script-mode");
+	(void)add_autoexec(".zlog*", "shell-script-mode");
 #endif
 }

@@ -1081,13 +1081,14 @@ indent mode so RET keeps the indentation of continuation lines.
 TAB indents the line like the previous non-blank line, or every line
 in the region when the mark is active; on a blank line it inserts a
 real tab, for here documents.
-Files named *.sh, and files whose first line is a #! naming a
-Bourne compatible shell, get the mode automatically.
+Files named *.sh, *.bash, *.ksh, *.zsh, shell rc files such as
+.bashrc, .profile, and .zshrc, and files whose first line is a #!
+naming a Bourne compatible shell, get the mode automatically.
 Add other file types with
 .Ic auto-execute ,
 for example:
 .Pp
-.Dl auto-execute *.zsh shell-script-mode
+.Dl auto-execute .aliases shell-script-mode
 .It Ic shift-backward-char
 .It Ic shift-forward-char
 .It Ic shift-next-line
