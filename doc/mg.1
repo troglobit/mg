@@ -447,6 +447,10 @@ that is, specify a filename pattern
 (conforming to the shell's filename globbing rules) and an associated
 function to execute when a file matching the specified pattern
 is read into a buffer.
+The pattern is tried against both the full path and the last path
+component, so
+.Ql .bashrc
+matches that file in any directory.
 .It Ic auto-fill-mode
 Toggle auto-fill mode (sometimes called
 .Ic mail-mode )

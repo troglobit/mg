@@ -32,16 +32,24 @@ find_autoexec(const char *fname)
 {
 	PF		*pfl, *npfl;
 	int		 have, used;
+	const char	*bname;
 	struct autoexec *ae;
 
 	if (!ready)
 		return (NULL);
 
+	/* patterns match the whole path or just the basename */
+	if ((bname = strrchr(fname, '/')) != NULL)
+		bname++;
+	else
+		bname = fname;
+
 	pfl = NULL;
 	have = 0;
 	used = 0;
 	SLIST_FOREACH(ae, &autos, next) {
-		if (fnmatch(ae->pattern, fname, 0) == 0) {
+		if (fnmatch(ae->pattern, fname, 0) == 0 ||
+		    (bname != fname && fnmatch(ae->pattern, bname, 0) == 0)) {
 			if (used >= have) {
 				npfl = reallocarray(pfl, have + AUTO_GROW + 1,
 				    sizeof(PF));
