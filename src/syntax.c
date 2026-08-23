@@ -19,7 +19,8 @@
 
 /*
  * Keywords are NULL-terminated lists; a trailing '|' marks the
- * second class, shown in the type color.
+ * second class, shown in the type color.  A leading '.' is part of
+ * the word, for dotted keywords like make's special targets.
  */
 static const char *c_keywords[] = {
 	"auto", "break", "case", "continue", "default", "do", "else",
@@ -70,7 +71,9 @@ struct syntax {
 	const char	 *sy_mcs;	/* multiline comment start	*/
 	const char	 *sy_mce;	/* multiline comment end	*/
 	int		  sy_preproc;	/* #directive lines		*/
-	int		  sy_dollar;	/* $variable references		*/
+	const char	 *sy_dollar;	/* chars a $variable reference
+					 * may start with; { and ( also
+					 * open a bracketed span	*/
 	int		  sy_atword;	/* @decorator words		*/
 	const char	 *sy_mstr[2];	/* multiline string delimiters	*/
 	/* the keyword machinery does not fit all languages */
@@ -78,15 +81,15 @@ struct syntax {
 };
 
 static const struct syntax syntab[] = {
-	{ "c", c_keywords, "//", 0, "/*", "*/", 1, 0, 0,
+	{ "c", c_keywords, "//", 0, "/*", "*/", 1, NULL, 0,
 	    { NULL, NULL }, NULL },
-	{ "shell-script", sh_keywords, "#", 1, NULL, NULL, 0, 1, 0,
+	{ "shell-script", sh_keywords, "#", 1, NULL, NULL, 0, "{#?@*$!-", 0,
 	    { NULL, NULL }, NULL },
-	{ "python", py_keywords, "#", 0, NULL, NULL, 0, 0, 1,
+	{ "python", py_keywords, "#", 0, NULL, NULL, 0, NULL, 1,
 	    { "\"\"\"", "'''" }, NULL },
-	{ "markdown", NULL, NULL, 0, NULL, NULL, 0, 0, 0,
+	{ "markdown", NULL, NULL, 0, NULL, NULL, 0, NULL, 0,
 	    { NULL, NULL }, md_parse },
-	{ NULL, NULL, NULL, 0, NULL, NULL, 0, 0, 0,
+	{ NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, 0,
 	    { NULL, NULL }, NULL }
 };
 
@@ -268,20 +271,28 @@ syn_parse(const struct syntax *sy, const struct line *lp, int incom,
 			i++;
 			continue;
 		}
-		if (sy->sy_dollar && c == '$' && i + 1 < len) {
+		if (sy->sy_dollar != NULL && c == '$' && i + 1 < len) {
+			int	 close, depth;
+
 			setattr(attr, i, SYN_TYPE);
 			i++;
 			c = lgetc(lp, i);
-			if (c == '{') {
+			if ((c == '{' || c == '(') &&
+			    strchr(sy->sy_dollar, c) != NULL) {
+				close = (c == '{') ? '}' : ')';
+				depth = 0;
 				for (; i < len; i++) {
 					setattr(attr, i, SYN_TYPE);
-					if (lgetc(lp, i) == '}') {
+					if (lgetc(lp, i) == c)
+						depth++;
+					else if (lgetc(lp, i) == close &&
+					    --depth == 0) {
 						i++;
 						break;
 					}
 				}
-			} else if (c == '#' || c == '?' || c == '@' ||
-			    c == '*' || c == '$' || c == '!' || c == '-') {
+			} else if (c != '{' && c != '(' &&
+			    strchr(sy->sy_dollar, c) != NULL) {
 				setattr(attr, i, SYN_TYPE);
 				i++;
 			} else {
@@ -330,7 +341,8 @@ syn_parse(const struct syntax *sy, const struct line *lp, int incom,
 			continue;
 		}
 		if (prev_sep && sy->sy_keywords != NULL &&
-		    (isalpha(c) || c == '_')) {
+		    (isalpha(c) || c == '_' ||
+		    (c == '.' && i + 1 < len && isalpha(lgetc(lp, i + 1))))) {
 			for (end = i + 1; end < len; end++) {
 				c = lgetc(lp, end);
 				if (!isalnum(c) && c != '_')
