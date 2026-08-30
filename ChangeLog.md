@@ -29,6 +29,8 @@ All relevant changes to the project are documented in this file.
   echo line and immediately covered, by the help text or by the line count
   of the files named on the command line, so a `~/.mg` that failed on its
   first line looked like it had never been read at all, issue #41
+- `set-tab-width` in `~/.mg` now also applies to *scratch*, which is created
+  before the startup file is read, issue #41
 - Update stale links in documentation, issue #40
 
 [v4.0][] - 2026-07-10

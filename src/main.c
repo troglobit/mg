@@ -196,6 +196,7 @@ main(int argc, char **argv)
 	 */
 	for (bp = bheadp; bp != NULL; bp = bp->b_bufp) {
 		bp->b_flag = defb_flag;
+		bp->b_tabw = defb_tabw;
 		for (i = 0; i <= defb_nmodes; i++) {
                 	bp->b_modes[i] = defb_modes[i];
         	}

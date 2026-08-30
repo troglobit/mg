@@ -926,6 +926,7 @@ extern int		 ttbot;
 extern int		 tthue;
 extern int		 defb_nmodes;
 extern int		 defb_flag;
+extern int		 defb_tabw;
 extern int		 doaudiblebell;
 extern int		 dovisiblebell;
 extern int		 dblspace;
