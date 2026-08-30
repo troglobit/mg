@@ -5,8 +5,8 @@
  * bytes of a line into comment, string, keyword, type, number and
  * preprocessor.  Which rules apply is decided by the buffer's mode,
  * so c-mode buffers get C rules.  The display code asks for one
- * line at a time; the only state carried across lines is whether a
- * multiline comment is open.
+ * line at a time, and carries one opaque state value from each
+ * line to the next.
  */
 
 #include <ctype.h>
@@ -170,11 +170,11 @@ matchat(const struct line *lp, int i, const char *s)
 /*
  * Classify the bytes of one line.  incom is the open multiline
  * comment or string state at the start of the line: 1 in a comment,
- * the delimiter index plus 2 in a multiline string.  The state
- * after the line is returned.  attr, when not NULL, receives one
- * SYN_* class per byte and must hold llength(lp) bytes.  With a
- * NULL attr only the comment and string state is tracked, for
- * syn_state().
+ * the delimiter index plus 2 in a multiline string.  A language with
+ * its own sy_parse defines the value itself.  The state after the
+ * line is returned.  attr, when not NULL, receives one SYN_* class
+ * per byte and must hold llength(lp) bytes.  With a NULL attr only
+ * the cross-line state is tracked, for syn_state().
  */
 int
 syn_parse(const struct syntax *sy, const struct line *lp, int incom,
@@ -423,18 +423,24 @@ md_underline(const struct line *lp)
 	return (n >= 2 ? c : 0);
 }
 
+#define MD_BREAK	1	/* an indented line here starts a code block */
+
 /*
  * Markdown line classifier, used through sy_parse.  Colors the
  * common core that all the markdown variants agree on; everything
  * else stays plain.  The cross-line state is the fence character
- * while inside a fenced code block, otherwise zero.
+ * while inside a fenced code block, MD_BREAK where an indented
+ * line would start a code block, otherwise zero.
  */
 static int
 md_parse(const struct line *lp, int infence, char *attr)
 {
-	int	 c, i, j, len, n, u;
+	int	 c, i, j, len, n, u, brk;
 
 	len = llength(lp);
+	brk = (infence == MD_BREAK);
+	if (brk)
+		infence = 0;
 
 	/* a fence, ``` or ~~~, opens and closes code blocks */
 	i = 0;
@@ -447,7 +453,7 @@ md_parse(const struct line *lp, int infence, char *attr)
 		if (n >= 3) {
 			if (attr != NULL)
 				memset(attr, SYN_STRING, len);
-			return (infence ? 0 : c);
+			return (infence ? MD_BREAK : c);
 		}
 	}
 	if (infence) {
@@ -455,24 +461,26 @@ md_parse(const struct line *lp, int infence, char *attr)
 			memset(attr, SYN_STRING, len);
 		return (infence);
 	}
-	if (attr == NULL)	/* only the fence state matters */
-		return (0);
 
-	i = 0;
-	n = 0;
-	while (i < len && (lgetc(lp, i) == ' ' || lgetc(lp, i) == '\t')) {
-		n = lgetc(lp, i) == '\t' ? ntabstop(n, 4) : n + 1;
+	/* the fence scan already stepped over leading spaces */
+	n = i;
+	while (i < len && ((c = lgetc(lp, i)) == ' ' || c == '\t')) {
+		n = c == '\t' ? ntabstop(n, 4) : n + 1;
 		i++;
 	}
 	if (i >= len)
-		return (0);
-	c = lgetc(lp, i);
+		return (MD_BREAK);
 
 	/* an indented code block, four columns or more */
-	if (n >= 4) {
-		memset(attr, SYN_STRING, len);
-		return (0);
+	if (n >= 4 && brk) {
+		if (attr != NULL)
+			memset(attr, SYN_STRING, len);
+		return (MD_BREAK);
 	}
+	if (attr == NULL)	/* only the cross-line state matters */
+		return (0);
+
+	c = lgetc(lp, i);
 	/* heading */
 	if (c == '#') {
 		memset(attr, SYN_HEADING, len);

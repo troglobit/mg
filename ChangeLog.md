@@ -32,6 +32,9 @@ All relevant changes to the project are documented in this file.
 - `set-tab-width` in `~/.mg` now also applies to *scratch*, which is created
   before the startup file is read, issue #41
 - Update stale links in documentation, issue #40
+- `markdown-mode` no longer colors the indented continuation lines of a
+  list item as a verbatim block.  An indented block is only verbatim when
+  a blank line precedes it
 
 [v4.0][] - 2026-07-10
 ---------------------
