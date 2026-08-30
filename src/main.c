@@ -271,13 +271,21 @@ notnum:
 	if (nfiles > 2)
 		listbuffers(0, 1);
 
+	update(CMODE);
+
+	/* The files just read report their line counts over it, issue #41 */
+	loadreport();
+
 	/*
 	 * The startup help is a courtesy to beginners: dismiss it on
 	 * the first key press, or after ten seconds, unless the user
-	 * asked to keep it with display-help-mode.
+	 * asked to keep it with display-help-mode.  Anything already in
+	 * the echo line outranks it.
 	 */
-	update(CMODE);
-	if (helpsh == TRUE) {
+	if (epresf != FALSE) {
+		if (helpset == FALSE)
+			helpsh = FALSE;
+	} else if (helpsh == TRUE) {
 		ewprintf(" %s", hlp);
 		update(CMODE);	/* park the cursor in the buffer */
 		if (helpset == FALSE) {

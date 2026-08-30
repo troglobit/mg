@@ -649,6 +649,8 @@ cleanup:
 	return (FALSE);
 }
 
+static char	 loaderr[NFILEN + 64];	/* where load() last gave up */
+
 /*
  * load - go load the file name we got passed.
  */
@@ -664,17 +666,34 @@ load(FILE *ffp, const char *fname)
 	    == FIOSUC) {
 		line++;
 		excbuf[nbytes] = '\0';
-		if (excline(excbuf, nbytes, line) != TRUE) {
-			s = FIOERR;
-			dobeep();
-			ewprintf("Error loading file %s at line %d", fname, line);
-			break;
-		}
+		if (excline(excbuf, nbytes, line) != TRUE)
+			goto err;
 	}
 	excbuf[nbytes] = '\0';
-	if (s != FIOEOF || (nbytes && excline(excbuf, nbytes, ++line) != TRUE))
+	if (s != FIOEOF)
 		return (FALSE);
+	if (nbytes && excline(excbuf, nbytes, ++line) != TRUE)
+		goto err;
 	return (TRUE);
+err:
+	dobeep();
+	snprintf(loaderr, sizeof(loaderr), "Error loading file %s at line %d",
+	    fname, line);
+	update(CMODE);		/* a queued redraw would wipe the message */
+	ewprintf("%s", loaderr);
+	return (FALSE);
+}
+
+/*
+ * Show the last load() error again.  At startup the startup file is read
+ * before the files named on the command line, whose own messages land on
+ * top of it.  See issue #41.
+ */
+void
+loadreport(void)
+{
+	if (loaderr[0] != '\0')
+		ewprintf("%s", loaderr);
 }
 
 /*

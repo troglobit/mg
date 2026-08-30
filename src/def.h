@@ -743,6 +743,7 @@ int		 evalexpr(int, int);
 int		 evalbuffer(int, int);
 int		 evalfile(int, int);
 int		 load(FILE *, const char *);
+void		 loadreport(void);
 int		 excline(char *, int, int);
 char		*skipwhite(char *);
 
