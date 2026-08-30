@@ -78,6 +78,7 @@ static const char *conf_keywords[] = {
 };
 
 static int	 conf_lead(const struct line *, char *);
+static int	 commit_parse(const struct line *, int, char *);
 static int	 diff_parse(const struct line *, int, char *);
 static int	 md_parse(const struct line *, int, char *);
 
@@ -114,6 +115,7 @@ static const struct syntax syntab[] = {
 	    .sy_slcomm = "#", .sy_slsep = 1, .sy_dollar = "{",
 	    .sy_lead = conf_lead },
 	{ .sy_mode = "diff", .sy_parse = diff_parse },
+	{ .sy_mode = "git-commit", .sy_parse = commit_parse },
 	{ .sy_mode = "markdown", .sy_parse = md_parse },
 	{ NULL }
 };
@@ -510,6 +512,48 @@ diff_parse(const struct line *lp, int inhunk, char *attr)
 	for (h = diff_headers; *h != NULL; h++)
 		if (matchat(lp, 0, *h) != 0) {
 			setattrs(attr, 0, len, SYN_HEADING);
+			break;
+		}
+	return (0);
+}
+
+/*
+ * The trailers git and the kernel process, colored so that the ones
+ * C-c C-s and its siblings add stand out from the message.
+ */
+static const char *commit_trailers[] = {
+	"Signed-off-by: ", "Acked-by: ", "Reviewed-by: ", "Tested-by: ",
+	"Reported-by: ", "Suggested-by: ", "Co-authored-by: ",
+	"Fixes: ", "Closes: ", "Link: ", "Cc: ",
+	NULL
+};
+
+#define COMMIT_DIFF	2	/* below the message, on the diff rules */
+
+/*
+ * Git commit message classifier, used through sy_parse.  The message
+ * is plain, the lines git adds below it are comments, and the diff a
+ * verbose commit appends runs on the diff rules, carrying the diff
+ * state alongside COMMIT_DIFF.
+ */
+static int
+commit_parse(const struct line *lp, int state, char *attr)
+{
+	const char	**t;
+	int	 len;
+
+	if (state != 0 || matchat(lp, 0, "diff --git ") != 0)
+		return (COMMIT_DIFF |
+		    diff_parse(lp, state & ~COMMIT_DIFF, attr));
+
+	len = llength(lp);
+	if (len > 0 && lgetc(lp, 0) == '#') {
+		setattrs(attr, 0, len, SYN_COMMENT);
+		return (0);
+	}
+	for (t = commit_trailers; *t != NULL; t++)
+		if (matchat(lp, 0, *t) != 0) {
+			setattrs(attr, 0, len, SYN_TYPE);
 			break;
 		}
 	return (0);

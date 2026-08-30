@@ -142,6 +142,7 @@ main(int argc, char **argv)
 		extern void cmode_init(void);
 		extern void confmode_init(void);
 		extern void diffmode_init(void);
+		extern void gitmode_init(void);
 		extern void shmode_init(void);
 		extern void mdmode_init(void);
 		extern void mkmode_init(void);
@@ -158,6 +159,7 @@ main(int argc, char **argv)
 #endif
 		confmode_init();
 		diffmode_init();
+		gitmode_init();
 		shmode_init();
 		mdmode_init();
 		mkmode_init();

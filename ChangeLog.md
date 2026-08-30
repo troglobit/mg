@@ -10,6 +10,11 @@ All relevant changes to the project are documented in this file.
 
 - Shift and PgUp/PgDn mark text a page at a time, completing the shift-select
   support from v4.0: new commands `shift-scroll-down` and `shift-scroll-up`
+- New `git-commit-mode` for COMMIT_EDITMSG and friends: the comments git adds
+  are dimmed, trailers stand out, and a `commit -v` diff is colored on the
+  diff-mode rules.  Bound like Magit's git-commit mode: `C-c C-c` finishes the
+  commit, `C-c C-k` aborts it, and `C-c C-s`, `C-c C-a`, `C-c C-r`, `C-c C-t`
+  add Signed-off-by, Acked-by, Reviewed-by and Tested-by trailers
 - New `diff-mode` with syntax highlighting for patches, detected for *.diff,
   *.patch and *.rej.  Removed and added lines are only colored inside a hunk,
   so the message of a mailed patch keeps its own dashes

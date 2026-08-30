@@ -746,6 +746,41 @@ paragraphs.
 Paragraphs are delimited by <NL><NL> or <NL><TAB> or <NL><SPACE>.
 .It Ic forward-word
 Move the cursor forward by the specified number of words.
+.It Ic git-commit-mode
+Toggle git commit message mode, which selects the git-commit rules
+for syntax highlighting: the lines git comments out below the
+message, the trailers at the end of it, and the diff that
+.Nm git Cm commit Fl v
+appends, on the same rules as
+.Ic diff-mode .
+It also binds the keys Magit's git-commit mode made standard:
+.Pp
+.Bl -tag -width "C-c C-s" -compact
+.It Ic C-c C-c
+Hand the message back to git: save the buffer and exit.
+.It Ic C-c C-k
+Abort, after a confirmation.
+The buffer is emptied before it is saved, which is how git, and
+.Nm git Cm tag
+and
+.Nm git Cm rebase Fl i
+with it, are told to give up.
+.It Ic C-c C-s
+Add a Signed-off-by trailer for the committer, as read from
+.Nm git Cm var Cm GIT_COMMITTER_IDENT .
+.It Ic C-c C-a
+Add an Acked-by trailer.
+.It Ic C-c C-r
+Add a Reviewed-by trailer.
+.It Ic C-c C-t
+Add a Tested-by trailer.
+.El
+.Pp
+A trailer goes below the message and above the comments, joining the
+trailer block already there or opening one under the body.
+Dot does not move.
+Files named COMMIT_EDITMSG, MERGE_MSG, NOTES_EDITMSG, TAG_EDITMSG and
+git-rebase-todo get the mode automatically.
 .It Ic global-set-key
 Bind a key in the global (fundamental) key map.
 .It Ic global-unset-key
