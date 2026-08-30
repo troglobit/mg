@@ -10,6 +10,10 @@ All relevant changes to the project are documented in this file.
 
 - Shift and PgUp/PgDn mark text a page at a time, completing the shift-select
   support from v4.0: new commands `shift-scroll-down` and `shift-scroll-up`
+- New `conf-mode` with syntax highlighting for configuration files, detected
+  for *.conf, *.cfg, *.ini, *.toml, systemd units, .desktop entries, fstab,
+  ssh_config, sshd_config, ~/.gitconfig, ~/.editorconfig, and the .config
+  and *defconfig files written by kconfig
 - New `makefile-mode` with syntax highlighting and hard tabs, detected for
   Makefile, GNUmakefile, *.mk, *.make, and `#!/usr/bin/make -f` scripts
 - `shell-script-mode` is now also detected for *.bash, *.ksh, *.zsh, and

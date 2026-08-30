@@ -530,6 +530,18 @@ See also
 .It Ic column-number-mode
 Toggle whether the column number is displayed in the modeline.
 Enabled by default.
+.It Ic conf-mode
+Toggle configuration file mode, which selects the conf rules for
+syntax highlighting: comments started by # or ;, [section] headers,
+the key of a key = value pair, quoted strings, numbers, and words
+like yes, no and off.
+Enabling it also sets the tab width to eight, which is what
+.Pa /etc
+is written for.
+Files named *.conf, *.cfg, *.ini and *.toml get the mode
+automatically, as do systemd units, .desktop entries, fstab,
+ssh_config, sshd_config, ~/.gitconfig, ~/.editorconfig, and the
+.config and *defconfig files written by kconfig.
 .It Ic copy-region-as-kill
 Copy all of the characters in the region to the kill buffer,
 clearing the mark afterwards.

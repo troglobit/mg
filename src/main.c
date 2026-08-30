@@ -140,6 +140,7 @@ main(int argc, char **argv)
 		extern void grep_init(void);
 		extern void dired_init(void);
 		extern void cmode_init(void);
+		extern void confmode_init(void);
 		extern void shmode_init(void);
 		extern void mdmode_init(void);
 		extern void mkmode_init(void);
@@ -154,6 +155,7 @@ main(int argc, char **argv)
 #ifdef ENABLE_CMODE
 		cmode_init();
 #endif
+		confmode_init();
 		shmode_init();
 		mdmode_init();
 		mkmode_init();

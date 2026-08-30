@@ -71,11 +71,19 @@ static const char *py_keywords[] = {
 	NULL
 };
 
+static const char *conf_keywords[] = {
+	"false|", "no|", "none|", "off|", "on|", "true|", "yes|",
+	"m|", "n|", "y|",
+	NULL
+};
+
+static int	 conf_lead(const struct line *, char *);
 static int	 md_parse(const struct line *, int, char *);
 
 struct syntax {
 	const char	 *sy_mode;	/* buffer mode this applies to	*/
 	const char	**sy_keywords;
+	const char	 *sy_wordchr;	/* extra characters inside a word */
 	const char	 *sy_slcomm;	/* single line comment starter	*/
 	int		  sy_slsep;	/* which needs a separator first */
 	const char	 *sy_mcs;	/* multiline comment start	*/
@@ -86,23 +94,26 @@ struct syntax {
 					 * open a bracketed span	*/
 	int		  sy_atword;	/* @decorator words		*/
 	const char	 *sy_mstr[2];	/* multiline string delimiters	*/
+	/* the start of a line; may not open cross-line state */
+	int		(*sy_lead)(const struct line *, char *);
 	/* the keyword machinery does not fit all languages */
 	int		(*sy_parse)(const struct line *, int, char *);
 };
 
 static const struct syntax syntab[] = {
-	{ "c", c_keywords, "//", 0, "/*", "*/", 1, NULL, 0,
-	    { NULL, NULL }, NULL },
-	{ "shell-script", sh_keywords, "#", 1, NULL, NULL, 0, "{#?@*$!-", 0,
-	    { NULL, NULL }, NULL },
-	{ "makefile", mk_keywords, "#", 0, NULL, NULL, 0, "({@<^?*+$%|", 0,
-	    { NULL, NULL }, NULL },
-	{ "python", py_keywords, "#", 0, NULL, NULL, 0, NULL, 1,
-	    { "\"\"\"", "'''" }, NULL },
-	{ "markdown", NULL, NULL, 0, NULL, NULL, 0, NULL, 0,
-	    { NULL, NULL }, md_parse },
-	{ NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, 0,
-	    { NULL, NULL }, NULL }
+	{ .sy_mode = "c", .sy_keywords = c_keywords, .sy_slcomm = "//",
+	    .sy_mcs = "/*", .sy_mce = "*/", .sy_preproc = 1 },
+	{ .sy_mode = "shell-script", .sy_keywords = sh_keywords,
+	    .sy_slcomm = "#", .sy_slsep = 1, .sy_dollar = "{#?@*$!-" },
+	{ .sy_mode = "makefile", .sy_keywords = mk_keywords,
+	    .sy_slcomm = "#", .sy_dollar = "({@<^?*+$%|" },
+	{ .sy_mode = "python", .sy_keywords = py_keywords, .sy_slcomm = "#",
+	    .sy_atword = 1, .sy_mstr = { "\"\"\"", "'''" } },
+	{ .sy_mode = "conf", .sy_keywords = conf_keywords, .sy_wordchr = "-",
+	    .sy_slcomm = "#", .sy_slsep = 1, .sy_dollar = "{",
+	    .sy_lead = conf_lead },
+	{ .sy_mode = "markdown", .sy_parse = md_parse },
+	{ NULL }
 };
 
 /*
@@ -138,9 +149,24 @@ syn_multiline(struct buffer *bp)
 	    sy->sy_parse != NULL));
 }
 
+/*
+ * True when c is part of a word, which a language may widen
+ * with sy_wordchr.
+ */
 static int
-issep(int c)
+iswordc(const struct syntax *sy, int c)
 {
+	if (isalnum(c) || c == '_')
+		return (1);
+	return (c != '\0' && sy->sy_wordchr != NULL &&
+	    strchr(sy->sy_wordchr, c) != NULL);
+}
+
+static int
+issep(const struct syntax *sy, int c)
+{
+	if (iswordc(sy, c))
+		return (0);
 	return (c == '\0' || isspace(c) ||
 	    strchr(",.()+-/*=~%<>[];{}!&^|?:", c) != NULL);
 }
@@ -193,6 +219,8 @@ syn_parse(const struct syntax *sy, const struct line *lp, int incom,
 		return (sy->sy_parse(lp, incom, attr));
 
 	i = 0;
+	if (sy->sy_lead != NULL)
+		i = sy->sy_lead(lp, attr);
 	while (i < len) {
 		c = lgetc(lp, i);
 		if (incom == 1) {
@@ -309,8 +337,7 @@ syn_parse(const struct syntax *sy, const struct line *lp, int incom,
 				i++;
 			} else {
 				for (; i < len; i++) {
-					c = lgetc(lp, i);
-					if (!isalnum(c) && c != '_')
+					if (!iswordc(sy, lgetc(lp, i)))
 						break;
 					setattr(attr, i, SYN_TYPE);
 				}
@@ -355,11 +382,9 @@ syn_parse(const struct syntax *sy, const struct line *lp, int incom,
 		if (prev_sep && sy->sy_keywords != NULL &&
 		    (isalpha(c) || c == '_' ||
 		    (c == '.' && i + 1 < len && isalpha(lgetc(lp, i + 1))))) {
-			for (end = i + 1; end < len; end++) {
-				c = lgetc(lp, end);
-				if (!isalnum(c) && c != '_')
-					break;
-			}
+			for (end = i + 1; end < len &&
+			    iswordc(sy, lgetc(lp, end)); end++)
+				;
 			for (kw = sy->sy_keywords; *kw != NULL; kw++) {
 				j = strlen(*kw);
 				n = ((*kw)[j - 1] == '|');
@@ -377,10 +402,48 @@ syn_parse(const struct syntax *sy, const struct line *lp, int incom,
 			prev_sep = 0;
 			continue;
 		}
-		prev_sep = issep(c);
+		prev_sep = issep(sy, c);
 		i++;
 	}
 	return (incom);
+}
+
+/*
+ * The leading part of a configuration file line, used through
+ * sy_lead: a [section] header, or the key of a key = value pair.
+ * Returns the offset where the generic rules take over.
+ */
+static int
+conf_lead(const struct line *lp, char *attr)
+{
+	int	 c, i, j, len;
+
+	len = llength(lp);
+	(void)lineindent(lp, &i);
+	if (i >= len)
+		return (i);
+	c = lgetc(lp, i);
+
+	/* ; opens a comment like #, but only at the start of a line */
+	if (c == ';') {
+		if (attr != NULL)
+			memset(attr + i, SYN_COMMENT, len - i);
+		return (len);
+	}
+	/* a [section] header owns its line */
+	if (c == '[') {
+		if (attr != NULL)
+			memset(attr + i, SYN_HEADING, len - i);
+		return (len);
+	}
+	if (!isalnum(c) && strchr("_./-*", c) == NULL)
+		return (i);
+
+	for (j = i; j < len && strchr("=: \t", lgetc(lp, j)) == NULL; j++)
+		;
+	if (attr != NULL)
+		memset(attr + i, SYN_KEYWORD, j - i);
+	return (j);
 }
 
 /*
