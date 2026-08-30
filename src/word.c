@@ -107,7 +107,7 @@ transposeword(int f, int n)
 	(void)backword(FFRAND, 1);
 	ret = grabword(&word1);
 	if (ret == ABORT) {
-		ewprintf("No word to the left to tranpose.");
+		ewprintf("No word to the left to transpose.");
 		return (FALSE);
 	}
 	if (ret < 0) {
