@@ -141,6 +141,7 @@ main(int argc, char **argv)
 		extern void dired_init(void);
 		extern void cmode_init(void);
 		extern void confmode_init(void);
+		extern void diffmode_init(void);
 		extern void shmode_init(void);
 		extern void mdmode_init(void);
 		extern void mkmode_init(void);
@@ -156,6 +157,7 @@ main(int argc, char **argv)
 		cmode_init();
 #endif
 		confmode_init();
+		diffmode_init();
 		shmode_init();
 		mdmode_init();
 		mkmode_init();

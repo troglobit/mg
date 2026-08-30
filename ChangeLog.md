@@ -10,6 +10,9 @@ All relevant changes to the project are documented in this file.
 
 - Shift and PgUp/PgDn mark text a page at a time, completing the shift-select
   support from v4.0: new commands `shift-scroll-down` and `shift-scroll-up`
+- New `diff-mode` with syntax highlighting for patches, detected for *.diff,
+  *.patch and *.rej.  Removed and added lines are only colored inside a hunk,
+  so the message of a mailed patch keeps its own dashes
 - New `conf-mode` with syntax highlighting for configuration files, detected
   for *.conf, *.cfg, *.ini, *.toml, systemd units, .desktop entries, fstab,
   ssh_config, sshd_config, ~/.gitconfig, ~/.editorconfig, and the .config

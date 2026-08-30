@@ -78,6 +78,7 @@ static const char *conf_keywords[] = {
 };
 
 static int	 conf_lead(const struct line *, char *);
+static int	 diff_parse(const struct line *, int, char *);
 static int	 md_parse(const struct line *, int, char *);
 
 struct syntax {
@@ -112,6 +113,7 @@ static const struct syntax syntab[] = {
 	{ .sy_mode = "conf", .sy_keywords = conf_keywords, .sy_wordchr = "-",
 	    .sy_slcomm = "#", .sy_slsep = 1, .sy_dollar = "{",
 	    .sy_lead = conf_lead },
+	{ .sy_mode = "diff", .sy_parse = diff_parse },
 	{ .sy_mode = "markdown", .sy_parse = md_parse },
 	{ NULL }
 };
@@ -444,6 +446,73 @@ conf_lead(const struct line *lp, char *attr)
 		;
 	setattrs(attr, i, j - i, SYN_KEYWORD);
 	return (j);
+}
+
+/*
+ * Lines that head a file in a diff.
+ */
+static const char *diff_headers[] = {
+	"---", "+++", "====", "diff -", "index ", "Index: ", "Only in ",
+	"old mode ", "new mode ", "new file mode ", "deleted file mode ",
+	"similarity index ", "dissimilarity index ",
+	"rename from ", "rename to ", "copy from ", "copy to ",
+	"Binary files ", "GIT binary patch",
+	NULL
+};
+
+#define DIFF_HUNK	1	/* inside a hunk, where +/- are edits */
+
+/*
+ * Diff line classifier, used through sy_parse.  Every line takes one
+ * color, picked from what it starts with.  The cross-line state says
+ * whether a hunk is open, so that the - bullets in the message of a
+ * mailed patch stay plain.
+ */
+static int
+diff_parse(const struct line *lp, int inhunk, char *attr)
+{
+	const char	**h;
+	int	 cls, len;
+
+	len = llength(lp);
+	if (len == 0)
+		return (0);	/* a hunk carries no blank lines of its own */
+
+	if (inhunk) {
+		/* the signature of a mailed patch, not a removed line */
+		if (len == 3 && matchat(lp, 0, "-- ") != 0)
+			return (0);
+		cls = -1;
+		switch (lgetc(lp, 0)) {
+		case ' ':
+			cls = SYN_NONE;
+			break;
+		case '+':
+			cls = SYN_TYPE;
+			break;
+		case '-':
+			cls = SYN_NUMBER;
+			break;
+		case '\\':	/* \ No newline at end of file */
+			cls = SYN_COMMENT;
+			break;
+		}
+		if (cls != -1) {
+			setattrs(attr, 0, len, cls);
+			return (DIFF_HUNK);
+		}
+		/* anything else ends the hunk */
+	}
+	if (matchat(lp, 0, "@@") != 0) {
+		setattrs(attr, 0, len, SYN_COMMENT);
+		return (DIFF_HUNK);
+	}
+	for (h = diff_headers; *h != NULL; h++)
+		if (matchat(lp, 0, *h) != 0) {
+			setattrs(attr, 0, len, SYN_HEADING);
+			break;
+		}
+	return (0);
 }
 
 /*
