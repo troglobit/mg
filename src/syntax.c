@@ -179,6 +179,16 @@ setattr(char *attr, int i, int cls)
 }
 
 /*
+ * Color n bytes from i.
+ */
+static void
+setattrs(char *attr, int i, int n, int cls)
+{
+	if (attr != NULL)
+		memset(attr + i, cls, n);
+}
+
+/*
  * Length of s when the line matches it at byte offset i, else 0.
  */
 static int
@@ -212,8 +222,7 @@ syn_parse(const struct syntax *sy, const struct line *lp, int incom,
 	int	 instr = 0;
 
 	len = llength(lp);
-	if (attr != NULL)
-		memset(attr, SYN_NONE, len);
+	setattrs(attr, 0, len, SYN_NONE);
 
 	if (sy->sy_parse != NULL)
 		return (sy->sy_parse(lp, incom, attr));
@@ -225,8 +234,7 @@ syn_parse(const struct syntax *sy, const struct line *lp, int incom,
 		c = lgetc(lp, i);
 		if (incom == 1) {
 			if ((n = matchat(lp, i, sy->sy_mce)) != 0) {
-				for (j = 0; j < n; j++)
-					setattr(attr, i + j, SYN_COMMENT);
+				setattrs(attr, i, n, SYN_COMMENT);
 				i += n;
 				incom = 0;
 				prev_sep = 1;
@@ -246,8 +254,7 @@ syn_parse(const struct syntax *sy, const struct line *lp, int incom,
 			}
 			if (c == sy->sy_mstr[incom - 2][0] &&
 			    (n = matchat(lp, i, sy->sy_mstr[incom - 2])) != 0) {
-				for (j = 0; j < n; j++)
-					setattr(attr, i + j, SYN_STRING);
+				setattrs(attr, i, n, SYN_STRING);
 				i += n;
 				incom = 0;
 				prev_sep = 0;
@@ -274,14 +281,12 @@ syn_parse(const struct syntax *sy, const struct line *lp, int incom,
 		if (sy->sy_slcomm != NULL &&
 		    (!sy->sy_slsep || prev_sep) &&
 		    matchat(lp, i, sy->sy_slcomm) != 0) {
-			for (j = i; j < len; j++)
-				setattr(attr, j, SYN_COMMENT);
+			setattrs(attr, i, len - i, SYN_COMMENT);
 			break;
 		}
 		if (sy->sy_mcs != NULL &&
 		    (n = matchat(lp, i, sy->sy_mcs)) != 0) {
-			for (j = 0; j < n; j++)
-				setattr(attr, i + j, SYN_COMMENT);
+			setattrs(attr, i, n, SYN_COMMENT);
 			i += n;
 			incom = 1;
 			continue;
@@ -294,8 +299,7 @@ syn_parse(const struct syntax *sy, const struct line *lp, int incom,
 					break;
 			if (j < 2) {
 				incom = j + 2;
-				for (j = 0; j < n; j++)
-					setattr(attr, i + j, SYN_STRING);
+				setattrs(attr, i, n, SYN_STRING);
 				i += n;
 				continue;
 			}
@@ -393,9 +397,8 @@ syn_parse(const struct syntax *sy, const struct line *lp, int incom,
 				if (memcmp(ltext(lp) + i, *kw,
 				    end - i) != 0)
 					continue;
-				for (j = i; j < end; j++)
-					setattr(attr, j,
-					    n ? SYN_TYPE : SYN_KEYWORD);
+				setattrs(attr, i, end - i,
+				    n ? SYN_TYPE : SYN_KEYWORD);
 				break;
 			}
 			i = end;
@@ -426,14 +429,12 @@ conf_lead(const struct line *lp, char *attr)
 
 	/* ; opens a comment like #, but only at the start of a line */
 	if (c == ';') {
-		if (attr != NULL)
-			memset(attr + i, SYN_COMMENT, len - i);
+		setattrs(attr, i, len - i, SYN_COMMENT);
 		return (len);
 	}
 	/* a [section] header owns its line */
 	if (c == '[') {
-		if (attr != NULL)
-			memset(attr + i, SYN_HEADING, len - i);
+		setattrs(attr, i, len - i, SYN_HEADING);
 		return (len);
 	}
 	if (!isalnum(c) && strchr("_./-*", c) == NULL)
@@ -441,8 +442,7 @@ conf_lead(const struct line *lp, char *attr)
 
 	for (j = i; j < len && strchr("=: \t", lgetc(lp, j)) == NULL; j++)
 		;
-	if (attr != NULL)
-		memset(attr + i, SYN_KEYWORD, j - i);
+	setattrs(attr, i, j - i, SYN_KEYWORD);
 	return (j);
 }
 
@@ -514,14 +514,12 @@ md_parse(const struct line *lp, int infence, char *attr)
 		for (n = 0, j = i; j < len && lgetc(lp, j) == c; j++)
 			n++;
 		if (n >= 3) {
-			if (attr != NULL)
-				memset(attr, SYN_STRING, len);
+			setattrs(attr, 0, len, SYN_STRING);
 			return (infence ? MD_BREAK : c);
 		}
 	}
 	if (infence) {
-		if (attr != NULL)
-			memset(attr, SYN_STRING, len);
+		setattrs(attr, 0, len, SYN_STRING);
 		return (infence);
 	}
 
@@ -536,8 +534,7 @@ md_parse(const struct line *lp, int infence, char *attr)
 
 	/* an indented code block, four columns or more */
 	if (n >= 4 && brk) {
-		if (attr != NULL)
-			memset(attr, SYN_STRING, len);
+		setattrs(attr, 0, len, SYN_STRING);
 		return (MD_BREAK);
 	}
 	if (attr == NULL)	/* only the cross-line state matters */
@@ -546,36 +543,36 @@ md_parse(const struct line *lp, int infence, char *attr)
 	c = lgetc(lp, i);
 	/* heading */
 	if (c == '#') {
-		memset(attr, SYN_HEADING, len);
+		setattrs(attr, 0, len, SYN_HEADING);
 		return (0);
 	}
 	/* block quote */
 	if (c == '>') {
-		memset(attr, SYN_COMMENT, len);
+		setattrs(attr, 0, len, SYN_COMMENT);
 		return (0);
 	}
 	/* setext heading: text with a ==== or ---- line under it */
 	u = md_underline(lp);
 	n = md_underline(lforw(lp));
 	if (u == 0 && (n == '=' || n == '-')) {
-		memset(attr, SYN_HEADING, len);
+		setattrs(attr, 0, len, SYN_HEADING);
 		return (0);
 	}
 	/* the underline under a setext heading */
 	if ((u == '=' || u == '-') && llength(lback(lp)) > 0) {
-		memset(attr, SYN_HEADING, len);
+		setattrs(attr, 0, len, SYN_HEADING);
 		return (0);
 	}
 	/* horizontal rules */
 	if (u != 0) {
-		memset(attr, SYN_KEYWORD, len);
+		setattrs(attr, 0, len, SYN_KEYWORD);
 		return (0);
 	}
 	/* a link reference definition, [label]: url */
 	if (c == '[') {
 		j = scanto(lp, i + 1, ']');
 		if (matchat(lp, j, "]:") != 0 && lgetc(lp, i + 1) != '^') {
-			memset(attr, SYN_PREPROC, len);
+			setattrs(attr, 0, len, SYN_PREPROC);
 			return (0);
 		}
 	}
