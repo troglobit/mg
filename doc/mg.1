@@ -1211,6 +1211,22 @@ and switch back to alternate screen, if in use.
 Prompt and switch to a new buffer in the current window.
 .It Ic switch-to-buffer-other-window
 Switch to buffer in another window.
+.It Ic text-mode
+Toggle text mode, for prose rather than code.
+Enabling it turns on
+.Ic auto-fill-mode ,
+so typing past the fill column wraps the line.
+Plain text has no syntax rules, so nothing is colored.
+Files named *.txt and *.text get the mode automatically, as do the
+files a source tree keeps without a suffix, AUTHORS, COPYING,
+INSTALL, LICENSE, NEWS, README, THANKS and TODO, and the file
+.Xr mutt 1
+hands its editor.
+Add other file types with
+.Ic auto-execute ,
+for example:
+.Pp
+.Dl auto-execute *.rst text-mode
 .It Ic toggle-read-only
 Toggle the read-only flag on the current buffer.
 .It Ic toggle-read-only-all

@@ -12,6 +12,9 @@ All relevant changes to the project are documented in this file.
   incremental redraws and cursor positioning aligned
 - Shift and PgUp/PgDn mark text a page at a time, completing the shift-select
   support from v4.0: new commands `shift-scroll-down` and `shift-scroll-up`
+- New `text-mode` for prose, which turns on `auto-fill-mode`, detected for
+  *.txt, *.text, the suffixless files a source tree keeps like README and
+  LICENSE, and the file mutt hands its editor
 - New `git-commit-mode` for COMMIT_EDITMSG and friends: the comments git adds
   are dimmed, trailers stand out, and a `commit -v` diff is colored on the
   diff-mode rules.  Bound like Magit's git-commit mode: `C-c C-c` finishes the
