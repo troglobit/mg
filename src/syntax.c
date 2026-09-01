@@ -126,16 +126,12 @@ static const struct syntax syntab[] = {
 const struct syntax *
 syntax_lookup(struct buffer *bp)
 {
-	struct maps_s	*m;
-	int	 i, j;
+	const char	*mode = buf_major(bp)->p_name;
+	int	 j;
 
-	for (j = 0; syntab[j].sy_mode != NULL; j++) {
-		if ((m = name_mode(syntab[j].sy_mode)) == NULL)
-			continue;
-		for (i = 0; i <= bp->b_nmodes; i++)
-			if (bp->b_modes[i] == m)
-				return (&syntab[j]);
-	}
+	for (j = 0; syntab[j].sy_mode != NULL; j++)
+		if (strcmp(syntab[j].sy_mode, mode) == 0)
+			return (&syntab[j]);
 	return (NULL);
 }
 

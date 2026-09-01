@@ -39,6 +39,7 @@ typedef struct keymap_s KEYMAPE(1) KEYMAP;
 struct maps_s {
 	KEYMAP		*p_map;
 	const char	*p_name;
+	int		 p_minor;	/* qualifies a major mode	 */
 	struct maps_s	*p_next;
 };
 

@@ -556,7 +556,7 @@ static struct KEYMAPE (1) overwmap = {
 /*
  * The basic (root) keyboard map
  */
-struct maps_s	fundamental_mode = { (KEYMAP *)&fundmap, "fundamental", NULL };
+struct maps_s	fundamental_mode = { (KEYMAP *)&fundmap, "fundamental", 0, NULL };
 
 /*
  * give names to the maps, for use by help etc. If the map is to be bindable,
@@ -568,15 +568,15 @@ struct maps_s	fundamental_mode = { (KEYMAP *)&fundmap, "fundamental", NULL };
  */
 
 static struct maps_s map_table[] = {
-	{(KEYMAP *) &fillmap, "fill", NULL},
-	{(KEYMAP *) &indntmap, "indent", NULL},
-	{(KEYMAP *) &notabmap, "notab", NULL},
-	{(KEYMAP *) &overwmap, "overwrite", NULL},
-	{(KEYMAP *) &metamap, "esc prefix", NULL},
-	{(KEYMAP *) &cXmap, "c-x prefix", NULL},
-	{(KEYMAP *) &cX4map, "c-x 4 prefix", NULL},
-	{(KEYMAP *) &helpmap, "help", NULL},
-	{NULL, NULL, NULL}
+	{ .p_map = (KEYMAP *)&fillmap, .p_name = "fill", .p_minor = 1 },
+	{ .p_map = (KEYMAP *)&indntmap, .p_name = "indent", .p_minor = 1 },
+	{ .p_map = (KEYMAP *)&notabmap, .p_name = "notab", .p_minor = 1 },
+	{ .p_map = (KEYMAP *)&overwmap, .p_name = "overwrite", .p_minor = 1 },
+	{ .p_map = (KEYMAP *)&metamap, .p_name = "esc prefix" },
+	{ .p_map = (KEYMAP *)&cXmap, .p_name = "c-x prefix" },
+	{ .p_map = (KEYMAP *)&cX4map, .p_name = "c-x 4 prefix" },
+	{ .p_map = (KEYMAP *)&helpmap, .p_name = "help" },
+	{ NULL }
 };
 
 struct maps_s *maps;
@@ -608,6 +608,7 @@ maps_add(KEYMAP *map, const char *name)
 
 	mp->p_name = name;
 	mp->p_map = map;
+	mp->p_minor = 0;	/* mode files register major modes */
 	mp->p_next = maps;
 	maps = mp;
 

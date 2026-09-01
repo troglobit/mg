@@ -39,6 +39,22 @@ buf_hasmode(struct buffer *bp, const char *name)
 }
 
 /*
+ * The mode that names the buffer: the last one that is not merely a
+ * qualifier, or fundamental when there is no other.
+ */
+struct maps_s *
+buf_major(struct buffer *bp)
+{
+	struct maps_s	*m = bp->b_modes[0];
+	int		 i;
+
+	for (i = 1; i <= bp->b_nmodes; i++)
+		if (!bp->b_modes[i]->p_minor)
+			m = bp->b_modes[i];
+	return (m);
+}
+
+/*
  * Set, clear, or toggle a buffer flag, on the defaults while the
  * startup file is being read and on the current buffer otherwise.
  */

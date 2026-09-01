@@ -12,6 +12,12 @@ All relevant changes to the project are documented in this file.
   incremental redraws and cursor positioning aligned
 - Shift and PgUp/PgDn mark text a page at a time, completing the shift-select
   support from v4.0: new commands `shift-scroll-down` and `shift-scroll-up`
+- The mode line names the major mode where it used to say Fundamental, with
+  the modes that qualify it after: a python buffer reads `(Python Notab
+  Indent)` and a text buffer `(Text Fill)`.  Fundamental is shown when there
+  is no major mode, which is what it means
+- The buffer list mode is called `buffer-list` rather than `listbufmap`, its
+  internal keymap name, now that the mode line leads with it
 - New `text-mode` for prose, which turns on `auto-fill-mode`, detected for
   *.txt, *.text, the suffixless files a source tree keeps like README and
   LICENSE, and the file mutt hands its editor

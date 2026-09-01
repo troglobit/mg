@@ -349,7 +349,8 @@ listbuffers(int f, int n)
 	struct mgwin		*wp;
 
 	if (!initialized) {
-		maps_add((KEYMAP *)&listbufmap, "listbufmap");
+		if (maps_add((KEYMAP *)&listbufmap, "buffer-list") != TRUE)
+			return (FALSE);
 		initialized = 1;
 	}
 
@@ -358,7 +359,7 @@ listbuffers(int f, int n)
 	wp->w_dotp = bp->b_dotp; /* fix up if window already on screen */
 	wp->w_doto = bp->b_doto;
 	bp->b_modes[0] = name_mode("fundamental");
-	bp->b_modes[1] = name_mode("listbufmap");
+	bp->b_modes[1] = name_mode("buffer-list");
 	bp->b_nmodes = 1;
 
 	return (TRUE);

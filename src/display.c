@@ -1107,6 +1107,17 @@ uline(int row, struct video *vvp, struct video *pvp)
 }
 
 /*
+ * Output a mode name to the mode line, capitalized, report how long
+ * it was.
+ */
+static int
+vtputmode(const struct maps_s *m, struct mgwin *wp)
+{
+	vtputc(toupper((unsigned char)m->p_name[0]), wp);
+	return (vtputs(&m->p_name[1], wp) + 1);
+}
+
+/*
  * Redisplay the mode line for the window pointed to by the "wp".
  * This is the only routine that has any idea of how the mode line is
  * formatted. You can change the modeline format by hacking at this
@@ -1118,6 +1129,7 @@ void
 modeline(struct mgwin *wp, int modelinecolor)
 {
 	int	n, md;
+	struct maps_s *major;
 	struct buffer *bp;
 	char sl[21];		/* Overkill. Space for 2^64 in base 10. */
 	int len;
@@ -1183,13 +1195,15 @@ modeline(struct mgwin *wp, int modelinecolor)
 
 	vtputc('(', wp);
 	++n;
-	for (md = 0; ; ) {
-		vtputc(toupper(bp->b_modes[md]->p_name[0]), wp);
-		n += vtputs(&bp->b_modes[md]->p_name[1], wp) + 1;
-		if (++md > bp->b_nmodes)
-			break;
+	/* the major mode first, then the modes that qualify it */
+	major = buf_major(bp);
+	n += vtputmode(major, wp);
+	for (md = 1; md <= bp->b_nmodes; md++) {
+		if (bp->b_modes[md] == major)
+			continue;
 		vtputc(' ', wp);
 		++n;
+		n += vtputmode(bp->b_modes[md], wp);
 	}
 	/* XXX These should eventually move to a real mode */
 	if (macrodef == TRUE)
