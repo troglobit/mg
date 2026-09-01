@@ -288,8 +288,8 @@ getgoal(struct line *dlp)
 
 	for (i = 0; i < llength(dlp); i++) {
 		c = lgetc(dlp, i);
-		if (c >= 0x80 && utf8_get(dlp, i, &len) != -1) {
-			col++;
+		if (c >= 0x80 && (c = utf8_get(dlp, i, &len)) != -1) {
+			col += utf8_width(c);
 			if (col > curgoal)
 				break;
 			i += len - 1;

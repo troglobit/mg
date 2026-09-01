@@ -455,7 +455,7 @@ int		 ttraw(void);
 void		 ttclose(void);
 int		 ttcooked(void);
 int		 ttputc(int);
-void		 ttputcell(int);
+int		 ttputcell(int);
 void		 ttflush(void);
 int		 ttgetc(void);
 int		 ttwait(int);
@@ -663,6 +663,7 @@ int		 utf8_iscont(int);
 int		 utf8_seqlen(int);
 int		 utf8_decode(const char *, int, int *);
 int		 utf8_get(const struct line *, int, int *);
+int		 utf8_width(int);
 
 /* basic.c */
 int		 gotobol(int, int);

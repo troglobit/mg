@@ -109,8 +109,8 @@ getcolpos(struct mgwin *wp)
 
 	for (i = 0; i < wp->w_doto; ++i) {
 		c = lgetc(wp->w_dotp, i);
-		if (c >= 0x80 && utf8_get(wp->w_dotp, i, &len) != -1) {
-			col++;
+		if (c >= 0x80 && (c = utf8_get(wp->w_dotp, i, &len)) != -1) {
+			col += utf8_width(c);
 			i += len - 1;
 			continue;
 		}

@@ -135,9 +135,11 @@ ttputc(int c)
  * codepoint, which is encoded on output; in single-byte locales
  * it holds a byte, which is written as-is.
  */
-void
+int
 ttputcell(int cp)
 {
+	if (cp == 0)
+		return (0);
 	if (!utf8_mode || cp < 0x80) {
 		ttputc(cp);
 	} else if (cp < 0x800) {
@@ -153,6 +155,7 @@ ttputcell(int cp)
 		ttputc(0x80 | ((cp >> 6) & 0x3f));
 		ttputc(0x80 | (cp & 0x3f));
 	}
+	return (utf8_mode ? utf8_width(cp) : 1);
 }
 
 /*

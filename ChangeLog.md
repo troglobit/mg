@@ -33,6 +33,8 @@ All relevant changes to the project are documented in this file.
 
 ### Fixes
 
+- Render double-width UTF-8 characters in two terminal columns, keeping
+  incremental redraws and cursor positioning aligned
 - Fix marking text with shifted keys in VTE-based terminals when built
   `--without-curses`: the ansi backend now enters the alternate screen like
   the terminfo backend.  As a side effect the shell's content and scrollback

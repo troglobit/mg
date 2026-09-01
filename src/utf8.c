@@ -7,7 +7,7 @@
  * │ The buffer holds raw bytes; these functions identify and    │
  * │ decode multibyte sequences so that movement, deletion and   │
  * │ redisplay can treat a sequence as a single character.       │
- * │ One codepoint occupies one display column.                  │
+ * │ Display width follows the active locale.                    │
  * │                                                             │
  * │ Hej världen! · Χαίρετε, κόσμε · Привіт, світе · «Grüß Gott» │
  * │ ∀ b ∈ [0x80, 0xC0): continuation → skip ✓ naïveté ≠ bug     │
@@ -19,6 +19,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
+#include <wchar.h>
 
 #include "def.h"
 
@@ -106,4 +107,18 @@ utf8_get(const struct line *lp, int o, int *len)
 	if (!utf8_mode || o >= llength(lp))
 		return (-1);
 	return (utf8_decode(&lp->l_text[o], llength(lp) - o, len));
+}
+
+/*
+ * Number of terminal columns occupied by a decoded codepoint.
+ */
+int
+utf8_width(int cp)
+{
+	int width;
+
+	width = wcwidth((wchar_t)cp);
+	/* ponytail: keep zero-width marks at one column until cells hold
+	 * graphemes. */
+	return (width > 0 ? width : 1);
 }

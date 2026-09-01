@@ -28,7 +28,7 @@
  * the longest line possible. v_text is allocated
  * dynamically to fit the screen width.  A cell holds one
  * column: a byte in single-byte locales, a codepoint in
- * UTF-8 locales.
+ * UTF-8 locales, or VCONT after a double-width codepoint.
  */
 struct video {
 	short	v_hash;		/* Hash code, for compares.	 */
@@ -51,6 +51,7 @@ struct video {
 #define VSYNMASK	0x0f000000
 #define VREV		0x40000000
 #define VATTRMASK	(VSYNMASK | VREV)
+#define VCONT		0
 
 /*
  * SCORE structures hold the optimal
@@ -534,21 +535,27 @@ vtputc(int c, struct mgwin *wp)
 
 /*
  * Put the codepoint of a decoded UTF-8 sequence on the virtual
- * display, in a single cell.  Positions left of the display,
+ * display.  Positions left of the display,
  * possible in extended lines, are tracked but not stored.
  */
 static void
 vtputcp(int cp)
 {
 	struct video	*vp;
+	int		 i, width;
 
 	vp = vscreen[vtrow];
-	if (vtcol >= vtright)
+	width = utf8_width(cp);
+	if (vtcol + width > vtright) {
 		vp->v_text[vtright - 1] = '$';
-	else {
-		if (vtcol >= vtleft)
+		vtcol = vtright;
+	} else {
+		if (vtcol >= vtleft) {
 			vp->v_text[vtcol] = cp | vtattr;
-		++vtcol;
+			for (i = 1; i < width; i++)
+				vp->v_text[vtcol + i] = VCONT;
+		}
+		vtcol += width;
 	}
 }
 
@@ -1018,8 +1025,7 @@ uline(int row, struct video *vvp, struct video *pvp)
 				ttattr((a & VSYNMASK) >> VSYNSHIFT,
 				    a & VREV);
 			}
-			ttputcell(*cp1++ & ~VATTRMASK);
-			++ttcol;
+			ttcol += ttputcell(*cp1++ & ~VATTRMASK);
 		}
 		if (cur)
 			ttattr(SYN_NONE, FALSE);
@@ -1068,8 +1074,7 @@ uline(int row, struct video *vvp, struct video *pvp)
 			cur = a;
 			ttattr((a & VSYNMASK) >> VSYNSHIFT, a & VREV);
 		}
-		ttputcell(*cp1++ & ~VATTRMASK);
-		++ttcol;
+		ttcol += ttputcell(*cp1++ & ~VATTRMASK);
 	}
 	if (cur) {
 		ttattr(SYN_NONE, FALSE);
@@ -1201,11 +1206,12 @@ vtputs(const char *s, struct mgwin *wp)
 			vtputcp(cp);
 			s += len;
 			avail -= len;
+			n += utf8_width(cp);
 		} else {
 			vtputc(*s++, wp);
 			avail--;
+			++n;
 		}
-		++n;
 	}
 	return (n);
 }
