@@ -145,6 +145,7 @@ main(int argc, char **argv)
 		extern void diffmode_init(void);
 		extern void gitmode_init(void);
 		extern void textmode_init(void);
+		extern void yamlmode_init(void);
 		extern void shmode_init(void);
 		extern void mdmode_init(void);
 		extern void mkmode_init(void);
@@ -163,6 +164,7 @@ main(int argc, char **argv)
 		diffmode_init();
 		gitmode_init();
 		textmode_init();
+		yamlmode_init();
 		shmode_init();
 		mdmode_init();
 		mkmode_init();

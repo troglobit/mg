@@ -12,7 +12,7 @@ mg_SOURCES       = basic.c bell.c buffer.c cinfo.c dir.c display.c echo.c 	\
 		   mkmode.c pymode.c						\
 		   modes.c							\
 		   paragraph.c region.c search.c shmode.c spawn.c syntax.c	\
-		   textmode.c							\
+		   textmode.c yamlmode.c						\
 		   tty.c ttyio.c ttykbd.c					\
 		   ttydef.h undo.c utf8.c util.c version.c window.c word.c	\
 		   yank.c							\

@@ -18,6 +18,11 @@ All relevant changes to the project are documented in this file.
   is no major mode, which is what it means
 - The buffer list mode is called `buffer-list` rather than `listbufmap`, its
   internal keymap name, now that the mode line leads with it
+- New `yaml-mode` with syntax highlighting, detected for *.yml, *.yaml,
+  `.clang-format` and `.yamllint`.  Whitespace is structure in YAML, so the
+  mode indents two columns with spaces only, a tab being a syntax error.
+  Block scalars introduced by `|` or `>` are left as text, so the shell in a
+  `run: |` step is not colored as YAML
 - New `text-mode` for prose, which turns on `auto-fill-mode`, detected for
   *.txt, *.text, the suffixless files a source tree keeps like README and
   LICENSE, and the file mutt hands its editor

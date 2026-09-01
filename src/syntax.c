@@ -81,6 +81,7 @@ static int	 conf_lead(const struct line *, char *);
 static int	 commit_parse(const struct line *, int, char *);
 static int	 diff_parse(const struct line *, int, char *);
 static int	 md_parse(const struct line *, int, char *);
+static int	 yaml_parse(const struct line *, int, char *);
 
 struct syntax {
 	const char	 *sy_mode;	/* buffer mode this applies to	*/
@@ -117,6 +118,7 @@ static const struct syntax syntab[] = {
 	{ .sy_mode = "diff", .sy_parse = diff_parse },
 	{ .sy_mode = "git-commit", .sy_parse = commit_parse },
 	{ .sy_mode = "markdown", .sy_parse = md_parse },
+	{ .sy_mode = "yaml", .sy_parse = yaml_parse },
 	{ NULL }
 };
 
@@ -759,6 +761,206 @@ md_parse(const struct line *lp, int infence, char *attr)
 		i++;
 	}
 	return (0);
+}
+
+static const char *yaml_words[] = {
+	"true", "false", "null", "yes", "no", "on", "off",
+	"True", "False", "Null", "Yes", "No", "On", "Off",
+	"TRUE", "FALSE", "NULL", "YES", "NO", "ON", "OFF",
+	NULL
+};
+
+/*
+ * The offset of the colon that ends a key starting at i, or -1 when
+ * the line does not open with one.  In YAML a colon only closes a
+ * key when a space or the end of the line follows it.
+ */
+static int
+yaml_colon(const struct line *lp, int i)
+{
+	int	 c, len;
+
+	len = llength(lp);
+	for (; i < len; i++) {
+		c = lgetc(lp, i);
+		if (c == '"' || c == '\'') {
+			i = scanto(lp, i + 1, c);
+			continue;
+		}
+		if (c == ':' && (i + 1 == len || lgetc(lp, i + 1) == ' '))
+			return (i);
+		if (c == '#')
+			break;
+	}
+	return (-1);
+}
+
+/*
+ * True when the | or > at i heads a block scalar, that is when only
+ * its chomping and indent indicators and a comment follow.
+ */
+static int
+yaml_isblock(const struct line *lp, int i)
+{
+	int	 c, len;
+
+	len = llength(lp);
+	for (i++; i < len; i++) {
+		c = lgetc(lp, i);
+		if (c == '-' || c == '+' || isdigit(c))
+			continue;
+		if (c == ' ')
+			break;
+		return (0);
+	}
+	for (; i < len && lgetc(lp, i) == ' '; i++)
+		;
+	return (i >= len || lgetc(lp, i) == '#');
+}
+
+/*
+ * The value of a pair, from i to the end of the line: quoted
+ * strings, numbers, the words YAML reads as booleans and null,
+ * anchors and aliases, and a trailing comment.  A plain scalar is
+ * left alone, there being no way to tell it from prose.  Returns
+ * the indent the lines of a block scalar must have when the value
+ * opens one, else zero.
+ */
+static int
+yaml_value(const struct line *lp, int i, int indent, char *attr)
+{
+	const char	**w;
+	int	 c, end, len, sep;
+
+	len = llength(lp);
+	while (i < len && lgetc(lp, i) == ' ')
+		i++;
+	if (i >= len)
+		return (0);
+	c = lgetc(lp, i);
+	if ((c == '|' || c == '>') && yaml_isblock(lp, i)) {
+		setattrs(attr, i, len - i, SYN_STRING);
+		return (indent + 1);
+	}
+
+	for (sep = 1; i < len; sep = (c == ' ' || c == ',' ||
+	    c == '[' || c == '{'), i++) {
+		c = lgetc(lp, i);
+		if (c == '#' && i > 0 && lgetc(lp, i - 1) == ' ') {
+			setattrs(attr, i, len - i, SYN_COMMENT);
+			break;
+		}
+		if (!sep)
+			continue;
+		if (c == '"' || c == '\'') {
+			end = scanto(lp, i + 1, c);
+			if (end < len)
+				end++;
+			setattrs(attr, i, end - i, SYN_STRING);
+			i = end - 1;
+			c = ' ';
+			continue;
+		}
+		if (c == '&' || c == '*') {
+			for (end = i + 1; end < len; end++) {
+				c = lgetc(lp, end);
+				if (!isalnum(c) && c != '_' && c != '-')
+					break;
+			}
+			if (end > i + 1) {
+				setattrs(attr, i, end - i, SYN_PREPROC);
+				i = end - 1;
+				c = ' ';
+			}
+			continue;
+		}
+		if (isdigit(c) || ((c == '-' || c == '+') && i + 1 < len &&
+		    isdigit(lgetc(lp, i + 1)))) {
+			for (end = i + 1; end < len; end++) {
+				c = lgetc(lp, end);
+				if (!isdigit(c) && c != '.' && c != ':')
+					break;
+			}
+			setattrs(attr, i, end - i, SYN_NUMBER);
+			i = end - 1;
+			c = ' ';
+			continue;
+		}
+		if (c == '~' && (i + 1 == len ||
+		    strchr(" ,]}", lgetc(lp, i + 1)) != NULL)) {
+			setattr(attr, i, SYN_TYPE);
+			continue;
+		}
+		for (w = yaml_words; *w != NULL; w++) {
+			end = i + strlen(*w);
+			if (matchat(lp, i, *w) == 0)
+				continue;
+			if (end < len && strchr(" ,]}", lgetc(lp, end)) == NULL)
+				continue;
+			setattrs(attr, i, end - i, SYN_TYPE);
+			i = end - 1;
+			c = ' ';
+			break;
+		}
+	}
+	return (0);
+}
+
+/*
+ * YAML line classifier, used through sy_parse.  Colors the block
+ * structure, document markers, list markers and keys, and the
+ * values.  The cross-line state is the indent the lines of an open
+ * block scalar must have, zero outside one.
+ */
+static int
+yaml_parse(const struct line *lp, int blkind, char *attr)
+{
+	int	 c, end, i, indent, len;
+
+	len = llength(lp);
+	/* a tab is not indentation in YAML, so it counts for nothing */
+	for (i = 0; i < len && lgetc(lp, i) == ' '; i++)
+		;
+	indent = i;
+
+	if (blkind > 0) {
+		if (i >= len)
+			return (blkind);	/* blank lines stay in */
+		if (indent >= blkind) {
+			setattrs(attr, 0, len, SYN_STRING);
+			return (blkind);
+		}
+		/* the indent fell back, so the block has ended */
+	}
+	if (i >= len)
+		return (0);
+	c = lgetc(lp, i);
+
+	if (c == '#') {
+		setattrs(attr, i, len - i, SYN_COMMENT);
+		return (0);
+	}
+	/* the document markers own their line */
+	if (matchat(lp, i, "---") != 0 || matchat(lp, i, "...") != 0) {
+		setattrs(attr, i, len - i, SYN_HEADING);
+		return (0);
+	}
+	/* a list marker for each level the line opens */
+	while (c == '-' && (i + 1 == len || lgetc(lp, i + 1) == ' ')) {
+		setattr(attr, i, SYN_NUMBER);
+		for (i++; i < len && lgetc(lp, i) == ' '; i++)
+			;
+		if (i >= len)
+			return (0);
+		c = lgetc(lp, i);
+	}
+	if ((end = yaml_colon(lp, i)) > i) {
+		setattrs(attr, i, end - i, SYN_KEYWORD);
+		indent = i;		/* a block belongs to the key, not
+					 * to the dash that may precede it */
+		i = end + 1;
+	}
+	return (yaml_value(lp, i, indent, attr));
 }
 
 /*

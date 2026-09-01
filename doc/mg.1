@@ -1328,6 +1328,32 @@ Ask for a file name and write the contents of the current buffer to
 that file.
 Update the remembered file name and clear the buffer
 changed flag.
+.It Ic yaml-mode
+Toggle yaml mode, which selects the yaml rules for syntax
+highlighting: comments, the
+.Ql ---
+and
+.Ql ...
+document markers, list markers, the key of a key: value pair,
+quoted strings, numbers, the words YAML reads as booleans and null,
+and anchors and aliases.
+A block scalar introduced by
+.Ql |
+or
+.Ql >
+takes the lines below it, which are left as text, so a shell script under
+.Ql run: |
+is not read as YAML.
+A plain scalar is left alone, there being no way to tell one from
+prose.
+Enabling it also sets a two column tab width, turns on
+.Ic no-tab-mode ,
+since a tab is a syntax error in YAML, and enables the indent mode
+so RET keeps the indentation.
+Files named *.yml and *.yaml get the mode automatically, as do
+.Pa .clang-format
+and
+.Pa .yamllint .
 .It Ic yank
 Yank text from kill-buffer.
 Unlike emacs, the
