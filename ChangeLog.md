@@ -52,6 +52,13 @@ All relevant changes to the project are documented in this file.
   mode that brings two helper modes of its own, like `python-mode`, no
   longer runs out of room and gets dropped when the buffer already carries
   a default mode
+- A mode named in `~/.mg`, such as `auto-fill-mode`, now becomes a default
+  for the files opened afterwards.  It used to be applied to *scratch*, the
+  only buffer in existence while the startup file is read, and so had no
+  effect on anything the user went on to edit
+- Default modes from `~/.mg` now reach the buffers that already exist, in
+  particular *scratch*.  The mode list was copied to them but the count was
+  not, so the modes were there and inert, the same shape as issue #41
 - Update stale links in documentation, issue #40
 - `markdown-mode` no longer colors the indented continuation lines of a
   list item as a verbatim block.  An indented block is only verbatim when

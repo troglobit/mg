@@ -35,6 +35,7 @@ int		 dovisiblebell;			/* visible bell toggle	*/
 int		 dblspace;			/* sentence end #spaces	*/
 int		 allbro;			/* all buffs read-only	*/
 int		 batch;				/* for regress tests	*/
+int		 inrc;				/* reading the startup file */
 struct buffer	*curbp;				/* current buffer	*/
 struct buffer	*bheadp;			/* BUFFER list head	*/
 struct mgwin	*curwp;				/* current window	*/
@@ -188,7 +189,9 @@ main(int argc, char **argv)
 
 	/* user startup file. */
 	if (ffp != NULL) {
+		inrc = 1;
 		(void)load(ffp, file);
+		inrc = 0;
 		ffclose(ffp, NULL);
 	}
 
@@ -205,10 +208,14 @@ main(int argc, char **argv)
 	for (bp = bheadp; bp != NULL; bp = bp->b_bufp) {
 		bp->b_flag = defb_flag;
 		bp->b_tabw = defb_tabw;
+		bp->b_nmodes = defb_nmodes;
 		for (i = 0; i <= defb_nmodes; i++) {
                 	bp->b_modes[i] = defb_modes[i];
         	}
 	}
+	/* the modes were drawn before the startup file was read */
+	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
+		wp->w_rflag |= WFMODE;
 
 	/* Force FFOTHARG=1 so that this mode is enabled, not simply toggled */
 	if (init_fcn)

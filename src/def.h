@@ -936,6 +936,7 @@ extern int		 utf8_mode;
 extern int		 helpsh;
 extern int		 helpset;
 extern int		 batch;
+extern int		 inrc;
 extern char	 	 cinfo[];
 extern char		*keystrings[];
 extern char		 pat[NPAT];

@@ -459,11 +459,15 @@ where text inserted past the fill column is automatically wrapped
 to a new line.
 Can be set globally with
 .Ic set-default-mode .
+Naming it in the startup file does the same, since there is no buffer
+there yet to toggle it in.
 .It Ic auto-indent-mode
 Toggle indent mode in the current buffer,
 where indentation is preserved after a newline.
 Can be set globally with
 .Ic set-default-mode .
+Naming it in the startup file does the same, since there is no buffer
+there yet to toggle it in.
 .It Ic back-to-indentation
 Move the dot to the first non-whitespace character on the current line.
 .It Ic backup-to-home-directory
@@ -929,6 +933,8 @@ Toggle notab mode.
 In this mode, spaces are inserted rather than tabs.
 This can be set globally with
 .Ic set-default-mode .
+Naming it in the startup file does the same, since there is no buffer
+there yet to toggle it in.
 .It Ic not-modified
 Turn off the modified flag in the current buffer.
 .It Ic open-line
@@ -946,6 +952,8 @@ Toggle overwrite mode in the current buffer,
 where typing overwrites existing characters rather than inserting them.
 Can be set globally with
 .Ic set-default-mode .
+Naming it in the startup file does the same, since there is no buffer
+there yet to toggle it in.
 .It Ic prefix-region
 Inserts a prefix string before each line of a region.
 The prefix string is settable by using

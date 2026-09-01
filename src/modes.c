@@ -38,11 +38,38 @@ buf_hasmode(struct buffer *bp, const char *name)
 	return (FALSE);
 }
 
+/*
+ * Set, clear, or toggle a buffer flag, on the defaults while the
+ * startup file is being read and on the current buffer otherwise.
+ */
+static void
+modeflag(int bit, int on)
+{
+	int	 flag = inrc ? defb_flag : curbp->b_flag;
+
+	if (on < 0)
+		flag ^= bit;
+	else if (on)
+		flag |= bit;
+	else
+		flag &= ~bit;
+
+	if (inrc)
+		defb_flag = flag;
+	else
+		curbp->b_flag = flag;
+}
+
+/*
+ * A mode named in the startup file is meant for the files opened
+ * afterwards, not for *scratch*, which is the only buffer there is
+ * at the time, so it goes on the defaults instead.
+ */
 int
 changemode(int f, int n, char *newmode)
 {
-	int	 i;
-	struct maps_s	*m;
+	int	 i, nmodes;
+	struct maps_s	*m, **modes;
 	struct mgwin	*wp;
 
 	if ((m = name_mode(newmode)) == NULL) {
@@ -50,35 +77,46 @@ changemode(int f, int n, char *newmode)
 		ewprintf("Can't find mode %s", newmode);
 		return (FALSE);
 	}
+	if (inrc) {
+		modes = defb_modes;
+		nmodes = defb_nmodes;
+	} else {
+		modes = curbp->b_modes;
+		nmodes = curbp->b_nmodes;
+	}
 	if (!(f & FFARG)) {
-		for (i = 0; i <= curbp->b_nmodes; i++)
-			if (curbp->b_modes[i] == m) {
+		for (i = 0; i <= nmodes; i++)
+			if (modes[i] == m) {
 				/* mode already set */
 				n = 0;
 				break;
 			}
 	}
 	if (n > 0) {
-		for (i = 0; i <= curbp->b_nmodes; i++)
-			if (curbp->b_modes[i] == m)
+		for (i = 0; i <= nmodes; i++)
+			if (modes[i] == m)
 				/* mode already set */
 				return (TRUE);
-		if (curbp->b_nmodes >= PBMODES - 1) {
+		if (nmodes >= PBMODES - 1) {
 			dobeep();
 			ewprintf("Too many modes");
 			return (FALSE);
 		}
-		curbp->b_modes[++(curbp->b_nmodes)] = m;
+		modes[++nmodes] = m;
 	} else {
-		/* fundamental is b_modes[0] and can't be unset */
-		for (i = 1; i <= curbp->b_nmodes && m != curbp->b_modes[i];
-		    i++);
-		if (i > curbp->b_nmodes)
+		/* fundamental is modes[0] and can't be unset */
+		for (i = 1; i <= nmodes && m != modes[i]; i++)
+			;
+		if (i > nmodes)
 			return (TRUE);	/* mode wasn't set */
-		for (; i < curbp->b_nmodes; i++)
-			curbp->b_modes[i] = curbp->b_modes[i + 1];
-		curbp->b_nmodes--;
+		for (; i < nmodes; i++)
+			modes[i] = modes[i + 1];
+		nmodes--;
 	}
+	if (inrc)
+		defb_nmodes = nmodes;
+	else
+		curbp->b_nmodes = nmodes;
 	/* the modes decide the syntax highlighting, redraw */
 	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
 		if (wp->w_bufp == curbp)
@@ -103,13 +141,7 @@ notabmode(int f, int n)
 {
 	if (changemode(f, n, "notab") == FALSE)
 		return (FALSE);
-	if (f & FFARG) {
-		if (n <= 0)
-			curbp->b_flag &= ~BFNOTAB;
-		else
-			curbp->b_flag |= BFNOTAB;
-	} else
-		curbp->b_flag ^= BFNOTAB;
+	modeflag(BFNOTAB, (f & FFARG) ? n > 0 : -1);
 	return (TRUE);
 }
 
@@ -118,13 +150,7 @@ overwrite_mode(int f, int n)
 {
 	if (changemode(f, n, "overwrite") == FALSE)
 		return (FALSE);
-	if (f & FFARG) {
-		if (n <= 0)
-			curbp->b_flag &= ~BFOVERWRITE;
-		else
-			curbp->b_flag |= BFOVERWRITE;
-	} else
-		curbp->b_flag ^= BFOVERWRITE;
+	modeflag(BFOVERWRITE, (f & FFARG) ? n > 0 : -1);
 	return (TRUE);
 }
 
