@@ -48,6 +48,10 @@ All relevant changes to the project are documented in this file.
   first line looked like it had never been read at all, issue #41
 - `set-tab-width` in `~/.mg` now also applies to *scratch*, which is created
   before the startup file is read, issue #41
+- Raise the number of modes a buffer can hold from four to six.  A major
+  mode that brings two helper modes of its own, like `python-mode`, no
+  longer runs out of room and gets dropped when the buffer already carries
+  a default mode
 - Update stale links in documentation, issue #40
 - `markdown-mode` no longer colors the indented continuation lines of a
   list item as a verbatim block.  An indented block is only verbatim when
