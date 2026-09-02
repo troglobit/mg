@@ -250,7 +250,7 @@ gitmode(int f, int n)
 		return (TRUE);	/* mode was toggled off */
 
 	/* the diff git appends quotes its source at the canonical stop */
-	curbp->b_tabw = 8;
+	modetabw(8);
 	return (TRUE);
 }
 

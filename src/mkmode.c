@@ -38,7 +38,7 @@ mkmode(int f, int n)
 	if (!buf_hasmode(curbp, "makefile"))
 		return (TRUE);	/* mode was toggled off */
 
-	curbp->b_tabw = 8;
+	modetabw(8);
 	return (notabmode(FFARG, 0));
 }
 

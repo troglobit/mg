@@ -835,6 +835,7 @@ int		 indentmode(int, int);
 int		 buf_hasmode(struct buffer *, const char *);
 int		 fillmode(int, int);
 struct maps_s	*buf_major(struct buffer *);
+void		 modetabw(int);
 int		 notabmode(int, int);
 int		 overwrite_mode(int, int);
 int		 set_default_mode(int,int);

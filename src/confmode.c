@@ -40,7 +40,7 @@ confmode(int f, int n)
 		return (TRUE);	/* mode was toggled off */
 
 	/* /etc is written for the traditional tab stop */
-	curbp->b_tabw = 8;
+	modetabw(8);
 	return (TRUE);
 }
 

@@ -67,6 +67,9 @@ All relevant changes to the project are documented in this file.
   for the files opened afterwards.  It used to be applied to *scratch*, the
   only buffer in existence while the startup file is read, and so had no
   effect on anything the user went on to edit
+- The tab width a mode wants now follows the startup file like the mode
+  itself.  `yaml-mode` in `~/.mg` used to leave the files opened afterwards
+  at width eight, with only *scratch* getting the two the mode asked for
 - Default modes from `~/.mg` now reach the buffers that already exist, in
   particular *scratch*.  The mode list was copied to them but the count was
   not, so the modes were there and inert, the same shape as issue #41

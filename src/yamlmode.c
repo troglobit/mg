@@ -38,7 +38,7 @@ yamlmode(int f, int n)
 	 * not in one they all share.
 	 */
 	if (!buf_hasmode(curbp, "yaml") && ((f & FFARG) == 0 || n > 0)) {
-		curbp->b_tabw = 2;
+		modetabw(2);
 		(void)notabmode(FFARG, 1);
 		(void)indentmode(FFARG, 1);
 	}

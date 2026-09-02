@@ -88,7 +88,7 @@ shmode(int f, int n)
 	 * only strip real tabs.  The indent mode makes RET keep the
 	 * indentation of continuation lines.
 	 */
-	curbp->b_tabw = 8;
+	modetabw(8);
 	(void)notabmode(FFARG, 0);
 	return (indentmode(FFARG, 1));
 }

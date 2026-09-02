@@ -39,7 +39,7 @@ diffmode(int f, int n)
 		return (TRUE);	/* mode was toggled off */
 
 	/* a diff quotes its source byte for byte, at the canonical stop */
-	curbp->b_tabw = 8;
+	modetabw(8);
 	return (TRUE);
 }
 

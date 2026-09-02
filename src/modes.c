@@ -77,6 +77,19 @@ modeflag(int bit, int on)
 }
 
 /*
+ * Set the tab width a mode wants, on the defaults while the startup
+ * file is being read and on the current buffer otherwise.
+ */
+void
+modetabw(int n)
+{
+	if (inrc)
+		defb_tabw = n;
+	else
+		curbp->b_tabw = n;
+}
+
+/*
  * A mode named in the startup file is meant for the files opened
  * afterwards, not for *scratch*, which is the only buffer there is
  * at the time, so it goes on the defaults instead.

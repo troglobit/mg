@@ -145,7 +145,7 @@ pymode(int f, int n)
 	 */
 	if (!buf_hasmode(curbp, "python") &&
 	    ((f & FFARG) == 0 || n > 0)) {
-		curbp->b_tabw = 4;
+		modetabw(4);
 		(void)notabmode(FFARG, 1);
 		(void)indentmode(FFARG, 1);
 	}
