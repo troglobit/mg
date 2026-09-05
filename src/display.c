@@ -125,17 +125,133 @@ static int	 vtleft = 0;
 static int	 vtright = 0;
 
 /*
+ * Whether the window being rendered wraps a line too long for it onto
+ * the rows below, and the last row it may spill into.
+ */
+static int	 vtwrap = 0;
+static int	 vtbot = 0;
+
+/*
  * The window owning the extended line, if any.  The VFEXT row flag
  * is shared between side by side windows, so only the strip that
  * drew the extension may de-extend it.
  */
 static struct mgwin *extwp = NULL;
 
+/*
+ * True when the buffer shown in wp is in wrap mode.  The mode is
+ * looked up once; b_modes is a handful of pointers to walk.
+ */
+static int
+wrapped(struct mgwin *wp)
+{
+	static struct maps_s	*wrapmode = NULL;
+	struct buffer		*bp = wp->w_bufp;
+	int			 i;
+
+	if (wrapmode == NULL && (wrapmode = name_mode("wrap")) == NULL)
+		return (0);
+	for (i = 0; i <= bp->b_nmodes; i++)
+		if (bp->b_modes[i] == wrapmode)
+			return (1);
+	return (0);
+}
+
 static void
 vtbounds(struct mgwin *wp)
 {
 	vtleft = wp->w_leftcol;
 	vtright = wp->w_leftcol + wp->w_ntcols;
+	vtwrap = wrapped(wp);
+	vtbot = wp->w_toprow + wp->w_ntrows - 1;
+}
+
+/*
+ * The columns a wrapping window has for text: the last one carries the
+ * marker that says the line goes on below.
+ */
+static int
+vtusable(int ntcols)
+{
+	return (ntcols > 1 ? ntcols - 1 : 1);
+}
+
+/*
+ * The column text stops at.  A wrapping window keeps the last one for
+ * the continuation marker.
+ */
+static int
+vtedge(void)
+{
+	if (vtwrap && vtright - vtleft > 1)
+		return (vtright - 1);
+	return (vtright);
+}
+
+/*
+ * Where offset o of lp falls once wrapped in wp, its column through
+ * col.  Returns the row, counting from one, so the length of the line
+ * gives the rows it takes.  A character that does not fit moves to the
+ * next row whole, the way the writers place it; dividing the width
+ * would put double-width text a row out.
+ */
+static int
+wraprows(struct line *lp, struct mgwin *wp, int o, int *col)
+{
+	int	 c, i, len, rows, usable, w;
+
+	usable = vtusable(wp->w_ntcols);
+	rows = 1;
+	c = 0;
+	for (i = 0; i < o && i < llength(lp); i += len) {
+		w = charcols(lp, i, c, wp->w_bufp->b_tabw, &len);
+		if (c + w > usable) {
+			rows++;
+			c = 0;
+		}
+		c += w;
+	}
+	/*
+	 * Dot sitting where the row ran out belongs at the start of the
+	 * next one, where the character it precedes is drawn.  At the
+	 * end of a line there is no such character, and the column kept
+	 * for the marker is free, since the last row carries none.
+	 */
+	if (col != NULL) {
+		if (c >= usable && o < llength(lp)) {
+			rows++;
+			c = 0;
+		}
+		*col = c;
+	}
+	return (rows);
+}
+
+/*
+ * The rows a line takes in wp: one, unless the window wraps and the
+ * line is wider than it is.
+ */
+static int
+linerows(struct line *lp, struct mgwin *wp)
+{
+	if (!wrapped(wp))
+		return (1);
+	return (wraprows(lp, wp, llength(lp), NULL));
+}
+
+/*
+ * At the right edge with more to write: mark the row as continued and
+ * step to the next when the window wraps and there is one left.
+ */
+static int
+vtnextrow(void)
+{
+	if (!vtwrap || vtrow >= vtbot || vtright - vtleft < 2)
+		return (0);
+	vscreen[vtrow]->v_text[vtright - 1] = utf8_mode ? 0x21B5 : '\\';
+	vtrow++;
+	vtcol = vtleft;
+	return (1);
 }
 
 /*
@@ -530,15 +646,19 @@ vtputc(int c, struct mgwin *wp)
 
 	c &= 0xff;
 
-	vp = vscreen[vtrow];
 	if (vtcol >= vtright)
+		(void)vtnextrow();
+	if (vtcol >= vtedge())
+		(void)vtnextrow();
+	vp = vscreen[vtrow];
+	if (vtcol >= vtedge())
 		vtmark(vtright - 1);
 	else if (c == '\t') {
 		target = vtleft + ntabstop(vtcol - vtleft,
 		    wp->w_bufp->b_tabw);
 		do {
 			vtputc(' ', wp);
-		} while (vtcol < vtright && vtcol < target);
+		} while (vtcol < vtedge() && vtcol < target);
 	} else if (ISCTRL(c)) {
 		vtputc('^', wp);
 		vtputc(CCHR(c), wp);
@@ -563,9 +683,11 @@ vtputcp(int cp)
 	struct video	*vp;
 	int		 i, width;
 
-	vp = vscreen[vtrow];
 	width = utf8_width(cp);
-	if (vtcol + width > vtright) {
+	if (vtcol + width > vtedge())
+		(void)vtnextrow();
+	vp = vscreen[vtrow];
+	if (vtcol + width > vtedge()) {
 		if (vtcol < vtright)
 			vp->v_text[vtright - 1] = ' ';
 		vtmark(vtright - 1);
@@ -620,8 +742,12 @@ vtpute(int c, struct mgwin *wp)
 
 	c &= 0xff;
 
-	vp = vscreen[vtrow];
 	if (vtcol >= vtright)
+		(void)vtnextrow();
+	if (vtcol >= vtedge())
+		(void)vtnextrow();
+	vp = vscreen[vtrow];
+	if (vtcol >= vtedge())
 		vtmark(vtright - 1);
 	else if (c == '\t') {
 		target = vtleft - lbound +
@@ -735,6 +861,7 @@ update(int modelinecolor)
 		 */
 		if (wp->w_rflag != 0 &&
 		    (hlactive(wp) ||
+		     ((wp->w_rflag & WFEDIT) && wrapped(wp)) ||
 		     (font_lock && (wp->w_rflag & WFEDIT) &&
 		      syn_multiline(wp->w_bufp))))
 			wp->w_rflag |= WFFULL;
@@ -747,11 +874,13 @@ update(int modelinecolor)
 
 		if ((wp->w_rflag & WFFRAME) == 0) {
 			lp = wp->w_linep;
-			for (i = 0; i < wp->w_ntrows; ++i) {
+			i = 0;
+			while (i < wp->w_ntrows) {
 				if (lp == wp->w_dotp)
 					goto out;
 				if (lp == wp->w_bufp->b_headp)
 					break;
+				i += linerows(lp, wp);
 				lp = lforw(lp);
 			}
 		}
@@ -774,9 +903,9 @@ update(int modelinecolor)
 		 * Find the line.
 		 */
 		lp = wp->w_dotp;
-		while (i != 0 && lback(lp) != wp->w_bufp->b_headp) {
-			--i;
+		while (i > 0 && lback(lp) != wp->w_bufp->b_headp) {
 			lp = lback(lp);
+			i -= linerows(lp, wp);
 		}
 		wp->w_linep = lp;
 		wp->w_rflag |= WFFULL;	/* Force full.		 */
@@ -811,7 +940,11 @@ update(int modelinecolor)
 					ln++;
 				}
 				vteeol();
-				++i;
+				/* a wrapped line took the rows under it too */
+				while (++i <= vtrow) {
+					vscreen[i]->v_color = CTEXT;
+					vscreen[i]->v_flag |= (VFCHG | VFHBAD);
+				}
 			}
 		}
 		if ((wp->w_rflag & WFMODE) != 0)
@@ -822,11 +955,16 @@ update(int modelinecolor)
 	lp = curwp->w_linep;	/* Cursor location. */
 	currow = curwp->w_toprow;
 	while (lp != curwp->w_dotp) {
-		++currow;
+		currow += linerows(lp, curwp);
 		lp = lforw(lp);
 	}
 	curcol = getcolpos(curwp);
-	if (curcol >= curwp->w_ntcols - 1) {	/* extended line. */
+	if (wrapped(curwp)) {
+		/* dot sits on one of the rows the line wrapped onto */
+		currow += wraprows(curwp->w_dotp, curwp, curwp->w_doto,
+		    &curcol) - 1;
+		lbound = 0;
+	} else if (curcol >= curwp->w_ntcols - 1) {	/* extended line. */
 		/* flag we are extended and changed */
 		vscreen[currow]->v_flag |= VFEXT | VFCHG;
 		updext(currow, curcol);	/* and output extended line */

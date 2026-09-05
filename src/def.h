@@ -836,6 +836,7 @@ int		 applymacro(int, int);
 int		 indentmode(int, int);
 int		 buf_hasmode(struct buffer *, const char *);
 int		 fillmode(int, int);
+int		 wrapmode(int, int);
 struct maps_s	*buf_major(struct buffer *);
 void		 modetabw(int);
 int		 notabmode(int, int);

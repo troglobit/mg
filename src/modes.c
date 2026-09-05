@@ -165,6 +165,23 @@ fillmode(int f, int n)
 	return (changemode(f, n, "fill"));
 }
 
+/*
+ * Wrap a line too long for the window onto the lines below it,
+ * rather than truncating it at the right edge.
+ */
+int
+wrapmode(int f, int n)
+{
+	struct mgwin	*wp;
+
+	if (changemode(f, n, "wrap") != TRUE)
+		return (FALSE);
+	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
+		if (wp->w_bufp == curbp)
+			wp->w_rflag |= WFFRAME | WFFULL;
+	return (TRUE);
+}
+
 int
 notabmode(int f, int n)
 {

@@ -10,6 +10,10 @@ All relevant changes to the project are documented in this file.
 
 - Render double-width UTF-8 characters in two terminal columns, keeping
   incremental redraws and cursor positioning aligned
+- New `line-wrap-mode`, where a line too long for the window continues on the
+  rows below instead of being truncated with a `$`.  A continued row ends
+  with an arrow, or a backslash outside UTF-8 locales.  Off by default; set
+  it per buffer, or with `set-default-mode wrap` in `~/.mg`
 - Character widths follow Unicode 17.  Emoji, and the scripts added since
   Unicode 5, are measured correctly instead of being drawn one column wide
   and overlapping whatever followed them

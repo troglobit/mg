@@ -46,6 +46,7 @@ static struct funmap functnames[] = {
 	{auto_execute, "auto-execute", 2, NULL},
 #endif
 	{fillmode, "auto-fill-mode", 0, NULL},
+	{wrapmode, "line-wrap-mode", 0, NULL},
 	{indentmode, "auto-indent-mode", 0, NULL},
 	{backtoindent, "back-to-indentation", 0, NULL},
 	{backuptohomedir, "backup-to-home-directory", 0, NULL},

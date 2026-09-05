@@ -867,6 +867,22 @@ are left there and not moved to the
 directory.
 .It Ic line-number-mode
 Toggle whether the line number is displayed in the modeline.
+.It Ic line-wrap-mode
+Toggle line wrap mode, where a line too long for the window continues
+on the rows below it instead of being truncated with a
+.Ql $ .
+The mode belongs to the buffer, so every window showing it wraps.
+A continued row ends with an arrow, or with a backslash outside UTF-8
+locales, in a column held back from the text for it.
+.Ic scroll-up
+and
+.Ic scroll-down
+still move by whole lines, which is more than a screenful when the
+lines are long.
+Can be set globally with
+.Ic set-default-mode .
+Naming it in the startup file does the same, since there is no buffer
+there yet to toggle it in.
 .It Ic list-buffers
 Display the list of available buffers.
 The first column in the output indicates which buffer is active with a '>'
