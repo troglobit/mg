@@ -20,6 +20,8 @@ mg_SOURCES       = basic.c bell.c buffer.c cinfo.c dir.c display.c echo.c 	\
 mg_SOURCES      += queue.h tree.h
 mg_SOURCES      += extensions.c
 
+EXTRA_DIST       = genwidth.py
+
 mg_CFLAGS        = -W -Wall -Wextra -Wno-unused-parameter
 mg_CFLAGS       += -D_GNU_SOURCE -DDATADIR=\"$(pkgdatadir)\" -DDOCDIR=\"$(docdir)\"
 if TINY

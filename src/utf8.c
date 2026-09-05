@@ -115,7 +115,8 @@ utf8_get(const struct line *lp, int o, int *len)
  * it is East Asian Wide or Fullwidth, and one otherwise.
  * https://www.cl.cam.ac.uk/~mgk25/ucs/wcwidth.c
  *
- * The tables come from the Unicode database, currently 17.0.0.  Zero
+ * The tables come from the Unicode database, currently 17.0.0, by way
+ * of genwidth.py next to this file.  Zero
  * width is general category Mn or Me, the format characters but not the
  * soft hyphen, and the conjoining Hangul jamo; two columns is East Asian
  * Wide or Fullwidth, which the database also gives the unassigned parts
