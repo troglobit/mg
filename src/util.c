@@ -101,30 +101,51 @@ showcpos(int f, int n)
 int
 getcolpos(struct mgwin *wp)
 {
-	int	col, i, c, cp, len;
-	char tmp[5];
+	int	col, i, len;
 
-	/* determine column */
 	col = 0;
+	for (i = 0; i < wp->w_doto; i += len)
+		col += charcols(wp->w_dotp, i, col, wp->w_bufp->b_tabw, &len);
 
-	for (i = 0; i < wp->w_doto; ++i) {
-		c = lgetc(wp->w_dotp, i);
-		if (c >= 0x80 && (cp = utf8_get(wp->w_dotp, i, &len)) != -1) {
-			col += utf8_width(cp);
-			i += len - 1;
-			continue;
-		}
-		if (c == '\t') {
-			col = ntabstop(col, wp->w_bufp->b_tabw);
-		} else if (ISCTRL(c) != FALSE)
-			col += 2;
-		else if (isprint(c)) {
-			col++;
-		} else {
-			col += snprintf(tmp, sizeof(tmp), "\\%o", c);
-		}
+	return (col);
+}
 
-	}
+/*
+ * The columns the character at offset o takes, and its length in bytes
+ * through len.  A tab depends on where it starts, so col is the column
+ * the character begins at.
+ */
+int
+charcols(const struct line *lp, int o, int col, int tabw, int *len)
+{
+	char	 tmp[5];
+	int	 c, cp;
+
+	*len = 1;
+	c = lgetc(lp, o);
+	if (c >= 0x80 && (cp = utf8_get(lp, o, len)) != -1)
+		return (utf8_width(cp));
+	if (c == '\t')
+		return (ntabstop(col, tabw) - col);
+	if (ISCTRL(c) != FALSE)
+		return (2);
+	if (isprint(c))
+		return (1);
+	return (snprintf(tmp, sizeof(tmp), "\\%o", c));
+}
+
+/*
+ * The width of a whole line in columns.
+ */
+int
+linecols(const struct line *lp, int tabw)
+{
+	int	 col, i, len;
+
+	col = 0;
+	for (i = 0; i < llength(lp); i += len)
+		col += charcols(lp, i, col, tabw, &len);
+
 	return (col);
 }
 

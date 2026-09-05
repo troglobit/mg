@@ -283,27 +283,10 @@ setgoal(void)
 int
 getgoal(struct line *dlp)
 {
-	int c, cp, i, len, col = 0;
-	char tmp[5];
+	int i, len, col = 0;
 
-	for (i = 0; i < llength(dlp); i++) {
-		c = lgetc(dlp, i);
-		if (c >= 0x80 && (cp = utf8_get(dlp, i, &len)) != -1) {
-			col += utf8_width(cp);
-			if (col > curgoal)
-				break;
-			i += len - 1;
-			continue;
-		}
-		if (c == '\t') {
-			col = ntabstop(col, curbp->b_tabw);
-		} else if (ISCTRL(c) != FALSE) {
-			col += 2;
-		} else if (isprint(c))
-			col++;
-		else {
-			col += snprintf(tmp, sizeof(tmp), "\\%o", c);
-		}
+	for (i = 0; i < llength(dlp); i += len) {
+		col += charcols(dlp, i, col, curbp->b_tabw, &len);
 		if (col > curgoal)
 			break;
 	}

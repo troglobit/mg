@@ -693,6 +693,8 @@ int		 setlineno(int);
 int		 ntabstop(int, int);
 int		 showcpos(int, int);
 int		 getcolpos(struct mgwin *);
+int		 charcols(const struct line *, int, int, int, int *);
+int		 linecols(const struct line *, int);
 int		 twiddle(int, int);
 int		 openline(int, int);
 int		 enewline(int, int);
