@@ -101,7 +101,7 @@ showcpos(int f, int n)
 int
 getcolpos(struct mgwin *wp)
 {
-	int	col, i, c, len;
+	int	col, i, c, cp, len;
 	char tmp[5];
 
 	/* determine column */
@@ -109,8 +109,8 @@ getcolpos(struct mgwin *wp)
 
 	for (i = 0; i < wp->w_doto; ++i) {
 		c = lgetc(wp->w_dotp, i);
-		if (c >= 0x80 && utf8_get(wp->w_dotp, i, &len) != -1) {
-			col++;
+		if (c >= 0x80 && (cp = utf8_get(wp->w_dotp, i, &len)) != -1) {
+			col += utf8_width(cp);
 			i += len - 1;
 			continue;
 		}

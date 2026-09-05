@@ -28,7 +28,7 @@
  * the longest line possible. v_text is allocated
  * dynamically to fit the screen width.  A cell holds one
  * column: a byte in single-byte locales, a codepoint in
- * UTF-8 locales.
+ * UTF-8 locales, or VCONT after a double-width codepoint.
  */
 struct video {
 	short	v_hash;		/* Hash code, for compares.	 */
@@ -51,6 +51,9 @@ struct video {
 #define VSYNMASK	0x0f000000
 #define VREV		0x40000000
 #define VATTRMASK	(VSYNMASK | VREV)
+/* Zero codepoint payload is reserved: vtputc() escapes control bytes.
+ * Strip VATTRMASK before testing for a continuation cell. */
+#define VCONT		0
 
 /*
  * SCORE structures hold the optimal
@@ -490,6 +493,23 @@ vtmove(int row, int col)
 	vtcol = col;
 }
 
+/* Replacing either half of a wide character must clear the other half. */
+static void
+vtmark(int col)
+{
+	int *cells = vscreen[vtrow]->v_text;
+	int cp = cells[col] & ~VATTRMASK;
+
+	if (utf8_mode) {
+		if (cp == VCONT && col > vtleft &&
+		    utf8_width(cells[col - 1] & ~VATTRMASK) == 2)
+			cells[col - 1] = ' ' | (cells[col - 1] & VATTRMASK);
+		else if (utf8_width(cp) == 2 && col + 1 < vtright)
+			cells[col + 1] = ' ' | (cells[col + 1] & VATTRMASK);
+	}
+	cells[col] = '$';
+}
+
 /*
  * Write a character to the virtual display,
  * dealing with long lines and the display of unprintable
@@ -512,7 +532,7 @@ vtputc(int c, struct mgwin *wp)
 
 	vp = vscreen[vtrow];
 	if (vtcol >= vtright)
-		vp->v_text[vtright - 1] = '$';
+		vtmark(vtright - 1);
 	else if (c == '\t') {
 		target = vtleft + ntabstop(vtcol - vtleft,
 		    wp->w_bufp->b_tabw);
@@ -534,27 +554,36 @@ vtputc(int c, struct mgwin *wp)
 
 /*
  * Put the codepoint of a decoded UTF-8 sequence on the virtual
- * display, in a single cell.  Positions left of the display,
+ * display.  Positions left of the display,
  * possible in extended lines, are tracked but not stored.
  */
 static void
 vtputcp(int cp)
 {
 	struct video	*vp;
+	int		 i, width;
 
 	vp = vscreen[vtrow];
-	if (vtcol >= vtright)
-		vp->v_text[vtright - 1] = '$';
-	else {
-		if (vtcol >= vtleft)
+	width = utf8_width(cp);
+	if (vtcol + width > vtright) {
+		if (vtcol < vtright)
+			vp->v_text[vtright - 1] = ' ';
+		vtmark(vtright - 1);
+		vtcol = vtright;
+	} else {
+		if (vtcol >= vtleft) {
 			vp->v_text[vtcol] = cp | vtattr;
-		++vtcol;
+			for (i = 1; i < width; i++)
+				vp->v_text[vtcol + i] = VCONT | vtattr;
+		} else if (vtcol + width > vtleft)
+			vp->v_text[vtleft] = ' ' | vtattr;
+		vtcol += width;
 	}
 }
 
 /*
  * Write an entire line to the virtual display.  UTF-8 sequences
- * are decoded into one cell each; all other bytes go through
+ * occupy one or two cells each; all other bytes go through
  * vtputc() as before.  Cells in the byte range [s, e) are marked
  * with the region attribute; pass s == e for no region.
  */
@@ -593,7 +622,7 @@ vtpute(int c, struct mgwin *wp)
 
 	vp = vscreen[vtrow];
 	if (vtcol >= vtright)
-		vp->v_text[vtright - 1] = '$';
+		vtmark(vtright - 1);
 	else if (c == '\t') {
 		target = vtleft - lbound +
 		    ntabstop(vtcol - vtleft + lbound, wp->w_bufp->b_tabw);
@@ -968,7 +997,7 @@ updext(int currow, int curcol)
 	hlrange(curwp->w_dotline, llength(lp), &s, &e);
 	vtputel(lp, curwp, s, e);		/* until the end-of-line */
 	vteeol();				/* truncate the virtual line */
-	vscreen[currow]->v_text[vtleft] = '$';	/* mark the left edge */
+	vtmark(vtleft);
 }
 
 /*
@@ -1018,8 +1047,7 @@ uline(int row, struct video *vvp, struct video *pvp)
 				ttattr((a & VSYNMASK) >> VSYNSHIFT,
 				    a & VREV);
 			}
-			ttputcell(*cp1++ & ~VATTRMASK);
-			++ttcol;
+			ttcol += ttputcell(*cp1++ & ~VATTRMASK);
 		}
 		if (cur)
 			ttattr(SYN_NONE, FALSE);
@@ -1068,8 +1096,7 @@ uline(int row, struct video *vvp, struct video *pvp)
 			cur = a;
 			ttattr((a & VSYNMASK) >> VSYNSHIFT, a & VREV);
 		}
-		ttputcell(*cp1++ & ~VATTRMASK);
-		++ttcol;
+		ttcol += ttputcell(*cp1++ & ~VATTRMASK);
 	}
 	if (cur) {
 		ttattr(SYN_NONE, FALSE);
@@ -1201,11 +1228,12 @@ vtputs(const char *s, struct mgwin *wp)
 			vtputcp(cp);
 			s += len;
 			avail -= len;
+			n += utf8_width(cp);
 		} else {
 			vtputc(*s++, wp);
 			avail--;
+			++n;
 		}
-		++n;
 	}
 	return (n);
 }
