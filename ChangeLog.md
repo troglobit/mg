@@ -10,6 +10,9 @@ All relevant changes to the project are documented in this file.
 
 - Render double-width UTF-8 characters in two terminal columns, keeping
   incremental redraws and cursor positioning aligned
+- Character widths follow Unicode 17.  Emoji, and the scripts added since
+  Unicode 5, are measured correctly instead of being drawn one column wide
+  and overlapping whatever followed them
 - Shift and PgUp/PgDn mark text a page at a time, completing the shift-select
   support from v4.0: new commands `shift-scroll-down` and `shift-scroll-up`
 - The mode line names the major mode where it used to say Fundamental, with
