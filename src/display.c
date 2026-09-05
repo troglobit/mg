@@ -51,6 +51,8 @@ struct video {
 #define VSYNMASK	0x0f000000
 #define VREV		0x40000000
 #define VATTRMASK	(VSYNMASK | VREV)
+/* Zero codepoint payload is reserved: vtputc() escapes control bytes.
+ * Strip VATTRMASK before testing for a continuation cell. */
 #define VCONT		0
 
 /*
@@ -491,6 +493,23 @@ vtmove(int row, int col)
 	vtcol = col;
 }
 
+/* Replacing either half of a wide character must clear the other half. */
+static void
+vtmark(int col)
+{
+	int *cells = vscreen[vtrow]->v_text;
+	int cp = cells[col] & ~VATTRMASK;
+
+	if (utf8_mode) {
+		if (cp == VCONT && col > vtleft &&
+		    utf8_width(cells[col - 1] & ~VATTRMASK) == 2)
+			cells[col - 1] = ' ' | (cells[col - 1] & VATTRMASK);
+		else if (utf8_width(cp) == 2 && col + 1 < vtright)
+			cells[col + 1] = ' ' | (cells[col + 1] & VATTRMASK);
+	}
+	cells[col] = '$';
+}
+
 /*
  * Write a character to the virtual display,
  * dealing with long lines and the display of unprintable
@@ -513,7 +532,7 @@ vtputc(int c, struct mgwin *wp)
 
 	vp = vscreen[vtrow];
 	if (vtcol >= vtright)
-		vp->v_text[vtright - 1] = '$';
+		vtmark(vtright - 1);
 	else if (c == '\t') {
 		target = vtleft + ntabstop(vtcol - vtleft,
 		    wp->w_bufp->b_tabw);
@@ -547,21 +566,24 @@ vtputcp(int cp)
 	vp = vscreen[vtrow];
 	width = utf8_width(cp);
 	if (vtcol + width > vtright) {
-		vp->v_text[vtright - 1] = '$';
+		if (vtcol < vtright)
+			vp->v_text[vtright - 1] = ' ';
+		vtmark(vtright - 1);
 		vtcol = vtright;
 	} else {
 		if (vtcol >= vtleft) {
 			vp->v_text[vtcol] = cp | vtattr;
 			for (i = 1; i < width; i++)
-				vp->v_text[vtcol + i] = VCONT;
-		}
+				vp->v_text[vtcol + i] = VCONT | vtattr;
+		} else if (vtcol + width > vtleft)
+			vp->v_text[vtleft] = ' ' | vtattr;
 		vtcol += width;
 	}
 }
 
 /*
  * Write an entire line to the virtual display.  UTF-8 sequences
- * are decoded into one cell each; all other bytes go through
+ * occupy one or two cells each; all other bytes go through
  * vtputc() as before.  Cells in the byte range [s, e) are marked
  * with the region attribute; pass s == e for no region.
  */
@@ -600,7 +622,7 @@ vtpute(int c, struct mgwin *wp)
 
 	vp = vscreen[vtrow];
 	if (vtcol >= vtright)
-		vp->v_text[vtright - 1] = '$';
+		vtmark(vtright - 1);
 	else if (c == '\t') {
 		target = vtleft - lbound +
 		    ntabstop(vtcol - vtleft + lbound, wp->w_bufp->b_tabw);
@@ -975,7 +997,7 @@ updext(int currow, int curcol)
 	hlrange(curwp->w_dotline, llength(lp), &s, &e);
 	vtputel(lp, curwp, s, e);		/* until the end-of-line */
 	vteeol();				/* truncate the virtual line */
-	vscreen[currow]->v_text[vtleft] = '$';	/* mark the left edge */
+	vtmark(vtleft);
 }
 
 /*

@@ -8,6 +8,8 @@ All relevant changes to the project are documented in this file.
 
 ### Changes
 
+- Render double-width UTF-8 characters in two terminal columns, keeping
+  incremental redraws and cursor positioning aligned
 - Shift and PgUp/PgDn mark text a page at a time, completing the shift-select
   support from v4.0: new commands `shift-scroll-down` and `shift-scroll-up`
 - New `git-commit-mode` for COMMIT_EDITMSG and friends: the comments git adds
@@ -33,8 +35,6 @@ All relevant changes to the project are documented in this file.
 
 ### Fixes
 
-- Render double-width UTF-8 characters in two terminal columns, keeping
-  incremental redraws and cursor positioning aligned
 - Fix marking text with shifted keys in VTE-based terminals when built
   `--without-curses`: the ansi backend now enters the alternate screen like
   the terminfo backend.  As a side effect the shell's content and scrollback

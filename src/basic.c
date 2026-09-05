@@ -283,13 +283,13 @@ setgoal(void)
 int
 getgoal(struct line *dlp)
 {
-	int c, i, len, col = 0;
+	int c, cp, i, len, col = 0;
 	char tmp[5];
 
 	for (i = 0; i < llength(dlp); i++) {
 		c = lgetc(dlp, i);
-		if (c >= 0x80 && (c = utf8_get(dlp, i, &len)) != -1) {
-			col += utf8_width(c);
+		if (c >= 0x80 && (cp = utf8_get(dlp, i, &len)) != -1) {
+			col += utf8_width(cp);
 			if (col > curgoal)
 				break;
 			i += len - 1;
