@@ -1,3 +1,31 @@
+mg2a (4.1) unstable; urgency=medium
+
+  * New language modes: conf, diff, git-commit, makefile, text, and yaml.
+    A mode is picked from the file name, or the #! line, and sets the
+    buffer up for it: hard tabs for makefiles, spaces for python and YAML
+  * git-commit-mode binds C-c C-c to finish the commit, C-c C-k to cancel
+    it, and C-c C-s to add a Signed-off-by trailer
+  * New command line-wrap-mode: a line too long for the window continues
+    on the rows below instead of being truncated at the edge
+  * Double-width characters take the two terminal columns they are drawn
+    in, from PR #42 by popflag; widths follow Unicode 17
+  * The mode line names the major mode where it used to say Fundamental
+  * Shift + PgUp/PgDn mark text a page at a time, completing the
+    shift-select support from 4.0
+  * shell-script-mode is also detected for *.bash, *.ksh, *.zsh and rc
+    files; auto-execute patterns now match the file's basename too
+  * A mode named in ~/.mg becomes the default for the files opened
+    afterwards, along with the tab width the mode asks for
+  * A buffer holds six modes rather than four, so a major mode bringing
+    two helpers of its own is no longer dropped
+  * Fix marking text with shifted keys in VTE-based terminals when built
+    --without-curses
+  * Report errors in the startup file again, issue #41
+  * markdown-mode no longer colors the indented continuation lines of a
+    list item as a verbatim block
+
+ -- Joachim Wiberg <troglobit@gmail.com>  Mon, 07 Sep 2026 12:18:35 +0200
+
 mg2a (4.0) unstable; urgency=medium
 
   * Initial UTF-8 support, active in UTF-8 locales: multibyte characters
