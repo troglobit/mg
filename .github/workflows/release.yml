@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   release:
-    name: Build and upload release tarball
+    name: Build and upload release artifacts
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
@@ -20,7 +20,8 @@ jobs:
         id: build
         run: |
           ver=${GITHUB_REF#refs/tags/}
-          echo "ver=${ver}" >> $GITHUB_OUTPUT
+          echo "ver=${ver}"     >> $GITHUB_OUTPUT
+          echo "num=${ver#v}"   >> $GITHUB_OUTPUT
           if echo $ver | grep -qE '^v[0-9]+\.[0-9]+(\.[0-9]+)?(-alpha|-beta|-rc)[0-9]*$'; then
             echo "pre=true"  >> $GITHUB_OUTPUT
           else
@@ -40,6 +41,17 @@ jobs:
           make distcheck
           mkdir -p artifacts/
           mv *.tar.* artifacts/
+      - name: Build Debian package ...
+        run: |
+          sudo apt-get -y update
+          sudo apt-get -y install libncurses-dev dpkg-dev debhelper devscripts
+          deb=$(dpkg-parsechangelog -S Version)
+          if [ "$deb" != "${{ steps.build.outputs.num }}" ]; then
+              echo "debian/changelog is at $deb, tag says ${{ steps.build.outputs.num }}"
+              exit 1
+          fi
+          make package
+          mv ../mg2a_*.deb artifacts/
       - name: Extract ChangeLog entry ...
         run: |
           awk '/-----*/{if (x == 1) exit; x=1;next}x' ChangeLog.md \
