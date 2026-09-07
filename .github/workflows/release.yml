@@ -10,9 +10,65 @@ permissions:
   contents: write
 
 jobs:
-  release:
-    name: Build and upload release artifacts
+  tarball:
+    name: Release tarball
     if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Creating Makefiles ...
+        run: |
+          ./autogen.sh
+          ./configure --prefix=
+      - name: Build release ...
+        run: |
+          make distcheck
+          mkdir -p artifacts/
+          mv *.tar.* artifacts/
+      - name: Upload tarball
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-tarball
+          path: artifacts/*
+          if-no-files-found: error
+          retention-days: 1
+
+  debian:
+    name: Debian package
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Installing dependencies ...
+        run: |
+          sudo apt-get -y update
+          sudo apt-get -y install build-essential libncurses-dev autoconf automake \
+          		          dpkg-dev debhelper devscripts
+      - name: Build Debian package ...
+        run: |
+          ver=${GITHUB_REF_NAME#v}
+          deb=$(dpkg-parsechangelog -S Version)
+          if [ "$deb" != "$ver" ]; then
+              echo "debian/changelog is at $deb, tag says $ver"
+              exit 1
+          fi
+          ./autogen.sh
+          ./configure
+          make package
+          mkdir -p artifacts/
+          mv ../mg2a_*.deb artifacts/
+      - name: Upload package
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-debian
+          path: artifacts/*
+          if-no-files-found: error
+          retention-days: 1
+
+  release:
+    name: Publish release
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [ tarball, debian ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -20,8 +76,7 @@ jobs:
         id: build
         run: |
           ver=${GITHUB_REF#refs/tags/}
-          echo "ver=${ver}"     >> $GITHUB_OUTPUT
-          echo "num=${ver#v}"   >> $GITHUB_OUTPUT
+          echo "ver=${ver}" >> $GITHUB_OUTPUT
           if echo $ver | grep -qE '^v[0-9]+\.[0-9]+(\.[0-9]+)?(-alpha|-beta|-rc)[0-9]*$'; then
             echo "pre=true"  >> $GITHUB_OUTPUT
           else
@@ -32,26 +87,12 @@ jobs:
           else
             echo "latest=false" >> $GITHUB_OUTPUT
           fi
-      - name: Creating Makefiles ...
-        run: |
-          ./autogen.sh
-          ./configure --prefix=
-      - name: Build release ...
-        run: |
-          make distcheck
-          mkdir -p artifacts/
-          mv *.tar.* artifacts/
-      - name: Build Debian package ...
-        run: |
-          sudo apt-get -y update
-          sudo apt-get -y install libncurses-dev dpkg-dev debhelper devscripts
-          deb=$(dpkg-parsechangelog -S Version)
-          if [ "$deb" != "${{ steps.build.outputs.num }}" ]; then
-              echo "debian/changelog is at $deb, tag says ${{ steps.build.outputs.num }}"
-              exit 1
-          fi
-          make package
-          mv ../mg2a_*.deb artifacts/
+      - name: Download artifacts ...
+        uses: actions/download-artifact@v7
+        with:
+          pattern: release-*
+          path: artifacts
+          merge-multiple: true
       - name: Extract ChangeLog entry ...
         run: |
           awk '/-----*/{if (x == 1) exit; x=1;next}x' ChangeLog.md \
