@@ -203,16 +203,28 @@ friendly to porting to resource constrained systems.
 New features include, but are not limited to:
 
 * UTF-8 support: multibyte characters can be typed, displayed, and edited
-  in UTF-8 locales
-* Syntax highlighting in buffers with a language mode, `c`, the new `python`
-  `markdown`, and `shell-script` modes, toggled with `M-x font-lock-mode`
+  in UTF-8 locales, with double-width CJK taking two columns
+* Syntax highlighting in buffers with a language mode, `c`, `conf`, `diff`,
+  `git-commit`, `makefile`, `markdown`, `python`, `shell-script`, and
+  `yaml`, toggled with `M-x font-lock-mode`.  The mode follows the file
+  name, or the `#!` line, and sets the buffer up for it: hard tabs for
+  makefiles, spaces for python and YAML
+* Line wrap with `M-x line-wrap-mode`: a line too long for the window
+  continues on the rows below instead of being truncated at the edge
+* `text-mode` for prose, which turns on `auto-fill-mode` for *.txt,
+  README, and the files a source tree keeps without a suffix
+* `git-commit-mode` for COMMIT_EDITMSG and its siblings, with `C-c C-c`
+  to finish the commit, `C-c C-k` to cancel it, and `C-c C-s` to sign off
 * Visual mark mode: the region between mark and dot is shown in reverse
   video, like transient-mark-mode in GNU Emacs
-* Marking text with Shift + arrow keys
+* Marking text with Shift + arrow keys, or a page at a time with
+  Shift + PgUp/PgDn
 * Side by side windows with `C-x 3`, `split-window-horizontally`
-* Window movement with `M-arrow keys` and resize with `M-S-arrow keys`
+* Window movement with `M-arrow keys`, resize with `M-S-arrow keys`, and
+  `C-x +` to balance them
 * Smart Tab indent in: `c`, `python`, and `shell-script` modes
-* Emacs-like modeline with `(row,col)` and new `display-time-mode`
+* Emacs-like modeline naming the major mode, with `(row,col)` and
+  `display-time-mode`
 * Support for building without curses, using termios + escape seq.
 * Support for exhuberant/universal ctags `tags` file format
 * Built-in `*quick*` help using `C-h q`
