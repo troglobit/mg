@@ -9,7 +9,7 @@
 .Nd emacs-like text editor
 .Sh SYNOPSIS
 .Nm mg
-.Op Fl hnRS
+.Op Fl hnRsS
 .Op Fl b Ar file
 .Op Fl f Ar mode
 .Op Fl u Ar file
@@ -62,6 +62,19 @@ Show usage text and exit.
 Turn off backup file generation.
 .It Fl R
 Files specified on the command line will be opened read-only.
+.It Fl s
+Single-file mode: only the files named on the command line can be
+visited, inserted, or written; anything else is refused.
+The startup file is not read, backups are off as with
+.Fl n ,
+and
+.Fl b
+and
+.Fl u
+are refused.
+Combine with
+.Fl S
+for the editor of a restricted shell.
 .It Fl S
 Secure mode, for use as the editor of a restricted shell.
 Commands that run other programs are disabled:

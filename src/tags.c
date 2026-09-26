@@ -260,6 +260,8 @@ loadtags(const char *fn)
 	char *l;
 	FILE *fd;
 	
+	if (!secure_allowed(fn))
+		return (FALSE);
 	if ((fd = fopen(fn, "r")) == NULL) {
 		dobeep();
 		ewprintf("Unable to open tags file: %s", fn);

@@ -12,8 +12,10 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <dirent.h>
+#include <err.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <libgen.h>
 #include <limits.h>
 #include <pwd.h>
 #include <signal.h>
@@ -56,12 +58,75 @@ secure_denied(void)
 	return (dobeep_msg("Command disabled in secure mode"));
 }
 
+static char **allowed;		/* -s: files from the command line */
+static int    nallowed;
+
+/*
+ * Canonical name of fn, also when fn does not exist yet.
+ */
+static void
+canonname(const char *fn, char *buf, size_t len)
+{
+	char	 tmp[PATH_MAX], base[PATH_MAX];
+
+	if (realpath(fn, buf) != NULL)
+		return;
+
+	(void)xbasename(base, fn, sizeof(base));
+	(void)strlcpy(tmp, fn, sizeof(tmp));
+	if (realpath(dirname(tmp), buf) == NULL) {
+		(void)strlcpy(buf, fn, len);
+		return;
+	}
+	if (buf[1] != '\0')
+		(void)strlcat(buf, "/", len);
+	(void)strlcat(buf, base, len);
+}
+
+/*
+ * Register a file that may be opened in single-file mode (-s).
+ */
+void
+secure_allow(const char *fn)
+{
+	char	 buf[PATH_MAX];
+	char	**nap;
+
+	canonname(fn, buf, sizeof(buf));
+	nap = reallocarray(allowed, nallowed + 1, sizeof(*allowed));
+	if (nap == NULL || (nap[nallowed] = strdup(buf)) == NULL)
+		err(1, "secure_allow");
+	allowed = nap;
+	nallowed++;
+}
+
+/*
+ * In single-file mode, only files from the command line may be opened.
+ */
+int
+secure_allowed(const char *fn)
+{
+	char	 buf[PATH_MAX];
+	int	 i;
+
+	if (!singlefile)
+		return (TRUE);
+	canonname(fn, buf, sizeof(buf));
+	for (i = 0; i < nallowed; i++)
+		if (strcmp(allowed[i], buf) == 0)
+			return (TRUE);
+	dobeep_msgs("File not permitted in secure mode:", fn);
+	return (FALSE);
+}
+
 /*
  * Open a file for reading.
  */
 int
 ffropen(FILE **ffp, const char *fn, struct buffer *bp)
 {
+	if (!secure_allowed(fn))
+		return (FIOERR);
 	if (!secure && isgzip(fn)) {
 		if ((*ffp = ffgzopen(fn)) == NULL)
 			goto filerr;
@@ -136,6 +201,8 @@ ffwopen(FILE ** ffp, const char *fn, struct buffer *bp)
 	int	fd;
 	mode_t	fmode = DEFFILEMODE;
 
+	if (!secure_allowed(fn))
+		return (FIOERR);
 	if (bp && bp->b_fi.fi_mode)
 		fmode = bp->b_fi.fi_mode & 07777;
 
@@ -494,6 +561,8 @@ make_file_list(char *buf)
 	struct list	*last, *current;
 	char		 prefixx[NFILEN + 1];
 
+	if (singlefile)
+		return (NULL);
 	/*
 	 * We need three different strings:
 

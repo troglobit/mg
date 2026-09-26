@@ -943,6 +943,8 @@ dired_(char *dname)
 		ewprintf("Bad directory name");
 		return (NULL);
 	}
+	if (!secure_allowed(dname))
+		return (NULL);
 	/* this should not be done, instead adjustname() should get a flag */
 	len = strlen(dname);
 	if (dname[len - 1] != '/') {

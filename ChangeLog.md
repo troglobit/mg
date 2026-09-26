@@ -11,6 +11,9 @@ All relevant changes to the project are documented in this file.
 - New secure mode, `-S` or `MGSECURE=1`, for use as the editor of a
   restricted shell.  Commands that run other programs are disabled, the
   startup file is skipped, and `-b`/`-u` are refused
+- New single-file mode, `-s`, where only the files named on the command
+  line can be visited, inserted, or written.  Combine with `-S` for the
+  editor of a restricted shell
 
 ### Fixes
 
