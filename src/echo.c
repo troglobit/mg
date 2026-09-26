@@ -408,6 +408,136 @@ mbinsertc(int c)
 }
 
 /*
+ * Replace the line with s.  Returns what mbinsert() does.
+ */
+static int
+mbset(const char *s)
+{
+	mbgoto(0);
+	mbdelto(mb.epos);
+	return (mbinsert(s, strlen(s)));
+}
+
+/*
+ * What was typed at earlier prompts, newest last, one list per kind
+ * of prompt: commands, buffers and files by their flag, any other
+ * prompt by its text.
+ */
+#define HISTLEN	32
+struct hist {
+	const char	*key;
+	char		*line[HISTLEN];
+	int		 n;
+	struct hist	*next;
+};
+static struct hist *hists;
+
+/*
+ * The list being walked at the prompt: pos is the line shown, n one
+ * past the newest, where cur holds what was typed before walking off.
+ */
+static struct {
+	struct hist	*h;
+	int		 pos;
+	char		*cur;
+} mbh;
+
+/*
+ * The list for a prompt.  A prompt that names a default, as in
+ * "Find tag (default %s): ", shares the list of "Find tag: ".
+ */
+static struct hist *
+histfind(const char *fp, int flag)
+{
+	struct hist	*h;
+	const char	*key, *dflt;
+	size_t		 len;
+
+	if (flag & EFFUNC)
+		key = "M-x";
+	else if (flag & EFBUF)
+		key = "buffer";
+	else if (flag & EFFILE)
+		key = "file";
+	else
+		key = fp;
+	if ((dflt = strstr(key, " (default")) != NULL)
+		len = dflt - key;
+	else if ((len = strlen(key)) > 2 && strcmp(key + len - 2, ": ") == 0)
+		len -= 2;
+	for (h = hists; h != NULL; h = h->next)
+		if (strncmp(h->key, key, len) == 0 && h->key[len] == '\0')
+			return (h);
+	if ((h = calloc(1, sizeof(*h))) == NULL ||
+	    (h->key = strndup(key, len)) == NULL) {
+		free(h);
+		return (NULL);
+	}
+	h->next = hists;
+	hists = h;
+	return (h);
+}
+
+/*
+ * Remember s as the newest line of h, unless it is empty or the same
+ * as the one before.
+ */
+static void
+histadd(struct hist *h, const char *s)
+{
+	if (h == NULL || *s == '\0' ||
+	    (h->n > 0 && strcmp(h->line[h->n - 1], s) == 0))
+		return;
+	if (h->n == HISTLEN) {
+		free(h->line[0]);
+		memmove(h->line, h->line + 1, --h->n * sizeof(*h->line));
+	}
+	if ((h->line[h->n] = strdup(s)) != NULL)
+		h->n++;
+}
+
+/*
+ * Show the line dir (-1 or 1) steps away in the history, keeping
+ * what was typed so walking back down restores it.  Returns what
+ * mbinsert() does.
+ */
+static int
+mbhist(int dir)
+{
+	int	 pos = mbh.pos + dir;
+
+	if (mbh.h == NULL || pos < 0 || pos > mbh.h->n) {
+		dobeep();
+		return (TRUE);
+	}
+	if (mbh.pos == mbh.h->n) {
+		free(mbh.cur);
+		if ((mbh.cur = strndup(mb.buf, mb.epos)) == NULL)
+			return (ABORT);
+	}
+	mbh.pos = pos;
+	return (mbset(pos == mbh.h->n ? mbh.cur : mbh.h->line[pos]));
+}
+
+/*
+ * The history commands: they have an effect at a prompt only, where
+ * mbcommand() sees them by name.
+ */
+int
+prevhist(int f, int n)
+{
+	dobeep();
+	return (FALSE);
+}
+
+int
+nexthist(int f, int n)
+{
+	dobeep();
+	return (FALSE);
+}
+
+/*
  * Insert the first line of the kill buffer at the cursor, gathered
  * to be drawn once.  Returns what mbinsert() does.
  */
@@ -488,6 +618,10 @@ mbcommand(PF funct, int c)
 		mbdelto(mbprevword());
 	else if (funct == delfword)
 		mbdelto(mbnextword());
+	else if (funct == backline || funct == prevhist)
+		return (mbhist(-1));
+	else if (funct == forwline || funct == nexthist)
+		return (mbhist(1));
 	else
 		dobeep();
 	return (TRUE);
@@ -520,6 +654,10 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 	mb.nbuf = nbuf;
 	mb.dynbuf = (buf == NULL);
 	mb.epos = mb.cpos = 0;
+	mbh.h = histfind(fp, flag);
+	mbh.pos = mbh.h != NULL ? mbh.h->n : 0;
+	free(mbh.cur);
+	mbh.cur = NULL;
 	cplflag = FALSE;
 
 	if ((flag & EFNEW) != 0 || ttrow != nrow - 1) {
@@ -586,8 +724,10 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 				if (i > 0)
 					mb.epos += i;
 			}
-			if (mb.buf != NULL)
+			if (mb.buf != NULL) {
 				mb.buf[mb.epos] = '\0';
+				histadd(mbh.h, mb.buf);
+			}
 			if ((flag & EFCR) != 0) {
 				ttputc(CCHR('M'));
 				ttflush();

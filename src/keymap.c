@@ -333,9 +333,9 @@ static PF metasqf[] = {
 static PF metal[] = {
 	lowerword,		/* l */
 	backtoindent,		/* m */
-	rescan,			/* n */
+	nexthist,		/* n */
 	rescan,			/* o */
-	rescan,			/* p */
+	prevhist,		/* p */
 	fillpara,		/* q */
 	backsearch,		/* r */
 	forwsearch,		/* s */

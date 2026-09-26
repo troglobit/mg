@@ -21,6 +21,9 @@ All relevant changes to the project are documented in this file.
   Home, End, Delete, Ctrl and Meta with the arrow keys, M-b, M-f, M-d and
   M-DEL now move and delete by word and character there too, instead of
   inserting the terminal's escape sequence
+- Minibuffer history: Up, Down, M-p and M-n walk what was entered before
+  at the same kind of prompt, one history each for command names, buffer
+  names and file names, and one per other prompt
 
 ### Fixes
 

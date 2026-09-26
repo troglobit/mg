@@ -99,6 +99,21 @@ Use
 as the startup file, instead of the default
 .Pa ~/.mg .
 .El
+.Sh MINIBUFFER
+Commands that need a name or a string ask for it on the bottom line,
+the minibuffer.
+The keys that move and delete in a buffer do the same there, as bound
+in the fundamental mode: the arrow keys, Home, End and Delete, and
+with Ctrl or Meta the word at a time variants.
+In addition, C-u and C-x delete what is before the cursor, C-w the
+word before it, C-k keeps the rest of the line in the kill buffer, and
+C-q inserts the next key as typed.
+.Pp
+Each kind of prompt keeps what was entered at it before: Up, Down,
+M-p and M-n walk those lines, and going back down past the newest
+restores what was being typed.
+Command names, buffer names and file names share one history each;
+any other prompt has its own.
 .Sh WINDOWS AND BUFFERS
 When a file is loaded into
 .Nm ,
@@ -980,6 +995,10 @@ Insert a newline, then enough tabs and spaces to duplicate the indentation
 of the previous line, respecting
 .Ic no-tab-mode
 and the buffer tab width.
+.It Ic next-history-element
+At a prompt, show the line entered after the one shown, or what was
+being typed once past the newest.
+Bound to M-n; the Down arrow does the same.
 .It Ic next-line
 Move forward
 .Va n
@@ -1015,6 +1034,9 @@ Inserts a prefix string before each line of a region.
 The prefix string is settable by using
 .Ic set-prefix-string
 or this command with a prefix argument.
+.It Ic previous-history-element
+At a prompt, show the line entered before the one shown.
+Bound to M-p; the Up arrow does the same.
 .It Ic previous-line
 Move backwards
 .Va n

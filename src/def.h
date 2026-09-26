@@ -675,6 +675,8 @@ int		 gotobob(int, int);
 int		 gotoeob(int, int);
 int		 forwline(int, int);
 int		 backline(int, int);
+int		 prevhist(int, int);
+int		 nexthist(int, int);
 void		 setgoal(void);
 int		 getgoal(struct line *);
 int		 forwpage(int, int);
