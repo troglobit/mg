@@ -22,6 +22,8 @@ All relevant changes to the project are documented in this file.
 
 - Fix shell command injection when opening a `.gz` file whose name
   contains shell metacharacters
+- Draw the divider between side by side windows on every row of a wrapped
+  line; it kept stale cells on the rows the line continued from
 
 [v4.1][] - 2026-09-07
 ---------------------

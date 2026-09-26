@@ -308,6 +308,17 @@ linerows(struct line *lp, struct mgwin *wp)
 }
 
 /*
+ * The column between side by side windows, drawn by the one on its
+ * left whenever it finishes a row.
+ */
+static void
+vtdivider(void)
+{
+	if (vtright < ncol)
+		vscreen[vtrow]->v_text[vtright] = '|';
+}
+
+/*
  * At the right edge with more to write: mark the row as continued and
  * step to the next when the window wraps and there is one left.
  */
@@ -317,6 +328,7 @@ vtnextrow(void)
 	if (!vtwrap || vtrow >= vtbot || vtright - vtleft < 2)
 		return (0);
 	vscreen[vtrow]->v_text[vtright - 1] = utf8_mode ? 0x21B5 : '\\';
+	vtdivider();
 	vtrow++;
 	vtcol = vtleft;
 	vtgutter(vtrow, 0);
@@ -870,9 +882,7 @@ vteeol(void)
 	vp = vscreen[vtrow];
 	while (vtcol < vtright)
 		vp->v_text[vtcol++] = ' ' | vtattr;
-	/* a divider between side by side windows */
-	if (vtright < ncol)
-		vp->v_text[vtright] = '|';
+	vtdivider();
 }
 
 /*
