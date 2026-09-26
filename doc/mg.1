@@ -9,7 +9,7 @@
 .Nd emacs-like text editor
 .Sh SYNOPSIS
 .Nm mg
-.Op Fl hnR
+.Op Fl hnRS
 .Op Fl b Ar file
 .Op Fl f Ar mode
 .Op Fl u Ar file
@@ -62,6 +62,24 @@ Show usage text and exit.
 Turn off backup file generation.
 .It Fl R
 Files specified on the command line will be opened read-only.
+.It Fl S
+Secure mode, for use as the editor of a restricted shell.
+Commands that run other programs are disabled:
+.Ic suspend-emacs ,
+.Ic shell-command ,
+.Ic shell-command-on-region ,
+.Ic compile ,
+.Ic grep ,
+.Ic diff-buffer-with-file ,
+all of dired, and the cscope commands.
+The startup file is not read and
+.Fl b
+and
+.Fl u
+are refused.
+Files ending in
+.Pa .gz
+are opened as-is instead of being decompressed.
 .It Fl u Ar file
 Use
 .Ar file
@@ -1513,6 +1531,15 @@ Comments can be added to the startup files by placing
 or
 .Sq #
 as the first character of a line.
+.Sh ENVIRONMENT
+.Bl -tag -width MGSECURE
+.It Ev MGSECURE
+When set, in the manner of
+.Ev LESSSECURE ,
+.Nm
+runs in secure mode as if started with
+.Fl S .
+.El
 .Sh FILES
 .Bl -tag -width /usr/share/doc/mg/tutorial -compact
 .It Pa ~/.mg

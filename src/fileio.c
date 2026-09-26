@@ -48,12 +48,21 @@ static int   leavetmp = 0;	/* 1 = leave any '~' files in tmp dir */
 static pid_t gzpid = -1;	/* gunzip child from ffgzopen() */
 
 /*
+ * Secure mode (-S) refuses any command that would start another program.
+ */
+int
+secure_denied(void)
+{
+	return (dobeep_msg("Command disabled in secure mode"));
+}
+
+/*
  * Open a file for reading.
  */
 int
 ffropen(FILE **ffp, const char *fn, struct buffer *bp)
 {
-	if (isgzip(fn)) {
+	if (!secure && isgzip(fn)) {
 		if ((*ffp = ffgzopen(fn)) == NULL)
 			goto filerr;
 

@@ -509,6 +509,10 @@ shellcmdoutput(char* const cmd, char* const text, int len,
 	char	*shellp;
 	int	 tbo, ret, special = 0;
 
+	if (secure) {
+		free(text);
+		return (secure_denied());
+	}
 	if (bp == NULL) {
 		special = 1;
 		bp = bfind("*Shell Command Output*", TRUE);
@@ -570,6 +574,8 @@ pipeio(const char* const path, char* const argv[], char* const text, int len,
 	int s[2], ret;
 	pid_t pid;
 
+	if (secure)
+		return (secure_denied());
 	if (socketpair(AF_UNIX, SOCK_STREAM, PF_UNSPEC, s) == -1) {
 		dobeep();
 		ewprintf("socketpair error");

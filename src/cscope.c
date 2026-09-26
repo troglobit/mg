@@ -180,6 +180,8 @@ cscreatelist(int f, int n)
 	else if (S_ISDIR(sb.st_mode) == 0)
 		return(dobeep_msgs(dir, "Not a directory"));
 
+	if (secure)
+		return (secure_denied());
 	if (csexists("cscope-indexer") == FALSE)
 		return(dobeep_msg("no such file or directory, cscope-indexer"));
 
@@ -384,6 +386,8 @@ do_cscope(int i)
 	else if (p[0] == '\0')
 		return (FALSE);
 
+	if (secure)
+		return (secure_denied());
 	if (csexists("cscope") == FALSE)
 		return(dobeep_msg("no such file or directory, cscope"));
 

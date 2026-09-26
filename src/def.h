@@ -942,6 +942,8 @@ extern int		 utf8_mode;
 extern int		 helpsh;
 extern int		 helpset;
 extern int		 batch;
+extern int		 secure;
+int		 secure_denied(void);
 extern int		 inrc;
 extern char	 	 cinfo[];
 extern char		*keystrings[];

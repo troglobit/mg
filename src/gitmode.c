@@ -85,6 +85,8 @@ git_ident(char *buf, size_t len)
 	FILE	*fp;
 	char	*p;
 
+	if (secure)
+		return (FALSE);
 	fp = popen("git var GIT_COMMITTER_IDENT 2>/dev/null", "r");
 	if (fp == NULL)
 		return (FALSE);

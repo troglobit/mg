@@ -35,6 +35,7 @@ int		 dovisiblebell;			/* visible bell toggle	*/
 int		 dblspace;			/* sentence end #spaces	*/
 int		 allbro;			/* all buffs read-only	*/
 int		 batch;				/* for regress tests	*/
+int		 secure;			/* -S: no exec, no rc	*/
 int		 inrc;				/* reading the startup file */
 struct buffer	*curbp;				/* current buffer	*/
 struct buffer	*bheadp;			/* BUFFER list head	*/
@@ -50,7 +51,7 @@ extern void	 closetags(void);
 static __dead void
 usage(int code)
 {
-	fprintf(stderr, "usage: %s [-hnR] [-b file] [-f mode] [-u file] "
+	fprintf(stderr, "usage: %s [-hnRS] [-b file] [-f mode] [-u file] "
 	    "[+number] [+number:col] [file ...]\n",
 	    PACKAGE_NAME);
 	exit(code);
@@ -74,7 +75,10 @@ main(int argc, char **argv)
 		err(1, "pledge");
 #endif
 
-	while ((o = getopt(argc, argv, "hnRb:f:u:")) != -1)
+	if (getenv("MGSECURE") != NULL)
+		secure = 1;
+
+	while ((o = getopt(argc, argv, "hnRSb:f:u:")) != -1)
 		switch (o) {
 		case 'b':
 			batch = 1;
@@ -82,6 +86,9 @@ main(int argc, char **argv)
 			break;
 		case 'R':
 			allbro = 1;
+			break;
+		case 'S':
+			secure = 1;
 			break;
 		case 'n':
 			nobackups = 1;
@@ -108,11 +115,15 @@ main(int argc, char **argv)
                     PACKAGE_NAME);
                 exit(1);
 	}
+	if (secure && (batch || conffile != NULL))
+		errx(1, "-b and -u are not allowed in secure mode");
 	if (batch) {
 		pty_init();
 		conffile = batchfile;
 	}
-	if ((ffp = startupfile(NULL, conffile, file, sizeof(file))) == NULL &&
+	if (secure)
+		ffp = NULL;
+	else if ((ffp = startupfile(NULL, conffile, file, sizeof(file))) == NULL &&
 	    conffile != NULL) {
 		fprintf(stderr, "%s: Problem with file: %s\n", PACKAGE_NAME,
 		    conffile);

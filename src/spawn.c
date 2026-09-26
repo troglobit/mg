@@ -23,6 +23,8 @@ spawncli(int f, int n)
 {
 	sigset_t	oset;
 
+	if (secure)
+		return (secure_denied());
 	/* Very similar to what vttidy() does. */
 	ttcolor(CTEXT);
 	ttnowindow();

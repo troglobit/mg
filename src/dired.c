@@ -657,6 +657,8 @@ d_exec(int space, struct buffer *bp, const char *input, const char *cmd, ...)
 	int	 ret = (ABORT), n;
 	pid_t	 pid;
 
+	if (secure)
+		return (secure_denied());
 	if (sigaction(SIGCHLD, NULL, &olda) == -1)
 		return (ABORT);
 

@@ -181,6 +181,11 @@ compile_mode(const char *name, const char *command)
 	char	 timestr[NTIME];
 	time_t	 t;
 
+	if (secure) {
+		secure_denied();
+		return (NULL);
+	}
+
 	n = snprintf(qcmd, sizeof(qcmd), "%s 2>&1", command);
 	if (n < 0 || n >= (int)sizeof(qcmd))
 		return (NULL);

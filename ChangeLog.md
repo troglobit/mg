@@ -3,6 +3,20 @@ Change Log
 
 All relevant changes to the project are documented in this file.
 
+[v4.2][UNRELEASED]
+---------------------
+
+### Changes
+
+- New secure mode, `-S` or `MGSECURE=1`, for use as the editor of a
+  restricted shell.  Commands that run other programs are disabled, the
+  startup file is skipped, and `-b`/`-u` are refused
+
+### Fixes
+
+- Fix shell command injection when opening a `.gz` file whose name
+  contains shell metacharacters
+
 [v4.1][] - 2026-09-07
 ---------------------
 
@@ -497,7 +511,7 @@ set as Mg3a.
 	functions.  Some simply marked as "don't care"
   - Fix missing initialization of stack variables
 
-[UNRELEASED]: https://github.com/troglobit/mg/compare/v4.0...HEAD
+[UNRELEASED]: https://github.com/troglobit/mg/compare/v4.1...HEAD
 [v4.0]:       https://github.com/troglobit/mg/compare/v3.7...v4.0
 [v3.7]:       https://github.com/troglobit/mg/compare/v3.6...v3.7
 [v3.6]:       https://github.com/troglobit/mg/compare/v3.5...v3.6
