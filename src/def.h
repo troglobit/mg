@@ -599,6 +599,7 @@ int		 ffropen(FILE **, const char *, struct buffer *);
 void		 ffstat(FILE *, struct buffer *);
 int		 ffwopen(FILE **, const char *, struct buffer *);
 int		 ffclose(FILE *, struct buffer *);
+void		 ffgzclose(FILE *);
 int		 ffputbuf(FILE *, struct buffer *, int);
 int		 ffgetline(FILE *, char *, int, int *);
 int		 fbackupfile(const char *);

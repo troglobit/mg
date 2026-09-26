@@ -465,7 +465,7 @@ retry:
 endoffile:
 	/* ignore errors */
 	if (pipe)
-		(void)pclose(ffp);
+		(void)ffgzclose(ffp);
 	else
 		(void)ffclose(ffp, NULL);
 

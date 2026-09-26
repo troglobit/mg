@@ -35,15 +35,17 @@
 #endif
 
 #ifndef GUNZIP
-#define GUNZIP "gunzip -c"
+#define GUNZIP "gunzip"
 #endif
 
 static char *bkuplocation(const char *);
 static int   bkupleavetmp(const char *);
 static int   isgzip(const char *);
+static FILE *ffgzopen(const char *);
 
 static char *bkupdir;
 static int   leavetmp = 0;	/* 1 = leave any '~' files in tmp dir */
+static pid_t gzpid = -1;	/* gunzip child from ffgzopen() */
 
 /*
  * Open a file for reading.
@@ -52,10 +54,7 @@ int
 ffropen(FILE **ffp, const char *fn, struct buffer *bp)
 {
 	if (isgzip(fn)) {
-		char cmd[strlen(fn) + sizeof(GUNZIP) + 2];
-
-                snprintf(cmd, sizeof(cmd), "%s %s", GUNZIP, fn);
-                if ((*ffp = popen(cmd, "r")) == NULL)
+		if ((*ffp = ffgzopen(fn)) == NULL)
 			goto filerr;
 
 		ffstat(*ffp, bp);
@@ -391,7 +390,7 @@ startupfile(char *suffix, char *conffile, char *path, size_t len)
 		return (ffp);
 	if (ffp) {
 		if (ret == FIOGZIP)
-			(void)pclose(ffp);
+			(void)ffgzclose(ffp);
 		else
 			(void)ffclose(ffp, NULL);
 		ffp = NULL;
@@ -414,7 +413,7 @@ nohome:
 		return (ffp);
 	if (ffp) {
 		if (ret == FIOGZIP)
-			(void)pclose(ffp);
+			(void)ffgzclose(ffp);
 		else
 			(void)ffclose(ffp, NULL);
 	}
@@ -655,6 +654,55 @@ isgzip(const char *fn)
         }
 
         return 0;
+}
+
+/*
+ * Run gunzip on fn without going through the shell, return its stdout
+ * as a read stream.  Close with ffgzclose().
+ */
+static FILE *
+ffgzopen(const char *fn)
+{
+	FILE *ffp;
+	int p[2];
+
+	if (pipe(p) == -1)
+		return (NULL);
+
+	switch ((gzpid = fork())) {
+	case -1:
+		close(p[0]);
+		close(p[1]);
+		return (NULL);
+	case 0:
+		close(p[0]);
+		if (dup2(p[1], STDOUT_FILENO) == -1)
+			_exit(1);
+		close(p[1]);
+		execlp(GUNZIP, GUNZIP, "-c", "--", fn, (char *)NULL);
+		_exit(1);
+	}
+
+	close(p[1]);
+	if ((ffp = fdopen(p[0], "r")) == NULL) {
+		close(p[0]);
+		ffgzclose(NULL);
+	}
+
+	return (ffp);
+}
+
+/*
+ * Close stream from ffgzopen() and reap gunzip.
+ */
+void
+ffgzclose(FILE *ffp)
+{
+	if (ffp)
+		fclose(ffp);
+	if (gzpid > 0)
+		waitpid(gzpid, NULL, 0);
+	gzpid = -1;
 }
 
 /*
