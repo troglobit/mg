@@ -184,6 +184,7 @@ goes something like this:
 * Apr 10, 2023: Mg v3.6, sync with OpenBSD, improved ctags support
 * Aug 13, 2023: Mg v3.7, sync with OpenBSD, improved usability
 * Jul 10, 2026: Mg v4.0, initial UTF-8 support by Joachim Wiberg
+* Sep  7, 2026: Mg v4.1, Unicode 17 support and lots of new modes
 
 See the source distribution for the list of [AUTHORS][].
 
