@@ -541,6 +541,18 @@ static struct KEYMAPE (1) wrapmap = {
 	}
 };
 
+static struct KEYMAPE (1) linummap = {
+	0,
+	1,		/* 1 to avoid 0 sized array */
+	rescan,
+	{
+		/* unused dummy entry, see the mode files */
+		{
+			(KCHAR)0, (KCHAR)0, NULL, NULL
+		}
+	}
+};
+
 static struct KEYMAPE (1) notabmap = {
 	1,
 	1,
@@ -582,6 +594,7 @@ struct maps_s	fundamental_mode = { (KEYMAP *)&fundmap, "fundamental", 0, NULL };
 static struct maps_s map_table[] = {
 	{ .p_map = (KEYMAP *)&fillmap, .p_name = "fill", .p_minor = 1 },
 	{ .p_map = (KEYMAP *)&indntmap, .p_name = "indent", .p_minor = 1 },
+	{ .p_map = (KEYMAP *)&linummap, .p_name = "linum", .p_minor = 1 },
 	{ .p_map = (KEYMAP *)&notabmap, .p_name = "notab", .p_minor = 1 },
 	{ .p_map = (KEYMAP *)&overwmap, .p_name = "overwrite", .p_minor = 1 },
 	{ .p_map = (KEYMAP *)&wrapmap, .p_name = "wrap", .p_minor = 1 },

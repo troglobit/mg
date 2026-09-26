@@ -132,6 +132,13 @@ static int	 vtwrap = 0;
 static int	 vtbot = 0;
 
 /*
+ * The gutter of line numbers the window being rendered has left of
+ * vtleft, and the number of the line on its top row.
+ */
+static int	 vtgut = 0;
+static int	 vttopln = 1;
+
+/*
  * The window owning the extended line, if any.  The VFEXT row flag
  * is shared between side by side windows, so only the strip that
  * drew the extension may de-extend it.
@@ -139,31 +146,92 @@ static int	 vtbot = 0;
 static struct mgwin *extwp = NULL;
 
 /*
- * True when the buffer shown in wp is in wrap mode.  The mode is
- * looked up once; b_modes is a handful of pointers to walk.
+ * True when the buffer shown in wp is in the mode called name.  The
+ * mode is looked up once, into m; b_modes is a handful of pointers
+ * to walk.
  */
 static int
-wrapped(struct mgwin *wp)
+inmode(struct mgwin *wp, struct maps_s **m, const char *name)
 {
-	static struct maps_s	*wrapmode = NULL;
-	struct buffer		*bp = wp->w_bufp;
-	int			 i;
+	struct buffer	*bp = wp->w_bufp;
+	int		 i;
 
-	if (wrapmode == NULL && (wrapmode = name_mode("wrap")) == NULL)
+	if (*m == NULL && (*m = name_mode(name)) == NULL)
 		return (0);
 	for (i = 0; i <= bp->b_nmodes; i++)
-		if (bp->b_modes[i] == wrapmode)
+		if (bp->b_modes[i] == *m)
 			return (1);
 	return (0);
 }
 
+static int
+wrapped(struct mgwin *wp)
+{
+	static struct maps_s	*wrapmode = NULL;
+
+	return (inmode(wp, &wrapmode, "wrap"));
+}
+
+/*
+ * Columns the line numbers take at the left of wp, two digits and a
+ * space at least: none when the buffer is not in linum mode, or the
+ * window is too narrow to keep any text beside them.
+ */
+static int
+gutterwidth(struct mgwin *wp)
+{
+	static struct maps_s	*linummode = NULL;
+	int			 n, w;
+
+	if (!inmode(wp, &linummode, "linum"))
+		return (0);
+	for (w = 3, n = wp->w_bufp->b_lines; n >= 100; n /= 10)
+		w++;
+	return (w + 1 < wp->w_ntcols ? w : 0);
+}
+
+/*
+ * The columns of wp that hold text: the gutter takes the rest.
+ */
+static int
+textcols(struct mgwin *wp)
+{
+	return (wp->w_ntcols - gutterwidth(wp));
+}
+
+/*
+ * Only valid once the window is framed, since the line number of its
+ * top row is found by walking dot back to it.
+ */
 static void
 vtbounds(struct mgwin *wp)
 {
-	vtleft = wp->w_leftcol;
+	struct line	*lp;
+
+	vtgut = gutterwidth(wp);
+	vtleft = wp->w_leftcol + vtgut;
 	vtright = wp->w_leftcol + wp->w_ntcols;
 	vtwrap = wrapped(wp);
 	vtbot = wp->w_toprow + wp->w_ntrows - 1;
+	vttopln = wp->w_dotline;
+	for (lp = wp->w_dotp; lp != wp->w_linep; lp = lback(lp))
+		vttopln--;
+}
+
+/*
+ * Put line number ln in the gutter of row, or clear it for 0: a row
+ * a line wrapped onto, or one past the end of the buffer.
+ */
+static void
+vtgutter(int row, int ln)
+{
+	int	*cells = vscreen[row]->v_text;
+	int	 i;
+
+	for (i = vtleft - vtgut; i < vtleft; i++)
+		cells[i] = ' ';
+	for (i = vtleft - 2; i >= vtleft - vtgut && ln > 0; i--, ln /= 10)
+		cells[i] = '0' + ln % 10;
 }
 
 /*
@@ -200,7 +268,7 @@ wraprows(struct line *lp, struct mgwin *wp, int o, int *col)
 {
 	int	 c, i, len, rows, usable, w;
 
-	usable = vtusable(wp->w_ntcols);
+	usable = vtusable(textcols(wp));
 	rows = 1;
 	c = 0;
 	for (i = 0; i < o && i < llength(lp); i += len) {
@@ -251,6 +319,7 @@ vtnextrow(void)
 	vscreen[vtrow]->v_text[vtright - 1] = utf8_mode ? 0x21B5 : '\\';
 	vtrow++;
 	vtcol = vtleft;
+	vtgutter(vtrow, 0);
 	return (1);
 }
 
@@ -276,7 +345,6 @@ static struct {
  */
 static struct {
 	int	 active;
-	int	 topln;			/* line number of w_linep	*/
 	int	 sline, soff;
 	int	 eline, eoff;
 } hl;
@@ -392,21 +460,14 @@ hlactive(struct mgwin *wp)
 
 /*
  * Prepare region drawing for the window being rendered: order the
- * mark and dot endpoints by line number and byte offset.  Only
- * valid after the window has been framed, since finding the line
- * number of the top line walks w_dotp back to w_linep.
+ * mark and dot endpoints by line number and byte offset.
  */
 static void
 hlsetup(struct mgwin *wp)
 {
-	struct line	*lp;
-
 	hl.active = hlactive(wp);
 	if (!hl.active)
 		return;
-	hl.topln = wp->w_dotline;
-	for (lp = wp->w_dotp; lp != wp->w_linep; lp = lback(lp))
-		hl.topln--;
 	if (wp->w_markline < wp->w_dotline ||
 	    (wp->w_markline == wp->w_dotline &&
 	     wp->w_marko <= wp->w_doto)) {
@@ -832,7 +893,7 @@ update(int modelinecolor)
 	struct video	*vp2;
 	int	 i, ln, s, e;
 	int	 hflag;
-	int	 currow, curcol;
+	int	 currow, curcol, curleft;
 	int	 offs, size;
 
 	if (charswaiting())
@@ -920,6 +981,7 @@ update(int modelinecolor)
 			}
 			vscreen[i]->v_color = CTEXT;
 			vscreen[i]->v_flag |= (VFCHG | VFHBAD);
+			vtgutter(i, wp->w_dotline);
 			vtmove(i, vtleft);
 			synsetup(wp);
 			vtputl(lp, wp, 0, 0);
@@ -928,10 +990,11 @@ update(int modelinecolor)
 			hflag = TRUE;
 			hlsetup(wp);
 			synsetup(wp);
-			ln = hl.topln;
+			ln = vttopln;
 			while (i < wp->w_toprow + wp->w_ntrows) {
 				vscreen[i]->v_color = CTEXT;
 				vscreen[i]->v_flag |= (VFCHG | VFHBAD);
+				vtgutter(i, lp != wp->w_bufp->b_headp ? ln : 0);
 				vtmove(i, vtleft);
 				if (lp != wp->w_bufp->b_headp) {
 					hlrange(ln, llength(lp), &s, &e);
@@ -959,12 +1022,13 @@ update(int modelinecolor)
 		lp = lforw(lp);
 	}
 	curcol = getcolpos(curwp);
+	curleft = curwp->w_leftcol + gutterwidth(curwp);
 	if (wrapped(curwp)) {
 		/* dot sits on one of the rows the line wrapped onto */
 		currow += wraprows(curwp->w_dotp, curwp, curwp->w_doto,
 		    &curcol) - 1;
 		lbound = 0;
-	} else if (curcol >= curwp->w_ntcols - 1) {	/* extended line. */
+	} else if (curcol >= textcols(curwp) - 1) {	/* extended line. */
 		/* flag we are extended and changed */
 		vscreen[currow]->v_flag |= VFEXT | VFCHG;
 		updext(currow, curcol);	/* and output extended line */
@@ -982,13 +1046,13 @@ update(int modelinecolor)
 		vtbounds(wp);
 		hlsetup(wp);
 		synsetup(wp);
-		ln = hl.topln;
+		ln = vttopln;
 		while (i < wp->w_toprow + wp->w_ntrows) {
 			if ((vscreen[i]->v_flag & VFEXT) && wp == extwp) {
 				/* always flag extended lines as changed */
 				vscreen[i]->v_flag |= VFCHG;
 				if ((wp != curwp) || (lp != wp->w_dotp) ||
-				    (curcol < curwp->w_ntcols - 1)) {
+				    (curcol < textcols(curwp) - 1)) {
 					vtmove(i, vtleft);
 					hlrange(ln, llength(lp), &s, &e);
 					vtputl(lp, wp, s, e);
@@ -1020,7 +1084,7 @@ update(int modelinecolor)
 			uline(i, vscreen[i], &blanks);
 			ucopy(vscreen[i], pscreen[i]);
 		}
-		ttmove(currow, curwp->w_leftcol + curcol - lbound);
+		ttmove(currow, curleft + curcol - lbound);
 		ttflush();
 		return;
 	}
@@ -1045,7 +1109,7 @@ update(int modelinecolor)
 			++offs;
 		}
 		if (offs == nrow - 1) {		/* Might get it all.	*/
-			ttmove(currow, curwp->w_leftcol + curcol - lbound);
+			ttmove(currow, curleft + curcol - lbound);
 			ttflush();
 			return;
 		}
@@ -1066,7 +1130,7 @@ update(int modelinecolor)
 		traceback(offs, size, size, size);
 		for (i = 0; i < size; ++i)
 			ucopy(vscreen[offs + i], pscreen[offs + i]);
-		ttmove(currow, curwp->w_leftcol + curcol - lbound);
+		ttmove(currow, curleft + curcol - lbound);
 		ttflush();
 		return;
 	}
@@ -1078,7 +1142,7 @@ update(int modelinecolor)
 			ucopy(vp1, vp2);
 		}
 	}
-	ttmove(currow, curwp->w_leftcol + curcol - lbound);
+	ttmove(currow, curleft + curcol - lbound);
 	ttflush();
 }
 
@@ -1112,7 +1176,7 @@ updext(int currow, int curcol)
 	struct line	*lp;			/* pointer to current line */
 	int	 s, e, width;
 
-	width = curwp->w_ntcols;
+	width = textcols(curwp);
 	if (width < 2)
 		return;
 
@@ -1275,6 +1339,7 @@ modeline(struct mgwin *wp, int modelinecolor)
 	n = wp->w_toprow + wp->w_ntrows;	/* Location.		 */
 	vscreen[n]->v_flag |= (VFCHG | VFHBAD);	/* Recompute, display.	 */
 	vtbounds(wp);
+	vtleft = wp->w_leftcol;		/* no gutter on the modeline */
 	/*
 	 * A narrow window can share this row with a neighbor's text,
 	 * so the row color cannot be used; the standout comes from

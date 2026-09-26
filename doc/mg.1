@@ -684,6 +684,15 @@ in
 a bare
 .Dq display-help-mode
 there toggles the default off.
+.It Ic display-line-numbers-mode
+Toggle line numbers in a gutter at the left of the text.
+The mode belongs to the buffer, so every window showing it gets the
+gutter.
+It is as wide as the number of lines in the buffer needs, plus a space,
+and a row a long line wraps onto is left blank.
+Can be set globally with
+.Ic set-default-mode ,
+or by naming it in the startup file.
 .It Ic display-time-mode
 Toggle whether the current time is displayed in the modeline.
 .It Ic downcase-region

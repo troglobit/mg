@@ -108,6 +108,7 @@ static struct funmap functnames[] = {
 	{dired_jump, "dired-jump", 1, NULL},
 #endif
 	{helptoggle, "display-help-mode", 0, NULL},
+	{linummode, "display-line-numbers-mode", 0, NULL},
 	{timetoggle, "display-time-mode", 0, NULL},
 	{lowerregion, "downcase-region", 0, NULL},
 	{lowerword, "downcase-word", 1, NULL},

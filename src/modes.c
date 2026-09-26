@@ -166,20 +166,39 @@ fillmode(int f, int n)
 }
 
 /*
+ * Toggle a mode that changes how much text fits in a window, so the
+ * windows showing the buffer must be framed again.
+ */
+static int
+reframemode(int f, int n, char *name)
+{
+	struct mgwin	*wp;
+
+	if (changemode(f, n, name) != TRUE)
+		return (FALSE);
+	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
+		if (wp->w_bufp == curbp)
+			wp->w_rflag |= WFFRAME | WFFULL;
+	return (TRUE);
+}
+
+/*
  * Wrap a line too long for the window onto the lines below it,
  * rather than truncating it at the right edge.
  */
 int
 wrapmode(int f, int n)
 {
-	struct mgwin	*wp;
+	return (reframemode(f, n, "wrap"));
+}
 
-	if (changemode(f, n, "wrap") != TRUE)
-		return (FALSE);
-	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
-		if (wp->w_bufp == curbp)
-			wp->w_rflag |= WFFRAME | WFFULL;
-	return (TRUE);
+/*
+ * Show the number of each line in a gutter at the left of the text.
+ */
+int
+linummode(int f, int n)
+{
+	return (reframemode(f, n, "linum"));
 }
 
 int

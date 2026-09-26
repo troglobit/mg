@@ -14,6 +14,9 @@ All relevant changes to the project are documented in this file.
 - New single-file mode, `-s`, where only the files named on the command
   line can be visited, inserted, or written.  Combine with `-S` for the
   editor of a restricted shell
+- New `display-line-numbers-mode`, showing line numbers in a gutter at the
+  left of the text.  Off by default; set it per buffer, or with
+  `set-default-mode linum` in `~/.mg`, issue #31
 
 ### Fixes
 
