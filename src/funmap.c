@@ -269,6 +269,7 @@ static struct funmap functnames[] = {
 	{tagsvisit, "visit-tags-table", 0, NULL},
 #endif
 	{showcpos, "what-cursor-position", 0, NULL},
+	{wscleanup, "whitespace-cleanup", 0, NULL},
 	{resizewinddown, "resize-window-down", 0, NULL},
 	{resizewindleft, "resize-window-left", 0, NULL},
 	{resizewindright, "resize-window-right", 0, NULL},

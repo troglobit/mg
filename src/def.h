@@ -705,6 +705,7 @@ int		 deblank(int, int);
 int		 justone(int, int);
 int		 delwhite(int, int);
 int		 delleadwhite(int, int);
+int		 wscleanup(int, int);
 int		 deltrailwhite(int, int);
 int		 lfindent(int, int);
 int		 indent(int, int);

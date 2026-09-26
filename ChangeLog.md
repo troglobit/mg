@@ -24,6 +24,9 @@ All relevant changes to the project are documented in this file.
 - Minibuffer history: Up, Down, M-p and M-n walk what was entered before
   at the same kind of prompt, one history each for command names, buffer
   names and file names, and one per other prompt
+- New `whitespace-cleanup`, as in GNU Emacs: trailing whitespace, empty
+  lines at the start and end of the buffer, and indentation redone with
+  tabs, or spaces in `no-tab-mode`; the region only when the mark is set
 
 ### Fixes
 

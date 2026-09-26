@@ -1391,6 +1391,15 @@ and column, and approximate position of the cursor in the file (as a
 percentage) is displayed.
 The column position assumes an infinite
 position display; it does not truncate just because the screen does.
+.It Ic whitespace-cleanup
+Clean up whitespace in the buffer, as in GNU Emacs: delete trailing
+whitespace on every line and empty lines at the start and end of the
+buffer, and redo the indentation of each line with tabs and spaces, or
+with spaces alone in
+.Ic no-tab-mode ,
+at the buffer's tab width.
+With the mark set, only the lines of the region are cleaned, and their
+empty lines are kept.
 .It Ic windmove-down
 .It Ic windmove-left
 .It Ic windmove-right

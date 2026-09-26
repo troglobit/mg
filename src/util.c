@@ -387,6 +387,102 @@ doindent(int cols)
 }
 
 /*
+ * Whether the i bytes of indentation on lp are what doindent(col)
+ * writes: the tabs, then the spaces.
+ */
+static int
+isindent(const struct line *lp, int col, int i)
+{
+	int	 j, tabs;
+
+	tabs = (curbp->b_flag & BFNOTAB) ? 0 : col / curbp->b_tabw;
+	if (i != tabs + col - tabs * curbp->b_tabw)
+		return (FALSE);
+	for (j = 0; j < i; j++)
+		if (lgetc(lp, j) != (j < tabs ? '\t' : ' '))
+			return (FALSE);
+	return (TRUE);
+}
+
+/*
+ * Clean up the line dot is on: delete trailing blanks and redo the
+ * indentation when it is not what doindent() would write.
+ */
+static int
+wsline(int f, int n)
+{
+	struct line	*lp = curwp->w_dotp;
+	int	 col, i, len;
+
+	len = llength(lp);
+	while (len > 0 && isblank(lgetc(lp, len - 1)))
+		len--;
+	if (len < llength(lp)) {
+		curwp->w_doto = len;
+		if (ldelete(llength(lp) - len, KNONE) != TRUE)
+			return (FALSE);
+	}
+	col = lineindent(lp, &i);
+	if (i > 0 && i < llength(lp) && !isindent(lp, col, i)) {
+		curwp->w_doto = 0;
+		if (ldelete(i, KNONE) != TRUE || doindent(col) != TRUE)
+			return (FALSE);
+	}
+	return (TRUE);
+}
+
+/*
+ * Clean up whitespace the way whitespace-cleanup does in GNU Emacs:
+ * trailing blanks go from every line, empty lines from the start and
+ * end of the buffer, and the indentation of each line is redone with
+ * tabs and spaces, or spaces alone in no-tab mode.  With the mark set
+ * only the lines of the region are cleaned, and their empty lines are
+ * left alone.
+ */
+int
+wscleanup(int f, int n)
+{
+	struct line	*lp;
+	int	 dotline, doto, k, s;
+
+	dotline = curwp->w_dotline;
+	doto = curwp->w_doto;
+	undo_boundary_enable(FFRAND, 0);
+	if (curwp->w_markact && curwp->w_markp != NULL)
+		s = regionlines(wsline);
+	else {
+		setlineno(1);
+		while ((s = wsline(FFRAND, 1)) == TRUE &&
+		    curwp->w_dotline < curbp->b_lines) {
+			(void)forwline(FFRAND, 1);
+			(void)gotobol(FFRAND, 1);
+		}
+		/* the empty lines at the start, and all but one at the end */
+		for (k = 0, lp = lforw(curbp->b_headp);
+		    lforw(lp) != curbp->b_headp && llength(lp) == 0; lp = lforw(lp))
+			k++;
+		if (s == TRUE && k > 0) {
+			setlineno(1);
+			s = ldelete(k, KNONE);
+			dotline -= k;
+		}
+		while (s == TRUE && lback(lp = lback(curbp->b_headp)) != curbp->b_headp &&
+		    llength(lp) == 0 && llength(lback(lp)) == 0) {
+			curwp->w_dotp = lback(lp);
+			curwp->w_doto = 0;
+			s = ldelete(1, KNONE);
+		}
+	}
+	undo_boundary_enable(FFRAND, 1);
+
+	/* back to where dot was, as far as the line still goes */
+	setlineno(dotline < 1 ? 1 : dotline);
+	curwp->w_doto = doto < llength(curwp->w_dotp) ?
+	    doto : llength(curwp->w_dotp);
+	return (s);
+}
+
+/*
  * Insert a newline, then enough tabs and spaces to duplicate the indentation
  * of the previous line, respecting no-tab-mode and the buffer tab width.
  * Figure out the indentation of the current line.  Insert a newline by
