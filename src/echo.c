@@ -18,6 +18,7 @@
 #include "ttydef.h"
 #include "def.h"
 #include "funmap.h"
+#include "kbd.h"
 #include "key.h"
 #include "macro.h"
 
@@ -287,8 +288,11 @@ mbleft(void)
 static int
 mbcharlen(void)
 {
-	int	 n = 1;
+	int	 n;
 
+	if (mb.cpos >= mb.epos)
+		return (0);
+	n = 1;
 	while (mb.cpos + n < mb.epos && mbwidth(mb.buf[mb.cpos + n]) == 0)
 		n++;
 	return (n);
@@ -299,8 +303,6 @@ mbright(void)
 {
 	int	 n;
 
-	if (mb.cpos >= mb.epos)
-		return;
 	for (n = mbcharlen(); n > 0; n--)
 		eputc(mb.buf[mb.cpos++]);
 }
@@ -315,7 +317,7 @@ mbgoto(int pos)
 }
 
 /*
- * Where the word before the cursor starts.
+ * Where the word before the cursor starts, and the one after it ends.
  */
 static int
 mbprevword(void)
@@ -326,6 +328,18 @@ mbprevword(void)
 		i--;
 	while (i > 0 && ISWORD(mb.buf[i - 1]))
 		i--;
+	return (i);
+}
+
+static int
+mbnextword(void)
+{
+	int	 i = mb.cpos;
+
+	while (i < mb.epos && !ISWORD(mb.buf[i]))
+		i++;
+	while (i < mb.epos && ISWORD(mb.buf[i]))
+		i++;
 	return (i);
 }
 
@@ -393,17 +407,100 @@ mbinsertc(int c)
 	return (mbinsert(&ch, 1));
 }
 
+/*
+ * Insert the first line of the kill buffer at the cursor, gathered
+ * to be drawn once.  Returns what mbinsert() does.
+ */
+static int
+mbyank(void)
+{
+	int	 c, n;
+
+	for (n = 0; (c = kremove(n)) >= 0 && c != *curbp->b_nlchr; n++)
+		;
+	{
+		char	 kill[n + 1];
+
+		for (c = 0; c < n; c++)
+			kill[c] = kremove(c);
+		return (mbinsert(kill, n));
+	}
+}
+
+/*
+ * Read the key sequence c begins through the fundamental map and
+ * return the command it is bound to, rescan for none; c is left at
+ * the last byte read.  This is how the terminal's arrow, Home, End
+ * and Delete keys, and whatever the user bound, reach the echo line.
+ */
+static PF
+mbkey(int *c)
+{
+	KEYMAP	*map = fundamental_map;
+	PF	 funct;
+	int	 esc, csi = 0;
+
+	esc = (*c == CCHR('['));
+	while ((funct = doscan(map, *c, &map)) == NULL) {
+		*c = getkey(FALSE);
+		if (esc)
+			csi = (*c == '[');
+		esc = 0;
+	}
+	/* swallow the rest of a CSI sequence nothing is bound to */
+	if (funct == rescan && csi)
+		while (*c < 0x40 || *c > 0x7e)
+			*c = getkey(FALSE);
+	return (funct);
+}
+
+/*
+ * Do on the echo line what the editor command funct, reached by the
+ * key c, does in a buffer.  Returns what mbinsert() does.
+ */
+static int
+mbcommand(PF funct, int c)
+{
+	if (funct == selfinsert)
+		return (mbinsertc(c));
+	if (funct == yank)
+		return (mbyank());
+	if (funct == backchar)
+		mbleft();
+	else if (funct == forwchar)
+		mbright();
+	else if (funct == gotobol)
+		mbgoto(0);
+	else if (funct == gotoeol)
+		mbgoto(mb.epos);
+	else if (funct == backword)
+		mbgoto(mbprevword());
+	else if (funct == forwword)
+		mbgoto(mbnextword());
+	else if (funct == backdel) {
+		if (mb.cpos > 0) {
+			mbleft();
+			mbdelete(mbcharlen());
+		}
+	} else if (funct == forwdel)
+		mbdelete(mbcharlen());
+	else if (funct == delbword)
+		mbdelto(mbprevword());
+	else if (funct == delfword)
+		mbdelto(mbnextword());
+	else
+		dobeep();
+	return (TRUE);
+}
+
 static char *
 veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 {
 	int	 c, i, y;
 	int	 cplflag;		/* display completion list */
 	int	 cwin = FALSE;		/* completion list created */
-	int	 mr, ml;		/* match left/right arrows */
-	int	 esc;			/* position in esc pattern */
 	struct buffer	*bp;			/* completion list buffer */
 	struct mgwin	*wp;			/* window for compl list */
-	int	 match;			/* esc match found */
 	char	*ret;			/* return value */
 
 	static char emptyval[] = "";	/* XXX hackish way to return err msg*/
@@ -423,7 +520,6 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 	mb.nbuf = nbuf;
 	mb.dynbuf = (buf == NULL);
 	mb.epos = mb.cpos = 0;
-	ml = mr = esc = 0;
 	cplflag = FALSE;
 
 	if ((flag & EFNEW) != 0 || ttrow != nrow - 1) {
@@ -442,6 +538,7 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 	tteeol();
 	ttflush();
 	for (;;) {
+		y = TRUE;
 		c = getkey(FALSE);
 		if ((flag & EFAUTO) != 0 && c == CCHR('I')) {
 			if (mb.buf == NULL)
@@ -460,79 +557,11 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 		}
 		cplflag = FALSE;
 
-		if (esc > 0) { /* ESC sequence started */
-			match = 0;
-			if (ml == esc && key_left[ml] && c == key_left[ml]) {
-				match++;
-				if (key_left[++ml] == '\0') {
-					c = CCHR('B');
-					esc = 0;
-				}
-			}
-			if (mr == esc && key_right[mr] && c == key_right[mr]) {
-				match++;
-				if (key_right[++mr] == '\0') {
-					c = CCHR('F');
-					esc = 0;
-				}
-			}
-			if (match == 0) {
-				esc = 0;
-				continue;
-				/* hack. how do we know esc pattern is done? */
-			}
-			if (esc > 0) {
-				esc++;
-				continue;
-			}
-		}
-
 		switch (c) {
-		case CCHR('A'): /* start of line */
-			mbgoto(0);
-			break;
-
-		case CCHR('D'):
-			if (mb.cpos != mb.epos)
-				mbdelete(mbcharlen());
-			break;
-
-		case CCHR('E'): /* end of line */
-			mbgoto(mb.epos);
-			break;
-
-		case CCHR('B'): /* back */
-			mbleft();
-			break;
-
-		case CCHR('F'): /* forw */
-			mbright();
-			break;
-
-		case CCHR('Y'): /* yank from kill buffer */
-			/* the first line of it, gathered to be drawn once */
-			for (i = 0; (y = kremove(i)) >= 0 && y != *curbp->b_nlchr; i++)
-				;
-			{
-				char	 kill[i + 1];
-
-				for (y = 0; y < i; y++)
-					kill[y] = kremove(y);
-				if ((y = mbinsert(kill, i)) == ABORT)
-					goto memfail;
-				if (y == FALSE)
-					goto toolong;
-			}
-			break;
-
-		case CCHR('K'): /* copy here-EOL to kill buffer */
+		case CCHR('K'):			/* copy here-EOL to kill buffer */
 			kdelete();
 			kchunk(mb.buf + mb.cpos, mb.epos - mb.cpos, KFORW);
 			mbdelto(mb.epos);
-			break;
-
-		case CCHR('['):
-			ml = mr = esc = 1;
 			break;
 
 		case CCHR('J'):
@@ -585,12 +614,7 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 			goto done;
 
 		case CCHR('H'):			/* rubout, erase */
-			/* fallthrough */
-		case CCHR('?'):
-			if (mb.cpos != 0) {
-				mbleft();
-				mbdelete(mbcharlen());
-			}
+			y = mbcommand(backdel, c);
 			break;
 
 		case CCHR('X'):			/* kill line */
@@ -606,14 +630,16 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 		case CCHR('\\'):
 			/* fallthrough */
 		case CCHR('Q'):			/* quote next */
-			c = getkey(FALSE);
-			/* fallthrough */
-		default:
-			if ((y = mbinsertc(c)) == ABORT)
-				goto memfail;
-			if (y == FALSE)
-				goto toolong;
+			y = mbinsertc(getkey(FALSE));
+			break;
+
+		default:			/* as bound in the editor */
+			y = mbcommand(mbkey(&c), c);
 		}
+		if (y == ABORT)
+			goto memfail;
+		if (y == FALSE)
+			goto toolong;
 		ttflush();
 		continue;
 toolong:

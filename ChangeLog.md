@@ -17,6 +17,10 @@ All relevant changes to the project are documented in this file.
 - New `display-line-numbers-mode`, showing line numbers in a gutter at the
   left of the text.  Off by default; set it per buffer, or with
   `set-default-mode linum` in `~/.mg`, issue #31
+- The minibuffer reads keys through the same keymap as the editor, so
+  Home, End, Delete, Ctrl and Meta with the arrow keys, M-b, M-f, M-d and
+  M-DEL now move and delete by word and character there too, instead of
+  inserting the terminal's escape sequence
 
 ### Fixes
 
