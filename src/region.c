@@ -391,19 +391,24 @@ region_put_data(const char *buf, int len)
 /*
  * Run a function once for every line the region touches, with dot
  * at the start of the line.  A region ending in column zero does
- * not reach onto that last line.  Dot is left on the last line.
+ * not reach onto that last line.  Dot and mark go back where they
+ * were, as far as their lines still reach.
  */
 int
 regionlines(int (*fn)(int, int))
 {
-	int	 last, s;
+	int	 dotline, doto, markline, marko, last, s;
 
 	if (curwp->w_markp == NULL) {
 		dobeep();
 		ewprintf("No mark set in this window");
 		return (FALSE);
 	}
-	if (curwp->w_dotline > curwp->w_markline)
+	dotline = curwp->w_dotline;
+	doto = curwp->w_doto;
+	markline = curwp->w_markline;
+	marko = curwp->w_marko;
+	if (dotline > markline)
 		(void)swapmark(FFRAND, 0);
 	last = curwp->w_markline;
 	if (curwp->w_marko == 0 && last > curwp->w_dotline)
@@ -413,6 +418,14 @@ regionlines(int (*fn)(int, int))
 		(void)forwline(FFRAND, 1);
 		(void)gotobol(FFRAND, 1);
 	}
+	setlineno(markline);
+	curwp->w_markp = curwp->w_dotp;
+	curwp->w_markline = curwp->w_dotline;
+	curwp->w_marko = marko < llength(curwp->w_dotp) ?
+	    marko : llength(curwp->w_dotp);
+	setlineno(dotline);
+	curwp->w_doto = doto < llength(curwp->w_dotp) ?
+	    doto : llength(curwp->w_dotp);
 	return (s);
 }
 

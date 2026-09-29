@@ -445,33 +445,35 @@ wscleanup(int f, int n)
 	struct line	*lp;
 	int	 dotline, doto, k, s;
 
+	if (curwp->w_markact && curwp->w_markp != NULL) {
+		undo_boundary_enable(FFRAND, 0);
+		s = regionlines(wsline);
+		undo_boundary_enable(FFRAND, 1);
+		return (s);
+	}
 	dotline = curwp->w_dotline;
 	doto = curwp->w_doto;
 	undo_boundary_enable(FFRAND, 0);
-	if (curwp->w_markact && curwp->w_markp != NULL)
-		s = regionlines(wsline);
-	else {
+	setlineno(1);
+	while ((s = wsline(FFRAND, 1)) == TRUE &&
+	    curwp->w_dotline < curbp->b_lines) {
+		(void)forwline(FFRAND, 1);
+		(void)gotobol(FFRAND, 1);
+	}
+	/* the empty lines at the start, and all but one at the end */
+	for (k = 0, lp = lforw(curbp->b_headp);
+	    lforw(lp) != curbp->b_headp && llength(lp) == 0; lp = lforw(lp))
+		k++;
+	if (s == TRUE && k > 0) {
 		setlineno(1);
-		while ((s = wsline(FFRAND, 1)) == TRUE &&
-		    curwp->w_dotline < curbp->b_lines) {
-			(void)forwline(FFRAND, 1);
-			(void)gotobol(FFRAND, 1);
-		}
-		/* the empty lines at the start, and all but one at the end */
-		for (k = 0, lp = lforw(curbp->b_headp);
-		    lforw(lp) != curbp->b_headp && llength(lp) == 0; lp = lforw(lp))
-			k++;
-		if (s == TRUE && k > 0) {
-			setlineno(1);
-			s = ldelete(k, KNONE);
-			dotline -= k;
-		}
-		while (s == TRUE && lback(lp = lback(curbp->b_headp)) != curbp->b_headp &&
-		    llength(lp) == 0 && llength(lback(lp)) == 0) {
-			curwp->w_dotp = lback(lp);
-			curwp->w_doto = 0;
-			s = ldelete(1, KNONE);
-		}
+		s = ldelete(k, KNONE);
+		dotline -= k;
+	}
+	while (s == TRUE && lback(lp = lback(curbp->b_headp)) != curbp->b_headp &&
+	    llength(lp) == 0 && llength(lback(lp)) == 0) {
+		curwp->w_dotp = lback(lp);
+		curwp->w_doto = 0;
+		s = ldelete(1, KNONE);
 	}
 	undo_boundary_enable(FFRAND, 1);
 

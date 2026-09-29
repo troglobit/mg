@@ -27,6 +27,9 @@ All relevant changes to the project are documented in this file.
 - New `whitespace-cleanup`, as in GNU Emacs: trailing whitespace, empty
   lines at the start and end of the buffer, and indentation redone with
   tabs, or spaces in `no-tab-mode`; the region only when the mark is set
+- Indenting a region with TAB in the C, shell and python modes leaves dot
+  and mark where they were, as in GNU Emacs, instead of dot on the last
+  line and the mark where dot was
 
 ### Fixes
 
