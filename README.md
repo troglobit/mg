@@ -97,6 +97,11 @@ Then build Mg from the unpacked release tarball:
     make
     sudo make install
 
+> [!NOTE]
+> This installs to `/usr/local/bin`, next to any `mg` from your distro
+> in `/usr/bin`.  If UTF-8 text shows up as octal escapes like `\303\251`,
+> run `command -v mg` to check which one you are starting.
+
 ### Without curses, completely stand-alone
 
     make clean
