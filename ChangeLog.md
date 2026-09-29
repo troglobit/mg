@@ -33,7 +33,8 @@ All relevant changes to the project are documented in this file.
 - New `comment-dwim` on `M-;`, with `comment-line`, `comment-region` and
   `uncomment-region`, as in GNU Emacs.  The delimiters come from the
   buffer's mode: `/* */` in C, `#` in shell, make, python, conf, yaml and
-  git commit messages, `<!-- -->` in markdown
+  git commit messages, `<!-- -->` in markdown.  `set-comment-column` on
+  `C-x ;` moves the column a comment after code starts in
 
 ### Fixes
 

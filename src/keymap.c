@@ -191,6 +191,10 @@ static PF cX0[] = {
 	NULL			/* 4 */
 };
 
+static PF cXsemi[] = {
+	setcommentcol		/* ; */
+};
+
 static PF cXeq[] = {
 	showcpos		/* = */
 };
@@ -234,9 +238,9 @@ static PF cXcar[] = {
 	enlargewindh		/* } */
 };
 
-struct KEYMAPE (6) cXmap = {
-	6,
-	6,
+struct KEYMAPE (7) cXmap = {
+	7,
+	7,
 	rescan,
 	{
 		{
@@ -250,6 +254,9 @@ struct KEYMAPE (6) cXmap = {
 		},
 		{
 			'0', '4', cX0, (KEYMAP *) & cX4map
+		},
+		{
+			';', ';', cXsemi, NULL
 		},
 		{
 			'=', '=', cXeq, NULL

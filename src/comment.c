@@ -8,14 +8,41 @@
  */
 
 #include <ctype.h>
+#include <limits.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "def.h"
 
-#define COMMENTCOL	40		/* where a comment after code goes */
-
+static int		 commentcol = 40; /* where a comment after code goes */
 static const char	*cstart, *cend;	/* the buffer's delimiters */
+
+/*
+ * Set the comment column, from the argument or a prompt.
+ */
+int
+setcommentcol(int f, int n)
+{
+	char	 buf[32], *rep;
+	const char	*es;
+
+	if ((f & FFARG) != 0) {
+		commentcol = n;
+		return (TRUE);
+	}
+	if ((rep = eread("Set comment-column: ", buf, sizeof(buf),
+	    EFNEW | EFCR)) == NULL)
+		return (ABORT);
+	if (rep[0] == '\0')
+		return (FALSE);
+	n = strtonum(rep, 0, INT_MAX, &es);
+	if (es != NULL)
+		return (dobeep_msgs("Invalid comment column:", rep));
+	commentcol = n;
+	ewprintf("Comment column set to %d", commentcol);
+	return (TRUE);
+}
 
 /*
  * Set cstart and cend for the current buffer, or say why not.
@@ -239,7 +266,7 @@ commentdwim(int f, int n)
 		(void)gotoeol(FFRAND, 1);
 		(void)delwhite(FFRAND, 1);
 		col = getcolpos(curwp);
-		linsert(col < COMMENTCOL ? COMMENTCOL - col : 1, ' ');
+		linsert(col < commentcol ? commentcol - col : 1, ' ');
 	}
 	s = opencomment();
 	doto = curwp->w_doto;

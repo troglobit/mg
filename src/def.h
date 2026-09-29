@@ -700,6 +700,7 @@ int		 commentdwim(int, int);
 int		 commentregion(int, int);
 int		 uncommentregion(int, int);
 int		 commentline(int, int);
+int		 setcommentcol(int, int);
 
 /* util.c X */
 int		 ntabstop(int, int);

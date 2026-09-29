@@ -326,6 +326,8 @@ keyboard-quit
 switch-to-buffer-other-window
 .It C-x 4 f
 find-file-other-window
+.It C-x ;
+set-comment-column
 .It C-x =
 what-cursor-position
 .It C-x ^
@@ -585,8 +587,8 @@ With the mark set, comment the region out, or back in when every
 line of code in it is already commented.
 On a line with a comment, move into it; with a numeric argument, kill
 the comment instead.
-Otherwise start a comment: after the code on the line, at column 40,
-or at dot on an empty line.
+Otherwise start a comment: after the code on the line, at the comment
+column, or at dot on an empty line.
 The delimiters come from the buffer's mode; a mode without comment
 syntax refuses.
 Bound to M-;.
@@ -1220,6 +1222,11 @@ This is the default.
 .It Ic set-case-replace
 Preserve the case of the replaced string.
 This is the default.
+.It Ic set-comment-column
+Set the column a comment
+.Ic comment-dwim
+adds after code starts in, 40 to begin with.
+Bound to C-x ;.
 .It Ic set-default-mode
 Append the supplied mode to the list of default modes
 used by subsequent buffer creation.

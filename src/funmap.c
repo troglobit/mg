@@ -232,6 +232,7 @@ static struct funmap functnames[] = {
 	{setcasefold, "set-case-fold-search", 0, NULL},
 #endif /* REGEX */
 	{setcasereplace, "set-case-replace", 0, NULL},
+	{setcommentcol, "set-comment-column", 1, NULL},
 	{set_default_mode, "set-default-mode", 1, NULL},
 	{setfillcol, "set-fill-column", 1, NULL},
 	{setmark, "set-mark-command", 0, NULL},
