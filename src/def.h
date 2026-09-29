@@ -654,6 +654,8 @@ char		*getkeyname(char  *, size_t, int);
 struct syntax;
 const struct syntax *syntax_lookup(struct buffer *);
 int		 syn_multiline(struct buffer *);
+int		 syn_comment(struct buffer *, const char **, const char **);
+int		 matchat(const struct line *, int, const char *);
 int		 syn_parse(const struct syntax *, const struct line *,
 		     int, char *);
 int		 syn_state(const struct syntax *, struct buffer *,
@@ -692,6 +694,12 @@ int		 clearmark(int, int);
 int		 swapmark(int, int);
 int		 gotoline(int, int);
 int		 setlineno(int);
+
+/* comment.c X */
+int		 commentdwim(int, int);
+int		 commentregion(int, int);
+int		 uncommentregion(int, int);
+int		 commentline(int, int);
 
 /* util.c X */
 int		 ntabstop(int, int);

@@ -30,6 +30,10 @@ All relevant changes to the project are documented in this file.
 - Indenting a region with TAB in the C, shell and python modes leaves dot
   and mark where they were, as in GNU Emacs, instead of dot on the last
   line and the mark where dot was
+- New `comment-dwim` on `M-;`, with `comment-line`, `comment-region` and
+  `uncomment-region`, as in GNU Emacs.  The delimiters come from the
+  buffer's mode: `/* */` in C, `#` in shell, make, python, conf, yaml and
+  git commit messages, `<!-- -->` in markdown
 
 ### Fixes
 

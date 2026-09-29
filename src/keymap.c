@@ -307,7 +307,7 @@ static PF metami[] = {
 	digit_argument,		/* 8 */
 	digit_argument,		/* 9 */
 	rescan,			/* : */
-	rescan,			/* ; */
+	commentdwim,		/* ; */
 	gotobob,		/* < */
 	rescan,			/* = */
 	gotoeob			/* > */

@@ -91,6 +91,8 @@ struct syntax {
 	int		  sy_slsep;	/* which needs a separator first */
 	const char	 *sy_mcs;	/* multiline comment start	*/
 	const char	 *sy_mce;	/* multiline comment end	*/
+	const char	 *sy_cstart;	/* what comments text out ...	*/
+	const char	 *sy_cend;	/* ... and closes it, if needed	*/
 	int		  sy_preproc;	/* #directive lines		*/
 	const char	 *sy_dollar;	/* chars a $variable reference
 					 * may start with; { and ( also
@@ -105,20 +107,23 @@ struct syntax {
 
 static const struct syntax syntab[] = {
 	{ .sy_mode = "c", .sy_keywords = c_keywords, .sy_slcomm = "//",
-	    .sy_mcs = "/*", .sy_mce = "*/", .sy_preproc = 1 },
+	    .sy_mcs = "/*", .sy_mce = "*/", .sy_preproc = 1,
+	    .sy_cstart = "/*", .sy_cend = "*/" },
 	{ .sy_mode = "shell-script", .sy_keywords = sh_keywords,
-	    .sy_slcomm = "#", .sy_slsep = 1, .sy_dollar = "{#?@*$!-" },
+	    .sy_slcomm = "#", .sy_slsep = 1, .sy_dollar = "{#?@*$!-",
+	    .sy_cstart = "#" },
 	{ .sy_mode = "makefile", .sy_keywords = mk_keywords,
-	    .sy_slcomm = "#", .sy_dollar = "({@<^?*+$%|" },
+	    .sy_slcomm = "#", .sy_dollar = "({@<^?*+$%|", .sy_cstart = "#" },
 	{ .sy_mode = "python", .sy_keywords = py_keywords, .sy_slcomm = "#",
-	    .sy_atword = 1, .sy_mstr = { "\"\"\"", "'''" } },
+	    .sy_atword = 1, .sy_mstr = { "\"\"\"", "'''" }, .sy_cstart = "#" },
 	{ .sy_mode = "conf", .sy_keywords = conf_keywords, .sy_wordchr = "-",
 	    .sy_slcomm = "#", .sy_slsep = 1, .sy_dollar = "{",
-	    .sy_lead = conf_lead },
+	    .sy_lead = conf_lead, .sy_cstart = "#" },
 	{ .sy_mode = "diff", .sy_parse = diff_parse },
-	{ .sy_mode = "git-commit", .sy_parse = commit_parse },
-	{ .sy_mode = "markdown", .sy_parse = md_parse },
-	{ .sy_mode = "yaml", .sy_parse = yaml_parse },
+	{ .sy_mode = "git-commit", .sy_parse = commit_parse, .sy_cstart = "#" },
+	{ .sy_mode = "markdown", .sy_parse = md_parse,
+	    .sy_cstart = "<!--", .sy_cend = "-->" },
+	{ .sy_mode = "yaml", .sy_parse = yaml_parse, .sy_cstart = "#" },
 	{ NULL }
 };
 
@@ -135,6 +140,23 @@ syntax_lookup(struct buffer *bp)
 		if (strcmp(syntab[j].sy_mode, mode) == 0)
 			return (&syntab[j]);
 	return (NULL);
+}
+
+/*
+ * The delimiters that comment text out in bp's mode, end being ""
+ * when a comment runs to the end of the line.  FALSE when the mode
+ * has no comment syntax.
+ */
+int
+syn_comment(struct buffer *bp, const char **start, const char **end)
+{
+	const struct syntax	*sy = syntax_lookup(bp);
+
+	if (sy == NULL || sy->sy_cstart == NULL)
+		return (FALSE);
+	*start = sy->sy_cstart;
+	*end = sy->sy_cend != NULL ? sy->sy_cend : "";
+	return (TRUE);
 }
 
 /*
@@ -193,7 +215,7 @@ setattrs(char *attr, int i, int n, int cls)
 /*
  * Length of s when the line matches it at byte offset i, else 0.
  */
-static int
+int
 matchat(const struct line *lp, int i, const char *s)
 {
 	int	 n = strlen(s);

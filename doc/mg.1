@@ -372,6 +372,8 @@ scroll-other-window
 just-one-space
 .It M-!
 shell-command
+.It M-;
+comment-dwim
 .It M-.
 find-tag
 .It M-*, M-,
@@ -577,6 +579,25 @@ upper case, and subsequent letters to lower case.
 Change the global working directory.
 See also
 .Ic global-wd-mode .
+.It Ic comment-dwim
+Do what a comment key should here, as in GNU Emacs.
+With the mark set, comment the region out, or back in when every
+line of code in it is already commented.
+On a line with a comment, move into it; with a numeric argument, kill
+the comment instead.
+Otherwise start a comment: after the code on the line, at column 40,
+or at dot on an empty line.
+The delimiters come from the buffer's mode; a mode without comment
+syntax refuses.
+Bound to M-;.
+.It Ic comment-line
+Comment the current line out, or back in when it is, and move to the
+next line.
+With the mark set, the region, as
+.Ic comment-dwim
+does.
+.It Ic comment-region
+Comment out every line of code in the region, at its indentation.
 .It Ic column-number-mode
 Toggle whether the column number is displayed in the modeline.
 Enabled by default.
@@ -1335,6 +1356,8 @@ Transpose adjacent words.
 Bring up
 .Nm
 tutorial, if available on system.
+.It Ic uncomment-region
+Take the comment delimiters off every line of the region.
 .It Ic undo
 Undo the most recent action.
 If invoked again without an intervening command,
