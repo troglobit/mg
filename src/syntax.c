@@ -659,7 +659,7 @@ md_parse(const struct line *lp, int infence, char *attr)
 	}
 	/* block quote */
 	if (c == '>') {
-		setattrs(attr, 0, len, SYN_COMMENT);
+		setattrs(attr, 0, len, SYN_QUOTE);
 		return (0);
 	}
 	/* setext heading: text with a ==== or ---- line under it */
@@ -743,6 +743,14 @@ md_parse(const struct line *lp, int infence, char *attr)
 					continue;
 				}
 			}
+		} else if (matchat(lp, i, "<!--") != 0) {
+			/* an HTML comment, to its --> or the end of the line */
+			for (j = i + 4; j < len && matchat(lp, j, "-->") == 0; j++)
+				;
+			j = j < len ? j + 3 : len;
+			setattrs(attr, i, j - i, SYN_COMMENT);
+			i = j;
+			continue;
 		} else if (c == '<') {
 			/* an autolink: no spaces and a : before the > */
 			for (n = 0, j = i + 1; j < len; j++) {
