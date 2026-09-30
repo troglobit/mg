@@ -698,6 +698,10 @@ Delete
 characters forward.
 If any argument is present, it kills rather than deletes,
 saving the result in the kill buffer.
+.It Ic delete-duplicate-lines
+Delete every line in the region that repeats an earlier line in it.
+The region grows to whole lines; a last line it only touches in
+column zero is left out.
 .It Ic delete-horizontal-space
 Delete any whitespace around the dot.
 .It Ic delete-leading-space
@@ -1178,6 +1182,9 @@ to restore the original
 .Nm
 behavior, use
 .Ic ask .
+.It Ic reverse-region
+Reverse the order of the lines in the region, whole lines as with
+.Ic sort-lines .
 .It Ic revert-buffer
 Revert the current buffer to the latest file on disk.
 .It Ic save-buffer
@@ -1319,6 +1326,12 @@ If only one window is present, this command has no effect.
 .It Ic shrink-window-horizontally
 Narrow the current window, giving the columns to the window beside
 it, like in GNU Emacs.
+.It Ic sort-lines
+Sort the lines in the region, byte by byte as
+.Xr sort 1
+does in the C locale; with a numeric argument in reverse.
+The region grows to whole lines; a last line it only touches in
+column zero is left out.
 .It Ic space-to-tabstop
 Insert enough spaces to reach the next tab-stop position.
 By default, tab-stops occur every 8 characters.

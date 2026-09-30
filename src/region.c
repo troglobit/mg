@@ -389,44 +389,271 @@ region_put_data(const char *buf, int len)
 }
 
 /*
- * Run a function once for every line the region touches, with dot
- * at the start of the line.  A region ending in column zero does
- * not reach onto that last line.  Dot and mark go back where they
- * were, as far as their lines still reach.
+ * Where dot and mark are, by line number and offset, so a command
+ * that moves them, or rewrites the lines they are on, can put them
+ * back as far as the lines still reach.
+ */
+struct regionpos {
+	int	 dotline, doto, markline, marko;
+};
+
+static void
+savepos(struct regionpos *p)
+{
+	p->dotline = curwp->w_dotline;
+	p->doto = curwp->w_doto;
+	p->markline = curwp->w_markline;
+	p->marko = curwp->w_marko;
+}
+
+static void
+restorepos(const struct regionpos *p)
+{
+	setlineno(p->markline);
+	curwp->w_markp = curwp->w_dotp;
+	curwp->w_markline = curwp->w_dotline;
+	curwp->w_marko = p->marko < llength(curwp->w_dotp) ?
+	    p->marko : llength(curwp->w_dotp);
+	setlineno(p->dotline);
+	curwp->w_doto = p->doto < llength(curwp->w_dotp) ?
+	    p->doto : llength(curwp->w_dotp);
+}
+
+/*
+ * The region as whole lines: from the start of the first line to
+ * the end of the last, where a last line the region only touches in
+ * column zero is left out.  Returns the number of lines.
+ */
+static int
+linesregion(struct region *r)
+{
+	struct line	*lp, *last;
+	int	 lastoff, n;
+
+	if (curwp->w_dotline <= curwp->w_markline) {
+		lp = curwp->w_dotp;
+		r->r_lineno = curwp->w_dotline;
+		last = curwp->w_markp;
+		lastoff = curwp->w_marko;
+	} else {
+		lp = curwp->w_markp;
+		r->r_lineno = curwp->w_markline;
+		last = curwp->w_dotp;
+		lastoff = curwp->w_doto;
+	}
+	if (lastoff == 0 && last != lp)
+		last = lback(last);
+	r->r_linep = lp;
+	r->r_offset = 0;
+	r->r_size = llength(lp);
+	for (n = 1; lp != last; n++) {
+		lp = lforw(lp);
+		r->r_size += 1 + llength(lp);
+	}
+	return (n);
+}
+
+/*
+ * Run a function once for every line of the region, with dot at
+ * the start of the line.  The function may not add or delete lines.
+ * Dot and mark go back where they were, as far as their lines still
+ * reach.
  */
 int
 regionlines(int (*fn)(int, int))
 {
-	int	 dotline, doto, markline, marko, last, s;
+	struct regionpos	 pos;
+	struct region	 r;
+	int	 n, s;
 
 	if (curwp->w_markp == NULL) {
 		dobeep();
 		ewprintf("No mark set in this window");
 		return (FALSE);
 	}
-	dotline = curwp->w_dotline;
-	doto = curwp->w_doto;
-	markline = curwp->w_markline;
-	marko = curwp->w_marko;
-	if (dotline > markline)
-		(void)swapmark(FFRAND, 0);
-	last = curwp->w_markline;
-	if (curwp->w_marko == 0 && last > curwp->w_dotline)
-		last--;
-	(void)gotobol(FFRAND, 1);
-	while ((s = fn(FFRAND, 1)) == TRUE && curwp->w_dotline < last) {
+	savepos(&pos);
+	n = linesregion(&r);
+	curwp->w_dotp = r.r_linep;
+	curwp->w_doto = 0;
+	curwp->w_dotline = r.r_lineno;
+	while ((s = fn(FFRAND, 1)) == TRUE && --n > 0) {
 		(void)forwline(FFRAND, 1);
 		(void)gotobol(FFRAND, 1);
 	}
-	setlineno(markline);
-	curwp->w_markp = curwp->w_dotp;
-	curwp->w_markline = curwp->w_dotline;
-	curwp->w_marko = marko < llength(curwp->w_dotp) ?
-	    marko : llength(curwp->w_dotp);
-	setlineno(dotline);
-	curwp->w_doto = doto < llength(curwp->w_dotp) ?
-	    doto : llength(curwp->w_dotp);
+	restorepos(&pos);
 	return (s);
+}
+
+/*
+ * The lines of the region as text, for the commands that rearrange
+ * them: each is the text of a line while the line lasts.
+ */
+struct textline {
+	const char	*s;
+	int		 len;
+};
+
+static int
+cmpline(const void *a, const void *b)
+{
+	const struct textline	*x = a, *y = b;
+	int	 c;
+
+	c = memcmp(x->s, y->s, x->len < y->len ? x->len : y->len);
+	return (c != 0 ? c : x->len - y->len);
+}
+
+static int
+cmplinerev(const void *a, const void *b)
+{
+	return (cmpline(b, a));
+}
+
+/* The rearrangements: each returns how many lines are left. */
+static int
+sortasc(struct textline *tl, int n)
+{
+	qsort(tl, n, sizeof(*tl), cmpline);
+	return (n);
+}
+
+static int
+sortdesc(struct textline *tl, int n)
+{
+	qsort(tl, n, sizeof(*tl), cmplinerev);
+	return (n);
+}
+
+static int
+revlines(struct textline *tl, int n)
+{
+	struct textline	 t;
+	int	 i, j;
+
+	for (i = 0, j = n - 1; i < j; i++, j--) {
+		t = tl[i];
+		tl[i] = tl[j];
+		tl[j] = t;
+	}
+	return (n);
+}
+
+static int
+uniqlines(struct textline *tl, int n)
+{
+	int	 i, j, k;
+
+	for (i = k = 0; i < n; i++) {
+		for (j = 0; j < k; j++)
+			if (cmpline(&tl[j], &tl[i]) == 0)
+				break;
+		if (j == k)
+			tl[k++] = tl[i];
+	}
+	return (k);
+}
+
+/*
+ * Rewrite the lines of the region as fn leaves them, as one undo
+ * step; not at all when it leaves them as they were.  The text goes
+ * into the lines in place, with one undo record each way, rather
+ * than through linsert(), which would cost a walk of the buffer per
+ * byte for its own records.
+ */
+static int
+rewritelines(int (*fn)(struct textline *, int))
+{
+	struct region	 r;
+	struct regionpos pos;
+	struct textline	*tl = NULL;
+	struct line	*lp;
+	char	*out = NULL;
+	int	 k, n, m, len, off, x, s = TRUE;
+
+	if (curwp->w_markp == NULL)
+		return (dobeep_msg("No mark set in this window"));
+	n = linesregion(&r);
+	if ((tl = reallocarray(NULL, n, sizeof(*tl))) == NULL ||
+	    (out = malloc(r.r_size + 1)) == NULL) {
+		s = dobeep_msg("Out of memory");
+		goto done;
+	}
+	for (k = 0, lp = r.r_linep; k < n; k++, lp = lforw(lp)) {
+		tl[k].s = ltext(lp);
+		tl[k].len = llength(lp);
+	}
+	m = fn(tl, n);
+	for (k = 0, lp = r.r_linep; k < m && k < n; k++, lp = lforw(lp))
+		if (tl[k].s != ltext(lp))
+			break;
+	if (m == n && k == n)
+		goto done;		/* in the order they were */
+
+	for (len = 0, k = 0; k < m; k++) {
+		if (k > 0)
+			out[len++] = *curbp->b_nlchr;
+		memcpy(out + len, tl[k].s, tl[k].len);
+		len += tl[k].len;
+	}
+	out[len] = '\0';
+	savepos(&pos);
+	undo_boundary_enable(FFRAND, 0);
+	undo_add_delete(r.r_linep, 0, r.r_size, 0);
+	for (k = 0, off = 0, lp = r.r_linep; k < m; k++, lp = lforw(lp)) {
+		if (lrealloc(lp, tl[k].len) == FALSE) {
+			s = dobeep_msg("Out of memory");
+			break;
+		}
+		memcpy(lp->l_text, out + off, tl[k].len);
+		lp->l_used = tl[k].len;
+		off += tl[k].len + 1;
+	}
+	if (s == TRUE && m < n) {
+		/* the lines left over, with their old text, go as one */
+		curwp->w_dotp = lback(lp);
+		curwp->w_doto = llength(lback(lp));
+		curwp->w_dotline = r.r_lineno + m - 1;
+		for (k = m, off = 0; k < n; k++, lp = lforw(lp))
+			off += 1 + llength(lp);
+		x = undo_enable(FFRAND, 0);
+		s = ldelete(off, KNONE);
+		undo_enable(FFRAND, x);
+	}
+	undo_add_insert(r.r_linep, 0, len);
+	undo_boundary_enable(FFRAND, 1);
+	lchange(WFFULL);
+	restorepos(&pos);
+done:
+	free(tl);
+	free(out);
+	return (s);
+}
+
+/*
+ * Sort the lines of the region, in reverse with an argument.
+ */
+int
+sortlines(int f, int n)
+{
+	return (rewritelines(f & FFARG ? sortdesc : sortasc));
+}
+
+/*
+ * Reverse the order of the lines of the region.
+ */
+int
+reverseregion(int f, int n)
+{
+	return (rewritelines(revlines));
+}
+
+/*
+ * Delete the lines of the region that repeat an earlier one in it.
+ */
+int
+deldupelines(int f, int n)
+{
+	return (rewritelines(uniqlines));
 }
 
 /*

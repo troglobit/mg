@@ -798,6 +798,9 @@ int		 transposeword(int, int);
 
 /* region.c X */
 int		 regionlines(int (*)(int, int));
+int		 sortlines(int, int);
+int		 reverseregion(int, int);
+int		 deldupelines(int, int);
 int		 killregion(int, int);
 int		 copyregion(int, int);
 int		 lowerregion(int, int);

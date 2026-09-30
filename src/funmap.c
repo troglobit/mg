@@ -95,6 +95,7 @@ static struct funmap functnames[] = {
 	{backdel, "delete-backward-char", 1, NULL},
 	{deblank, "delete-blank-lines", 0, NULL},
 	{forwdel, "delete-char", 1, NULL},
+	{deldupelines, "delete-duplicate-lines", 0, NULL},
 	{delwhite, "delete-horizontal-space", 0, NULL},
 	{delleadwhite, "delete-leading-space", 0, NULL},
 #ifdef	REGEX
@@ -213,6 +214,7 @@ static struct funmap functnames[] = {
 	{replstr, "replace-string", 2, NULL},
 #endif /* REGEX */
 	{reqnewline, "require-final-newline", 1, NULL},
+	{reverseregion, "reverse-region", 0, NULL},
 	{revertbuffer, "revert-buffer", 0, NULL},
 	{filesave, "save-buffer", 1, NULL},
 	{quit, "save-buffers-kill-emacs", 0, NULL},
@@ -242,6 +244,7 @@ static struct funmap functnames[] = {
 	{piperegion, "shell-command-on-region", 1, NULL},
 	{shrinkwind, "shrink-window", 1, NULL},
 	{shrinkwindh, "shrink-window-horizontally", 1, NULL},
+	{sortlines, "sort-lines", 0, NULL},
 	{space_to_tabstop, "space-to-tabstop", 0, NULL},
 	{splitwindh, "split-window-horizontally", 0, NULL},
 	{splitwind, "split-window-vertically", 0, NULL},
