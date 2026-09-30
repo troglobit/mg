@@ -622,16 +622,49 @@ md_underline(const struct line *lp)
 #define MD_BREAK	1	/* an indented line here starts a code block */
 
 /*
+ * The width of a list marker at i, the -, + or * or the 1. and 1)
+ * forms, with the one to four spaces after it that set where the
+ * item's content starts; zero when there is none.
+ */
+static int
+md_marker(const struct line *lp, int i)
+{
+	int	 j, len = llength(lp), w;
+
+	if (i >= len)
+		return (0);
+	j = i;
+	if (lgetc(lp, j) == '-' || lgetc(lp, j) == '+' || lgetc(lp, j) == '*')
+		j++;
+	else {
+		while (j < len && isdigit(lgetc(lp, j)))
+			j++;
+		if (j == i || j >= len || (lgetc(lp, j) != '.' && lgetc(lp, j) != ')'))
+			return (0);
+		j++;
+	}
+	if (j >= len || lgetc(lp, j) != ' ')
+		return (0);
+	for (w = 0; w < 4 && j + w < len && lgetc(lp, j + w) == ' '; w++)
+		;
+	return (j - i + w);
+}
+
+/*
  * Markdown line classifier, used through sy_parse.  Colors the
  * common core that all the markdown variants agree on; everything
  * else stays plain.  The cross-line state is the fence character
  * while inside a fenced code block, MD_BREAK where an indented
- * line would start a code block, otherwise zero.
+ * line would start a code block, otherwise zero, with the column
+ * the innermost list item's content starts in above the low byte:
+ * inside an item, text indented to that column continues it, and a
+ * code block needs four more.  md_line() works on the low byte and
+ * the column apart; md_parse() packs them.
  */
 static int
-md_parse(const struct line *lp, int infence, char *attr)
+md_line(const struct line *lp, int infence, char *attr, int *listp)
 {
-	int	 c, i, j, len, n, u, brk;
+	int	 c, i, j, len, n, u, w, brk, list = *listp;
 
 	len = llength(lp);
 	brk = (infence == MD_BREAK);
@@ -640,7 +673,7 @@ md_parse(const struct line *lp, int infence, char *attr)
 
 	/* a fence, ``` or ~~~, opens and closes code blocks */
 	i = 0;
-	while (i < 3 && i < len && lgetc(lp, i) == ' ')
+	while (i < list + 3 && i < len && lgetc(lp, i) == ' ')
 		i++;
 	c = i < len ? lgetc(lp, i) : 0;
 	if ((c == '`' || c == '~') && (infence == 0 || infence == c)) {
@@ -665,11 +698,16 @@ md_parse(const struct line *lp, int infence, char *attr)
 	if (i >= len)
 		return (MD_BREAK);
 
-	/* an indented code block, four columns or more */
-	if (n >= 4 && brk) {
+	/* an indented code block: four columns past the item's content */
+	if (n >= list + 4 && brk) {
 		setattrs(attr, 0, len, SYN_STRING);
 		return (MD_BREAK);
 	}
+	/* a list item, at any depth, or text to the left of the list */
+	if ((w = md_marker(lp, i)) > 0)
+		*listp = n + w;
+	else if (n < list)
+		*listp = 0;
 	if (attr == NULL)	/* only the cross-line state matters */
 		return (0);
 
@@ -709,20 +747,11 @@ md_parse(const struct line *lp, int infence, char *attr)
 			return (0);
 		}
 	}
-	/* list markers, -, +, * and 1. */
-	if ((c == '-' || c == '+' || c == '*') && i + 1 < len &&
-	    lgetc(lp, i + 1) == ' ') {
-		attr[i] = SYN_NUMBER;
-		i += 2;
-	} else if (isdigit(c)) {
-		for (j = i; j < len && isdigit(lgetc(lp, j)); j++)
-			;
-		if (j + 1 < len && lgetc(lp, j) == '.' &&
-		    lgetc(lp, j + 1) == ' ') {
-			for (; i <= j; i++)
-				attr[i] = SYN_NUMBER;
-			i++;
-		}
+	/* the list marker, measured above */
+	if (w > 0) {
+		for (j = i; j < i + w && lgetc(lp, j) != ' '; j++)
+			attr[j] = SYN_NUMBER;
+		i += w;
 	}
 
 	/* inline `code`, *emphasis*, [text](url) links and <urls> */
@@ -791,6 +820,15 @@ md_parse(const struct line *lp, int infence, char *attr)
 		i++;
 	}
 	return (0);
+}
+
+static int
+md_parse(const struct line *lp, int state, char *attr)
+{
+	int	 list = state >> 8;
+
+	state = md_line(lp, state & 0xff, attr, &list);
+	return (state | (list << 8));
 }
 
 static const char *yaml_words[] = {

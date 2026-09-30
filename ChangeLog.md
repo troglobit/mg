@@ -45,6 +45,9 @@ All relevant changes to the project are documented in this file.
   contains shell metacharacters
 - Draw the divider between side by side windows on every row of a wrapped
   line; it kept stale cells on the rows the line continued from
+- Markdown: a paragraph in a list item, indented to the item's content
+  after a blank line, is no longer colored as a code block; a code block
+  in an item needs four columns more, as in CommonMark
 
 [v4.1][] - 2026-09-07
 ---------------------
