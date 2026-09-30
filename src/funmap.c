@@ -15,7 +15,8 @@
  * funmap structure: a list of functions and their command-names/#parameters.
  *
  * If the function is NULL, it must be listed with the same name in the
- * map_table.
+ * map_table.  A second name for a command goes in aliasnames[], so the
+ * name in functnames[] is the one help reports for a key.
  */
 struct funmap {
 	PF		 fn_funct;
@@ -288,11 +289,48 @@ static struct funmap functnames[] = {
 	{NULL, NULL, 0, NULL}
 };
 
+/*
+ * The names GNU Emacs binds to the same keys today, for the commands
+ * above whose meaning has not changed.  Registered first, so they sit
+ * behind the names above in every lookup by function.
+ */
+static struct funmap aliasnames[] = {
+	{forwdel, "delete-forward-char", 1, NULL},
+	{joinline, "delete-indentation", 0, NULL},
+#ifdef REGEX
+	{delmatchlines, "flush-lines", 1, NULL},
+	{cntmatchlines, "how-many", 1, NULL},
+	{delnonmatchlines, "keep-lines", 1, NULL},
+#endif /* REGEX */
+	{copyregion, "kill-ring-save", 0, NULL},
+	{executemacro, "kmacro-call-macro", 0, NULL},
+	{finishmacro, "kmacro-end-macro", 0, NULL},
+	{endorexecmacro, "kmacro-end-or-call-macro", 0, NULL},
+	{definemacro, "kmacro-start-macro", 0, NULL},
+	{gotobol, "move-beginning-of-line", 0, NULL},
+	{gotoeol, "move-end-of-line", 0, NULL},
+	{togglereadonly, "read-only-mode", 0, NULL},
+	{quit, "save-buffers-kill-terminal", 0, NULL},
+	{backpage, "scroll-down-command", 1, NULL},
+	{forwpage, "scroll-up-command", 1, NULL},
+	{splitwind, "split-window-below", 0, NULL},
+	{splitwindh, "split-window-right", 0, NULL},
+#ifdef ENABLE_CTAGS
+	{findtag, "xref-find-definitions", 1, NULL},
+	{poptag, "xref-go-back", 0, NULL},
+#endif /* ENABLE_CTAGS */
+	{NULL, NULL, 0, NULL}
+};
+
 void
 funmap_init(void)
 {
 	struct funmap *fn;
 
+	for (fn = aliasnames; fn->fn_name != NULL; fn++) {
+		fn->fn_next = funs;
+		funs = fn;
+	}
 	for (fn = functnames; fn->fn_name != NULL; fn++) {
 		fn->fn_next = funs;
 		funs = fn;

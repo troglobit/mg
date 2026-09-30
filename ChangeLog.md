@@ -35,6 +35,9 @@ All relevant changes to the project are documented in this file.
   buffer's mode: `/* */` in C, `#` in shell, make, python, conf, yaml and
   git commit messages, `<!-- -->` in markdown.  `set-comment-column` on
   `C-x ;` moves the column a comment after code starts in
+- The names GNU Emacs binds to the same keys today work in `M-x` too, e.g.
+  `kill-ring-save`, `read-only-mode`, `split-window-below`,
+  `xref-find-definitions` and the `kmacro-*` names
 
 ### Fixes
 
