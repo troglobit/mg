@@ -572,6 +572,8 @@ rewritelines(int (*fn)(struct textline *, int))
 
 	if (curwp->w_markp == NULL)
 		return (dobeep_msg("No mark set in this window"));
+	if (curbp->b_flag & BFREADONLY)
+		return (dobeep_msg("Buffer is read only"));
 	n = linesregion(&r);
 	if ((tl = reallocarray(NULL, n, sizeof(*tl))) == NULL ||
 	    (out = malloc(r.r_size + 1)) == NULL) {
