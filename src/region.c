@@ -602,12 +602,10 @@ rewritelines(int (*fn)(struct textline *, int))
 	undo_boundary_enable(FFRAND, 0);
 	undo_add_delete(r.r_linep, 0, r.r_size, 0);
 	for (k = 0, off = 0, lp = r.r_linep; k < m; k++, lp = lforw(lp)) {
-		if (lrealloc(lp, tl[k].len) == FALSE) {
+		if (lsettext(lp, out + off, tl[k].len) == FALSE) {
 			s = dobeep_msg("Out of memory");
 			break;
 		}
-		memcpy(lp->l_text, out + off, tl[k].len);
-		lp->l_used = tl[k].len;
 		off += tl[k].len + 1;
 	}
 	if (s == TRUE && m < n) {

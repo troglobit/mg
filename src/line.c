@@ -78,6 +78,28 @@ lrealloc(struct line *lp, int newsize)
 }
 
 /*
+ * Make lp's text the len bytes at s, and keep every window's dot and
+ * mark on it within the line.  No undo record: the caller keeps one.
+ */
+int
+lsettext(struct line *lp, const char *s, int len)
+{
+	struct mgwin	*wp;
+
+	if (lrealloc(lp, len) == FALSE)
+		return (FALSE);
+	memcpy(lp->l_text, s, len);
+	lp->l_used = len;
+	for (wp = wheadp; wp != NULL; wp = wp->w_wndp) {
+		if (wp->w_dotp == lp && wp->w_doto > len)
+			wp->w_doto = len;
+		if (wp->w_markp == lp && wp->w_marko > len)
+			wp->w_marko = len;
+	}
+	return (TRUE);
+}
+
+/*
  * Delete line "lp".  Fix all of the links that might point to it (they are
  * moved to offset 0 of the next line.  Unlink the line from whatever buffer
  * it might be in, and release the memory.  The buffers are updated too; the

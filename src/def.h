@@ -496,6 +496,7 @@ int		 do_filevisitalt(char *);
 /* line.c X */
 struct line	*lalloc(int);
 int		 lrealloc(struct line *, int);
+int		 lsettext(struct line *, const char *, int);
 void		 lfree(struct line *);
 void		 lchange(int);
 int		 linsert(int, int);
