@@ -37,6 +37,7 @@ All relevant changes to the project are documented in this file.
   `C-x ;` moves the column a comment after code starts in
 - New `sort-lines`, `reverse-region` and `delete-duplicate-lines`, over
   the whole lines of the region, as in GNU Emacs
+- New `transpose-lines` on `C-x C-t`, as in GNU Emacs
 - The names GNU Emacs binds to the same keys today work in `M-x` too, e.g.
   `kill-ring-save`, `read-only-mode`, `split-window-below`,
   `xref-find-definitions` and the `kmacro-*` names

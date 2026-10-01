@@ -259,6 +259,7 @@ static struct funmap functnames[] = {
 	{togglereadonly, "toggle-read-only", 0, NULL},
 	{togglereadonlyall, "toggle-read-only-all", 0, NULL},
 	{twiddle, "transpose-chars", 0, NULL},
+	{transposelines, "transpose-lines", 0, NULL},
 	{transposepara, "transpose-paragraphs", 0, NULL},
 	{transposeword, "transpose-words", 0, NULL},
 	{tutorial, "tutorial", 0, NULL},

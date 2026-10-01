@@ -420,6 +420,22 @@ restorepos(const struct regionpos *p)
 }
 
 /*
+ * The n lines from lp, line number lineno, as a region of whole lines.
+ */
+static void
+spanof(struct line *lp, int lineno, int n, struct region *r)
+{
+	r->r_linep = lp;
+	r->r_lineno = lineno;
+	r->r_offset = 0;
+	r->r_size = llength(lp);
+	while (--n > 0) {
+		lp = lforw(lp);
+		r->r_size += 1 + llength(lp);
+	}
+}
+
+/*
  * The region as whole lines: from the start of the first line to
  * the end of the last, where a last line the region only touches in
  * column zero is left out.  Returns the number of lines.
@@ -441,15 +457,10 @@ linesregion(struct region *r)
 		last = curwp->w_dotp;
 		lastoff = curwp->w_doto;
 	}
+	n = abs(curwp->w_dotline - curwp->w_markline) + 1;
 	if (lastoff == 0 && last != lp)
-		last = lback(last);
-	r->r_linep = lp;
-	r->r_offset = 0;
-	r->r_size = llength(lp);
-	for (n = 1; lp != last; n++) {
-		lp = lforw(lp);
-		r->r_size += 1 + llength(lp);
-	}
+		n--;
+	spanof(lp, r->r_lineno, n, r);
 	return (n);
 }
 
@@ -554,54 +565,59 @@ uniqlines(struct textline *tl, int n)
 }
 
 /*
- * Rewrite the lines of the region as fn leaves them, as one undo
- * step; not at all when it leaves them as they were.  The text goes
- * into the lines in place, with one undo record each way, rather
- * than through linsert(), which would cost a walk of the buffer per
- * byte for its own records.
+ * Whether the buffer may be changed: not read only, and not changed
+ * on disk unless the user says to go ahead.
  */
 static int
-rewritelines(int (*fn)(struct textline *, int))
+editable(void)
 {
-	struct region	 r;
-	struct regionpos pos;
-	struct textline	*tl = NULL;
-	struct line	*lp;
-	char	*out = NULL;
-	int	 k, n, m, len, off, x, s = TRUE;
+	int	 s;
 
-	if (curwp->w_markp == NULL)
-		return (dobeep_msg("No mark set in this window"));
+	if ((s = checkdirty(curbp)) != TRUE)
+		return (s);
 	if (curbp->b_flag & BFREADONLY)
 		return (dobeep_msg("Buffer is read only"));
-	n = linesregion(&r);
-	if ((tl = reallocarray(NULL, n, sizeof(*tl))) == NULL ||
-	    (out = malloc(r.r_size + 1)) == NULL) {
-		s = dobeep_msg("Out of memory");
-		goto done;
-	}
-	for (k = 0, lp = r.r_linep; k < n; k++, lp = lforw(lp)) {
-		tl[k].s = ltext(lp);
-		tl[k].len = llength(lp);
-	}
-	m = fn(tl, n);
-	for (k = 0, lp = r.r_linep; k < m && k < n; k++, lp = lforw(lp))
-		if (tl[k].s != ltext(lp))
-			break;
-	if (m == n && k == n)
-		goto done;		/* in the order they were */
+	return (TRUE);
+}
 
+/*
+ * The n lines from line number from, as a region of whole lines.
+ */
+static void
+linespan(int from, int n, struct region *r)
+{
+	struct line	*lp;
+	int	 k;
+
+	for (lp = lforw(curbp->b_headp), k = 1; k < from; k++)
+		lp = lforw(lp);
+	spanof(lp, from, n, r);
+}
+
+/*
+ * Write the m texts in tl over the n lines of r, in place, with one
+ * undo record for the old text and one for the new, rather than
+ * through linsert(), whose undo record walks the buffer from the top
+ * for every byte.  Lines past the m-th are deleted.  The caller sets
+ * the undo boundaries.
+ */
+static int
+putlines(struct region *r, struct textline *tl, int m, int n)
+{
+	struct line	*lp;
+	char	*out;
+	int	 k, len, off, x, s = TRUE;
+
+	if ((out = malloc(r->r_size + 1)) == NULL)
+		return (dobeep_msg("Out of memory"));
 	for (len = 0, k = 0; k < m; k++) {
 		if (k > 0)
 			out[len++] = *curbp->b_nlchr;
 		memcpy(out + len, tl[k].s, tl[k].len);
 		len += tl[k].len;
 	}
-	out[len] = '\0';
-	savepos(&pos);
-	undo_boundary_enable(FFRAND, 0);
-	undo_add_delete(r.r_linep, 0, r.r_size, 0);
-	for (k = 0, off = 0, lp = r.r_linep; k < m; k++, lp = lforw(lp)) {
+	undo_add_delete(r->r_linep, 0, r->r_size, 0);
+	for (k = 0, off = 0, lp = r->r_linep; k < m; k++, lp = lforw(lp)) {
 		if (lsettext(lp, out + off, tl[k].len) == FALSE) {
 			s = dobeep_msg("Out of memory");
 			break;
@@ -612,20 +628,144 @@ rewritelines(int (*fn)(struct textline *, int))
 		/* the lines left over, with their old text, go as one */
 		curwp->w_dotp = lback(lp);
 		curwp->w_doto = llength(lback(lp));
-		curwp->w_dotline = r.r_lineno + m - 1;
+		curwp->w_dotline = r->r_lineno + m - 1;
 		for (k = m, off = 0; k < n; k++, lp = lforw(lp))
 			off += 1 + llength(lp);
 		x = undo_enable(FFRAND, 0);
 		s = ldelete(off, KNONE);
 		undo_enable(FFRAND, x);
 	}
-	undo_add_insert(r.r_linep, 0, len);
-	undo_boundary_enable(FFRAND, 1);
+	undo_add_insert(r->r_linep, 0, len);
 	lchange(WFFULL);
-	restorepos(&pos);
-done:
-	free(tl);
 	free(out);
+	return (s);
+}
+
+/*
+ * The texts of the n lines of r, into a new array.
+ */
+static struct textline *
+getlines(struct region *r, int n)
+{
+	struct textline	*tl;
+	struct line	*lp;
+	int	 k;
+
+	if ((tl = reallocarray(NULL, n, sizeof(*tl))) == NULL) {
+		dobeep_msg("Out of memory");
+		return (NULL);
+	}
+	for (k = 0, lp = r->r_linep; k < n; k++, lp = lforw(lp)) {
+		tl[k].s = ltext(lp);
+		tl[k].len = llength(lp);
+	}
+	return (tl);
+}
+
+/*
+ * Rewrite the lines of the region as fn leaves them, as one undo
+ * step; not at all when it leaves them as they were.
+ */
+static int
+rewritelines(int (*fn)(struct textline *, int))
+{
+	struct region	 r;
+	struct regionpos pos;
+	struct textline	*tl;
+	struct line	*lp;
+	int	 k, n, m, s;
+
+	if (curwp->w_markp == NULL)
+		return (dobeep_msg("No mark set in this window"));
+	if ((s = editable()) != TRUE)
+		return (s);
+	n = linesregion(&r);
+	if ((tl = getlines(&r, n)) == NULL)
+		return (FALSE);
+	m = fn(tl, n);
+	for (k = 0, lp = r.r_linep; k < m && k < n; k++, lp = lforw(lp))
+		if (tl[k].s != ltext(lp))
+			break;
+	if (m != n || k != n) {
+		savepos(&pos);
+		undo_boundary_enable(FFRAND, 0);
+		s = putlines(&r, tl, m, n);
+		undo_boundary_enable(FFRAND, 1);
+		restorepos(&pos);
+	}
+	free(tl);
+	return (s);
+}
+
+/*
+ * Move the line above dot down past n lines, or up past -n, and dot
+ * to the line after the one moved; on the first line, act as from
+ * the second.  With an argument of zero, exchange the line dot is on
+ * with the line the mark is on.  Missing lines at the end of the
+ * buffer are added, as GNU Emacs does.
+ */
+int
+transposelines(int f, int n)
+{
+	struct region	 r;
+	struct regionpos pos;
+	struct textline	*tl, t;
+	int	 dotline, from, count, s;
+
+	if ((s = editable()) != TRUE)
+		return (s);
+	if (!(f & FFARG))
+		n = 1;
+	if (n == 0) {
+		if (curwp->w_markp == NULL)
+			return (dobeep_msg("No mark set in this window"));
+		from = curwp->w_dotline < curwp->w_markline ?
+		    curwp->w_dotline : curwp->w_markline;
+		count = abs(curwp->w_dotline - curwp->w_markline) + 1;
+		if (count == 1)
+			return (TRUE);
+	} else {
+		dotline = curwp->w_dotline > 1 ? curwp->w_dotline : 2;
+		from = dotline - 1 + (n < 0 ? n : 0);
+		count = abs(n) + 1;
+		if (from < 1)
+			return (dobeep_msg("Beginning of buffer"));
+	}
+
+	undo_boundary_enable(FFRAND, 0);
+	/* the lines moved past, and the one dot ends on, must exist */
+	if (curbp->b_lines < from + count - 1 + (n > 0))
+		(void)gotoeob(FFRAND, 1);
+	while (s == TRUE && curbp->b_lines < from + count - 1 + (n > 0))
+		s = lnewline();
+	if (s != TRUE)
+		goto out;
+	savepos(&pos);
+	linespan(from, count, &r);
+	if ((tl = getlines(&r, count)) == NULL) {
+		s = FALSE;
+		goto out;
+	}
+	t = tl[0];
+	if (n == 0) {
+		tl[0] = tl[count - 1];
+		tl[count - 1] = t;
+	} else if (n > 0) {
+		memmove(tl, tl + 1, (count - 1) * sizeof(*tl));
+		tl[count - 1] = t;
+	} else {
+		t = tl[count - 1];
+		memmove(tl + 1, tl, (count - 1) * sizeof(*tl));
+		tl[0] = t;
+	}
+	s = putlines(&r, tl, count, count);
+	free(tl);
+	if (n == 0)
+		restorepos(&pos);
+	else
+		setlineno(n > 0 ? from + count : from + 1);
+out:
+	undo_boundary_enable(FFRAND, 1);
 	return (s);
 }
 

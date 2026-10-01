@@ -169,7 +169,7 @@ static PF cXcJ[] = {
 	togglereadonly,		/* ^Q */
 	filevisitro,		/* ^R */
 	filesave,		/* ^S */
-	rescan,			/* ^T */
+	transposelines,		/* ^T */
 	upperregion,		/* ^U */
 	filevisitalt,		/* ^V */
 	filewrite,		/* ^W */

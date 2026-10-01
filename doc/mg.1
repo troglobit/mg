@@ -294,6 +294,8 @@ toggle-read-only
 find-file-read-only
 .It C-x C-s, F2
 save-buffer
+.It C-x C-t
+transpose-lines
 .It C-x C-u
 upcase-region
 .It C-x C-v
@@ -1387,6 +1389,18 @@ or off.
 Transpose the two characters in front of and under dot,
 then move forward one character.
 Treat newline characters the same as any other.
+.It Ic transpose-lines
+Exchange the line dot is on with the line above it, and move dot to
+the start of the next line, so repeating it drags a line down; on the
+first line, the first two lines are exchanged.
+With a numeric argument
+.Va n ,
+move the line above dot down past
+.Va n
+lines, or up past
+.Va -n ;
+with zero, exchange the lines dot and mark are on.
+Bound to C-x C-t.
 .It Ic transpose-paragraphs
 Transpose adjacent paragraphs.
 If multiple iterations are requested, the current paragraph will
