@@ -49,7 +49,8 @@ struct tagpos {
 	SLIST_ENTRY(tagpos) entry;
 	int    doto;
 	int    dotline;
-	char   *bname;
+	char   *bname;		/* the file, or a buffer with none	*/
+	int    isfile;
 };
 SLIST_HEAD(tagstack, tagpos) shead = SLIST_HEAD_INITIALIZER(shead);
 
@@ -161,48 +162,37 @@ pushtag(char *tok)
 {
 	struct ctag *res;
 	struct tagpos *s;
-	char bname[NFILEN];
-	int doto, dotline;
+	char *bname;
+	int doto, dotline, isfile;
 	
 	if ((res = searchtag(tok)) == NULL)
 		return (FALSE);
 		
 	doto = curwp->w_doto;
 	dotline = curwp->w_dotline;
-	/* record absolute filenames. Fixes issues when mg's cwd is not the
-	 * same as buffer's directory.
-	 */
-	if (strlcpy(bname, curbp->b_cwd, sizeof(bname)) >= sizeof(bname)) {
-		dobeep();
-		ewprintf("filename too long");
+	/* where to return: the file, or the name of a buffer with none */
+	isfile = curbp->b_fname[0] != '\0';
+	if ((bname = strdup(isfile ? curbp->b_fname : curbp->b_bname)) == NULL)
+		return (dobeep_msg("Out of memory"));
+
+	if (loadbuffer(res->fname) == FALSE) {
+		free(bname);
 		return (FALSE);
 	}
-	if (strlcat(bname, curbp->b_bname, sizeof(bname)) >= sizeof(bname)) {
-		dobeep();
-		ewprintf("filename too long");
-		return (FALSE);
-	}	
-
-	if (loadbuffer(res->fname) == FALSE)
-		return (FALSE);
 	
 	if (searchpat(res->pat) == TRUE) {
 		if ((s = malloc(sizeof(struct tagpos))) == NULL) {
-			dobeep();
-			ewprintf("Out of memory");
-			return (FALSE);
+			free(bname);
+			return (dobeep_msg("Out of memory"));
 		}
-		if ((s->bname = strdup(bname)) == NULL) {
-			dobeep();
-			ewprintf("Out of memory");
-			free(s);
-			return (FALSE);
-		}
+		s->bname = bname;
+		s->isfile = isfile;
 		s->doto = doto;
 		s->dotline = dotline;
 		SLIST_INSERT_HEAD(&shead, s, entry);
 		return (TRUE);
 	} else {
+		free(bname);
 		dobeep();
 		ewprintf("%s: pattern not found", res->tag);
 		return (FALSE);
@@ -219,6 +209,8 @@ poptag(int f, int n)
 {
 	struct line *dotp;
 	struct tagpos *s;
+	struct buffer *bp;
+	int ok;
 	
 	if (SLIST_EMPTY(&shead)) {
 		dobeep();
@@ -227,7 +219,14 @@ poptag(int f, int n)
 	}
 	s = SLIST_FIRST(&shead);
 	SLIST_REMOVE_HEAD(&shead, entry);
-	if (loadbuffer(s->bname) == FALSE) {
+	if (s->isfile)
+		ok = loadbuffer(s->bname);
+	else if ((ok = (bp = bfind(s->bname, FALSE)) != NULL) == TRUE) {
+		curbp = bp;
+		ok = showbuffer(bp, curwp, WFFULL);
+	} else
+		dobeep_msgs("No buffer", s->bname);
+	if (ok == FALSE) {
 		free(s->bname);
 		free(s);
 		return (FALSE);
@@ -497,8 +496,7 @@ searchtag(char *tok)
  * This is equivalent to filevisit from file.c.
  * Look around to see if we can find the file in another buffer; if we
  * can't find it, create a new buffer, read in the text, and switch to
- * the new buffer. *scratch*, *grep*, *compile* needs to be handled 
- * differently from other buffers which have "filenames".
+ * the new buffer.
  */
 int
 loadbuffer(char *bname)
@@ -506,20 +504,10 @@ loadbuffer(char *bname)
 	struct buffer *bufp;
 	char *adjf;
 
-	/* check for special buffers which begin with '*' */
-	if (bname[0] == '*') {
-		if ((bufp = bfind(bname, FALSE)) != NULL) {
-			curbp = bufp;
-			return (showbuffer(bufp, curwp, WFFULL));
-		} else {
-			return (FALSE);
-		}
-	} else {	
-		if ((adjf = adjustname(bname, TRUE)) == NULL)
-			return (FALSE);
-		if ((bufp = findbuffer(adjf)) == NULL)
-			return (FALSE);
-	}
+	if ((adjf = adjustname(bname, TRUE)) == NULL)
+		return (FALSE);
+	if ((bufp = findbuffer(adjf)) == NULL)
+		return (FALSE);
 	curbp = bufp;
 	if (showbuffer(bufp, curwp, WFFULL) != TRUE)
 		return (FALSE);
