@@ -304,6 +304,10 @@ find-alternate-file
 write-file
 .It C-x C-x
 exchange-point-and-mark
+.It C-x left, C-x C-left
+previous-buffer
+.It C-x right, C-x C-right
+next-buffer
 .It C-x (, F3
 start-kbd-macro
 .It C-x \&)
@@ -997,6 +1001,7 @@ character.
 The second column indicates which buffers are modified.
 The third column indicates which buffers are read-only.
 The remaining columns are self-explanatory.
+The buffers are listed from the one used last.
 .It Ic load
 Prompt the user for a filename, and then execute commands
 from that file.
@@ -1051,6 +1056,11 @@ and the buffer tab width.
 At a prompt, show the line entered after the one shown, or what was
 being typed once past the newest.
 Bound to M-n; the Down arrow does the same.
+.It Ic next-buffer
+Undo a
+.Ic previous-buffer :
+show the buffer used after this one, walking back toward the newest.
+Bound to C-x right arrow and C-x C-right arrow.
 .It Ic next-line
 Move forward
 .Va n
@@ -1089,6 +1099,12 @@ or this command with a prefix argument.
 .It Ic previous-history-element
 At a prompt, show the line entered before the one shown.
 Bound to M-p; the Up arrow does the same.
+.It Ic previous-buffer
+Show the buffer used before this one in the current window.
+Repeating it walks on through the older buffers, in the order of
+.Ic list-buffers ,
+and wraps around, so holding the key visits every buffer once.
+Bound to C-x left arrow and C-x C-left arrow.
 .It Ic previous-line
 Move backwards
 .Va n

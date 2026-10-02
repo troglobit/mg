@@ -24,6 +24,8 @@ static struct buffer *bnew(const char *);
 
 static int usebufname(const char *);
 
+static void	 bfront(struct buffer *);
+
 /* Default tab width */
 int	 defb_tabw = 8;
 
@@ -144,6 +146,61 @@ usebuffer(int f, int n)
 		return (ABORT);
 
 	return (usebufname(bufp));
+}
+
+/*
+ * Move bp to the front of the buffer list, which so runs from the
+ * buffer used last.
+ */
+static void
+bfront(struct buffer *bp)
+{
+	struct buffer	**bpp;
+
+	for (bpp = &bheadp; *bpp != NULL; bpp = &(*bpp)->b_bufp)
+		if (*bpp == bp) {
+			*bpp = bp->b_bufp;
+			bp->b_bufp = bheadp;
+			bheadp = bp;
+			return;
+		}
+}
+
+/*
+ * Show the buffer used before this one, and on repeating, the ones
+ * before that; next-buffer walks back toward the newest.  The list
+ * wraps around.
+ */
+static int
+cyclebuffer(int older)
+{
+	struct buffer	*bp;
+
+	if (!(lastflag & CFBUFCYC))
+		bfront(curbp);
+	if (older)
+		bp = curbp->b_bufp != NULL ? curbp->b_bufp : bheadp;
+	else
+		for (bp = bheadp; bp->b_bufp != NULL && bp->b_bufp != curbp;
+		    bp = bp->b_bufp)
+			;
+	if (bp == curbp)
+		return (dobeep_msg("No other buffer"));
+	thisflag |= CFBUFCYC;
+	curbp = bp;
+	return (showbuffer(bp, curwp, WFFRAME | WFFULL));
+}
+
+int
+prevbuffer(int f, int n)
+{
+	return (cyclebuffer(1));
+}
+
+int
+nextbuffer(int f, int n)
+{
+	return (cyclebuffer(0));
 }
 
 /*
@@ -472,6 +529,7 @@ listbuf_goto_buffer_helper(int f, int n, int only)
 		goto cleanup;
 	curbp = bp;
 	curwp = wp;
+	bfront(bp);
 
 	if (only)
 		ret = (onlywind(FFRAND, 1));
@@ -587,7 +645,7 @@ bfind(const char *bname, int cflag)
 static struct buffer *
 bnew(const char *bname)
 {
-	struct buffer	*bp;
+	struct buffer	*bp, **bpp;
 	struct line	*lp;
 	int		 i;
 	size_t		len;
@@ -628,8 +686,10 @@ bnew(const char *bname)
 	bzero(&bp->b_fi, sizeof(bp->b_fi));
 	lp->l_fp = lp;
 	lp->l_bp = lp;
-	bp->b_bufp = bheadp;
-	bheadp = bp;
+	/* unused until it is shown, so at the end of the list */
+	for (bpp = &bheadp; *bpp != NULL; bpp = &(*bpp)->b_bufp)
+		;
+	*bpp = bp;
 	bp->b_dotline = bp->b_markline = 1;
 	bp->b_lines = 1;
 	bp->b_nlseq = "\n";		/* use unix default */
@@ -705,6 +765,14 @@ showbuffer(struct buffer *bp, struct mgwin *wp, int flags)
 			obp->b_dotline = wp->w_dotline;
 			obp->b_markline = wp->w_markline;
 		}
+	}
+	/*
+	 * A buffer is used when it is shown in the window being worked
+	 * in, not popped up in another; a cycle walks the list as is.
+	 */
+	if (wp == curwp && !(thisflag & CFBUFCYC)) {
+		bfront(obp);
+		bfront(bp);
 	}
 	/* Now, attach the new buffer to the window */
 	wp->w_bufp = bp;

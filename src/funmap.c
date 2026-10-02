@@ -181,6 +181,7 @@ static struct funmap functnames[] = {
 	{enewline, "newline", 1, NULL},
 	{lfindent, "newline-and-indent", 1, NULL},
 	{nexthist, "next-history-element", 0, NULL},
+	{nextbuffer, "next-buffer", 0, NULL},
 	{forwline, "next-line", 1, NULL},
 	{notabmode, "no-tab-mode", 0, NULL},
 	{notmodified, "not-modified", 0, NULL},
@@ -192,6 +193,7 @@ static struct funmap functnames[] = {
 #endif
 	{prefixregion, "prefix-region", 0, NULL},
 	{prevhist, "previous-history-element", 0, NULL},
+	{prevbuffer, "previous-buffer", 0, NULL},
 	{backline, "previous-line", 1, NULL},
 	{prevwind, "previous-window", 0, NULL},
 	{spawncli, "push-shell", 0, NULL},

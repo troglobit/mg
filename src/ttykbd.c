@@ -143,6 +143,20 @@ shiftfpara(int f, int n)
 }
 
 /*
+ * Bind C-x followed by the key the terminal sends as seq.
+ */
+static void
+bindcx(const char *func, const char *seq)
+{
+	char	 buf[32];
+
+	if (seq != NULL) {
+		(void)snprintf(buf, sizeof(buf), "^X%s", seq);
+		dobindkey(fundamental_map, func, buf);
+	}
+}
+
+/*
  * Turn on function keys using keypad_xmit, then load a keys file, if
  * available.  The keys file is located in the same manner as the startup
  * file is, depending on what startupfile() does on your system.
@@ -223,6 +237,11 @@ ttykeymapinit(void)
 	if (key_cpgdn)
 		dobindkey(fundamental_map, "end-of-buffer", key_cpgdn);
 
+	/* C-x and an arrow key, or C-arrow, cycle through the buffers */
+	bindcx("previous-buffer", key_left);
+	bindcx("previous-buffer", key_cleft);
+	bindcx("next-buffer", key_right);
+	bindcx("next-buffer", key_cright);
 	/* The goto-line prefix from newer GNU Emacs; C-x g remains */
 	dobindkey(fundamental_map, "goto-line", "\egg");
 	dobindkey(fundamental_map, "goto-line", "\eg\eg");

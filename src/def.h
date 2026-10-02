@@ -151,6 +151,7 @@ typedef int	(*PF)(int, int);	/* generally useful type */
 #define CFINDT	0x0008		/* Last command was an indent cycle */
 #define CFSHIFT	0x0010		/* Last command was a shifted move */
 #define CFMARK	0x0020		/* Last command activated the mark */
+#define CFBUFCYC 0x0040		/* Last command cycled buffers	 */
 
 /*
  * File I/O.
@@ -547,6 +548,8 @@ int		 delwind(int, int);
 int		 settabw(int, int);
 int		 togglereadonly(int, int);
 int		 togglereadonlyall(int, int);
+int		 prevbuffer(int, int);
+int		 nextbuffer(int, int);
 struct buffer   *bfind(const char *, int);
 int		 poptobuffer(int, int);
 int		 killbuffer(struct buffer *);
