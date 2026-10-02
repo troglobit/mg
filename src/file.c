@@ -777,7 +777,7 @@ upmodes(struct buffer *bp)
 	struct mgwin	*wp;
 
 	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
-		if (bp == NULL || curwp->w_bufp == bp)
+		if (bp == NULL || wp->w_bufp == bp)
 			wp->w_rflag |= WFMODE;
 }
 
