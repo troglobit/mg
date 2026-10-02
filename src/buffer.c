@@ -719,8 +719,8 @@ showbuffer(struct buffer *bp, struct mgwin *wp, int flags)
 		wp->w_markline = bp->b_markline;
 	} else
 		/* already on screen, steal values from other window */
-		for (owp = wheadp; owp != NULL; owp = wp->w_wndp)
-			if (wp->w_bufp == bp && owp != wp) {
+		for (owp = wheadp; owp != NULL; owp = owp->w_wndp)
+			if (owp->w_bufp == bp && owp != wp) {
 				wp->w_dotp = owp->w_dotp;
 				wp->w_doto = owp->w_doto;
 				wp->w_markp = owp->w_markp;
