@@ -946,6 +946,10 @@ Dispose of a buffer, by name.
 If the buffer name does not start and end with an asterisk,
 prompt the user if the buffer
 has been changed.
+.It Ic kill-current-buffer
+Kill the current buffer, as
+.Ic kill-buffer
+does, without asking which.
 .It Ic kill-line
 Kill line.
 If called without an argument, it kills from dot to the end
@@ -1144,6 +1148,12 @@ Query Replace.
 Search and replace strings selectively, prompting after each match.
 .It Ic quick-help
 Toggle quick help buffer.
+.It Ic rename-buffer
+Give the current buffer a new name.
+A name already in use is refused; with a numeric argument,
+.Dq <2> ,
+.Dq <3>
+and so on is added to it to make it unique.
 .It Ic replace-regexp
 Replace regular expression globally without individual prompting.
 .It Ic replace-string

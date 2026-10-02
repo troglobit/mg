@@ -160,6 +160,7 @@ static struct funmap functnames[] = {
 	{justone, "just-one-space", 0, NULL},
 	{ctrlg, "keyboard-quit", 0, NULL},
 	{killbuffer_cmd, "kill-buffer", 1, NULL},
+	{killcurbuf, "kill-current-buffer", 0, NULL},
 	{killline, "kill-line", 1, NULL},
 	{killpara, "kill-paragraph", 1, NULL},
 	{zaptochar, "zap-to-char", 1, NULL},
@@ -211,6 +212,7 @@ static struct funmap functnames[] = {
 #endif /* REGEX */
 	{reposition, "recenter", 0, NULL},
 	{redraw, "redraw-display", 0, NULL},
+	{renamebuf, "rename-buffer", 1, NULL},
 #ifdef REGEX
 	{re_repl, "replace-regexp", 2, NULL},
 	{replstr, "replace-string", 2, NULL},

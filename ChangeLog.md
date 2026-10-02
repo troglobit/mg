@@ -38,6 +38,7 @@ All relevant changes to the project are documented in this file.
 - New `sort-lines`, `reverse-region` and `delete-duplicate-lines`, over
   the whole lines of the region, as in GNU Emacs
 - New `transpose-lines` on `C-x C-t`, as in GNU Emacs
+- New `kill-current-buffer` and `rename-buffer`, as in GNU Emacs
 - New `previous-buffer` and `next-buffer` on `C-x` and the left and right
   arrow keys, as in GNU Emacs.  The buffer list now runs from the buffer
   used last, which is also the order of `list-buffers`

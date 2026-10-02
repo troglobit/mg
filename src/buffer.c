@@ -266,6 +266,39 @@ killbuffer_cmd(int f, int n)
 	return rc;
 }
 
+/*
+ * Kill the current buffer, without asking which.
+ */
+int
+killcurbuf(int f, int n)
+{
+	return (killbuffer_cmd(FFRAND, 1));
+}
+
+/*
+ * Give the current buffer a new name.  A name already in use is
+ * refused; with an argument, <2>, <3> ... is added to make it unique.
+ */
+int
+renamebuf(int f, int n)
+{
+	char	 bufn[NBUFN], *bufp;
+	struct buffer	*bp;
+
+	if ((bufp = eread("Rename buffer (to new name): ", bufn, NBUFN,
+	    EFNEW | EFBUF)) == NULL)
+		return (ABORT);
+	if ((bp = bfind(bufp, FALSE)) == curbp)
+		return (TRUE);
+	if (bp != NULL) {
+		if (!(f & FFARG))
+			return (dobeep_msgs("Buffer name in use:", bufp));
+		if (!uniqbname(bufn, strlen(bufn), sizeof(bufn)))
+			return (dobeep_msg("Buffer name too long"));
+	}
+	return (setbname(curbp, bufn));
+}
+
 int
 killbuffer(struct buffer *bp)
 {
@@ -813,16 +846,42 @@ showbuffer(struct buffer *bp, struct mgwin *wp, int flags)
 int
 augbname(char *bn, const char *fn, size_t bs)
 {
-	int	 count;
-	size_t	 remain, len;
+	size_t	 len;
 
 	if ((len = xbasename(bn, fn, bs)) >= bs)
 		return (FALSE);
+	return (uniqbname(bn, len, bs));
+}
 
-	remain = bs - len;
+/*
+ * Make the name in bn, len bytes long and with room for bs, unique
+ * among the buffers by adding <2>, <3> ... to it.
+ */
+int
+uniqbname(char *bn, size_t len, size_t bs)
+{
+	int	 count;
+
 	for (count = 2; bfind(bn, FALSE) != NULL; count++)
-		snprintf(bn + len, remain, "<%d>", count);
+		if ((size_t)snprintf(bn + len, bs - len, "<%d>", count) >=
+		    bs - len)
+			return (FALSE);
+	return (TRUE);
+}
 
+/*
+ * Give bp the name bn, and show it in the mode lines.
+ */
+int
+setbname(struct buffer *bp, const char *bn)
+{
+	char	*name;
+
+	if ((name = strdup(bn)) == NULL)
+		return (dobeep_msg("Out of memory"));
+	free(bp->b_bname);
+	bp->b_bname = name;
+	upmodes(bp);
 	return (TRUE);
 }
 

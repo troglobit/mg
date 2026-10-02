@@ -584,10 +584,7 @@ filewrite(int f, int n)
 		if (getbufcwd(curbp->b_cwd, sizeof(curbp->b_cwd)) != TRUE)
 			(void)strlcpy(curbp->b_cwd, "/", sizeof(curbp->b_cwd));
 		if (augbname(bn, curbp->b_fname, sizeof(bn))
-		    == FALSE)
-			return (FALSE);
-		free(curbp->b_bname);
-		if ((curbp->b_bname = strdup(bn)) == NULL)
+		    == FALSE || setbname(curbp, bn) == FALSE)
 			return (FALSE);
 		(void)fupdstat(curbp);
 		curbp->b_flag &= ~(BFBAK | BFCHG);
