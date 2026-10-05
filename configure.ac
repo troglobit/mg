@@ -133,8 +133,13 @@ AS_IF([test "x$enable_cmode" != "xno"], enable_cmode="yes"
 AS_IF([test "x$enable_compile" != "xno"], enable_compile="yes"
 	AC_DEFINE(ENABLE_COMPILE_GREP, 1, [Enable C compile mode, M-x compile]))
 
+# Cscope needs ctags, so going without ctags means going without cscope
+AS_IF([test "x$enable_ctags" = "xno"], [
+	AS_IF([test "x$enable_cscope" = "xyes"],
+		AC_MSG_WARN([cscope needs ctags, building without cscope]))
+	enable_cscope="no"])
+
 AS_IF([test "x$enable_cscope" != "xno"], enable_cscope="yes"
-	enable_ctags="yes"
 	AC_DEFINE(CSCOPE, 1, [Enable Cscope programming tool]))
 
 AS_IF([test "x$enable_ctags" != "xno"], enable_ctags="yes"
@@ -208,6 +213,7 @@ cat <<EOF
   ctags..........: $enable_ctags
   dired..........: $enable_dired
   regexp.........: $enable_regexp
+  toggle newline.: $enable_togglenl
 
 ------------- Compiler version --------------
 $($CC --version || true)
