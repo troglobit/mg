@@ -42,6 +42,7 @@ All relevant changes to the project are documented in this file.
 - makefile-mode colors the automake `if` conditional and the `@VAR@`
   substitutions in `Makefile.am` and `Makefile.in`
 - New `m4-mode` for `configure.ac`, `configure.in` and `*.m4`
+- New `cmake-mode` for `CMakeLists.txt` and `*.cmake`
 - New `previous-buffer` and `next-buffer` on `C-x` and the left and right
   arrow keys, as in GNU Emacs.  The buffer list now runs from the buffer
   used last, which is also the order of `list-buffers`

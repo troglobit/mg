@@ -87,6 +87,35 @@ static const char *m4_keywords[] = {
 	NULL
 };
 
+static const char *cmake_keywords[] = {
+	"add_compile_definitions", "add_compile_options",
+	"add_custom_command", "add_custom_target", "add_definitions",
+	"add_dependencies", "add_executable", "add_library",
+	"add_subdirectory", "add_test", "break", "cmake_minimum_required",
+	"cmake_policy", "configure_file", "continue", "else", "elseif",
+	"enable_language", "enable_testing", "endforeach", "endfunction",
+	"endif", "endmacro", "endwhile", "execute_process", "file",
+	"find_file", "find_library", "find_package", "find_path",
+	"find_program", "foreach", "function", "get_filename_component",
+	"get_property", "get_target_property", "if", "include",
+	"include_directories", "install", "list", "macro", "math",
+	"message", "option", "project", "return", "set",
+	"set_property", "set_target_properties", "string",
+	"target_compile_definitions", "target_compile_features",
+	"target_compile_options", "target_include_directories",
+	"target_link_directories", "target_link_libraries",
+	"target_sources", "unset", "while",
+	"AND|", "ARCHIVE|", "BOOL|", "CACHE|", "COMMAND|", "COMPONENTS|",
+	"DEFINED|", "DEPENDS|", "DESTINATION|", "EQUAL|", "EXISTS|",
+	"FALSE|", "FATAL_ERROR|", "FILEPATH|", "FORCE|", "GREATER|",
+	"INTERFACE|", "INTERNAL|", "LESS|", "LIBRARY|", "MATCHES|", "NOT|",
+	"OFF|", "ON|", "OPTIONAL|", "OR|", "OUTPUT|", "PARENT_SCOPE|",
+	"PATH|", "PRIVATE|", "PUBLIC|", "QUIET|", "REQUIRED|", "RUNTIME|",
+	"SEND_ERROR|", "STATUS|", "STREQUAL|", "STRING|", "TARGETS|",
+	"TRUE|", "VERSION|", "WARNING|", "WORKING_DIRECTORY|",
+	NULL
+};
+
 static const char *conf_keywords[] = {
 	"false|", "no|", "none|", "off|", "on|", "true|", "yes|",
 	"m|", "n|", "y|",
@@ -137,6 +166,9 @@ static const struct syntax syntab[] = {
 	{ .sy_mode = "m4", .sy_keywords = m4_keywords,
 	    .sy_slcomm = { "#", "dnl" }, .sy_slsep = 1, .sy_dollar = "{#?@*$!-",
 	    .sy_atsubst = 1, .sy_cstart = "dnl" },
+	{ .sy_mode = "cmake", .sy_keywords = cmake_keywords,
+	    .sy_slcomm = { "#" }, .sy_mcs = "#[[", .sy_mce = "]]",
+	    .sy_dollar = "{", .sy_cstart = "#" },
 	{ .sy_mode = "python", .sy_keywords = py_keywords, .sy_slcomm = { "#" },
 	    .sy_atword = 1, .sy_mstr = { "\"\"\"", "'''" }, .sy_cstart = "#" },
 	{ .sy_mode = "conf", .sy_keywords = conf_keywords, .sy_wordchr = "-",
@@ -325,6 +357,13 @@ syn_parse(const struct syntax *sy, const struct line *lp, int incom,
 			i++;
 			continue;
 		}
+		if (sy->sy_mcs != NULL &&
+		    (n = matchat(lp, i, sy->sy_mcs)) != 0) {
+			setattrs(attr, i, n, SYN_COMMENT);
+			i += n;
+			incom = 1;
+			continue;
+		}
 		if (!sy->sy_slsep || prev_sep) {
 			for (j = 0; j < 2 && sy->sy_slcomm[j] != NULL; j++)
 				if ((n = matchat(lp, i, sy->sy_slcomm[j])) != 0 &&
@@ -336,13 +375,6 @@ syn_parse(const struct syntax *sy, const struct line *lp, int incom,
 				setattrs(attr, i, len - i, SYN_COMMENT);
 				break;
 			}
-		}
-		if (sy->sy_mcs != NULL &&
-		    (n = matchat(lp, i, sy->sy_mcs)) != 0) {
-			setattrs(attr, i, n, SYN_COMMENT);
-			i += n;
-			incom = 1;
-			continue;
 		}
 		if (sy->sy_mstr[0] != NULL) {
 			for (j = 0; j < 2; j++)

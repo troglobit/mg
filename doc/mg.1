@@ -615,6 +615,13 @@ upper case, and subsequent letters to lower case.
 Change the global working directory.
 See also
 .Ic global-wd-mode .
+.It Ic cmake-mode
+Toggle cmake mode, which selects the cmake rules for syntax
+highlighting: comments, both # and #[[ ]], strings, the common
+commands, the upper case argument keywords like PUBLIC and REQUIRED,
+and ${VAR} references.
+Commands are recognized in lower case only.
+Files named CMakeLists.txt and *.cmake get the mode automatically.
 .It Ic column-number-mode
 Toggle whether the column number is displayed in the modeline.
 Enabled by default.
