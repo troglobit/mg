@@ -15,10 +15,19 @@ struct autoexec {
 	SLIST_ENTRY(autoexec) next;	/* link in the linked list */
 	const char	*pattern;	/* Pattern to match to filenames */
 	PF		 fp;
+	int		 builtin;	/* registered by a mode, not the user */
+	int		 literal;	/* no wildcards: names a file */
 };
 
 static SLIST_HEAD(, autoexec)	 autos;
 static int			 ready;
+
+static int
+matches(const struct autoexec *ae, const char *fname, const char *bname)
+{
+	return (fnmatch(ae->pattern, fname, 0) == 0 ||
+	    (bname != fname && fnmatch(ae->pattern, bname, 0) == 0));
+}
 
 
 #define AUTO_GROW 8
@@ -31,7 +40,7 @@ PF *
 find_autoexec(const char *fname)
 {
 	PF		*pfl, *npfl;
-	int		 have, used;
+	int		 have, used, exact;
 	const char	*bname;
 	struct autoexec *ae;
 
@@ -44,12 +53,23 @@ find_autoexec(const char *fname)
 	else
 		bname = fname;
 
+	/*
+	 * A built-in pattern that names the file, like CMakeLists.txt,
+	 * outranks the built-in ones it only matches by wildcard, like
+	 * *.txt; the user's patterns always apply.
+	 */
+	exact = 0;
+	SLIST_FOREACH(ae, &autos, next)
+		if (ae->builtin && ae->literal && matches(ae, fname, bname))
+			exact = 1;
+
 	pfl = NULL;
 	have = 0;
 	used = 0;
 	SLIST_FOREACH(ae, &autos, next) {
-		if (fnmatch(ae->pattern, fname, 0) == 0 ||
-		    (bname != fname && fnmatch(ae->pattern, bname, 0) == 0)) {
+		if (exact && ae->builtin && !ae->literal)
+			continue;
+		if (matches(ae, fname, bname)) {
 			if (used >= have) {
 				npfl = reallocarray(pfl, have + AUTO_GROW + 1,
 				    sizeof(PF));
@@ -67,8 +87,8 @@ find_autoexec(const char *fname)
 	return (pfl);
 }
 
-int
-add_autoexec(const char *pattern, const char *func)
+static int
+addauto(const char *pattern, const char *func, int user)
 {
 	PF		 fp;
 	struct autoexec *ae;
@@ -80,14 +100,19 @@ add_autoexec(const char *pattern, const char *func)
 	fp = name_function(func);
 	if (fp == NULL)
 		return (FALSE);
-	/* an entry from ~/.mg may repeat a built-in one */
+	/* ~/.mg may repeat a built-in entry, which is then the user's */
 	SLIST_FOREACH(ae, &autos, next)
-		if (ae->fp == fp && strcmp(ae->pattern, pattern) == 0)
+		if (ae->fp == fp && strcmp(ae->pattern, pattern) == 0) {
+			if (user)
+				ae->builtin = 0;
 			return (TRUE);
+		}
 	ae = malloc(sizeof(*ae));
 	if (ae == NULL)
 		return (FALSE);
 	ae->fp = fp;
+	ae->builtin = !user;
+	ae->literal = strpbrk(pattern, "*?[") == NULL;
 	ae->pattern = strdup(pattern);
 	if (ae->pattern == NULL) {
 		free(ae);
@@ -96,6 +121,15 @@ add_autoexec(const char *pattern, const char *func)
 	SLIST_INSERT_HEAD(&autos, ae, next);
 
 	return (TRUE);
+}
+
+/*
+ * A mode's own pattern, registered at start up.
+ */
+int
+add_autoexec(const char *pattern, const char *func)
+{
+	return (addauto(pattern, func, 0));
 }
 
 /*
@@ -120,7 +154,7 @@ auto_execute(int f, int n)
 		return (ABORT);
 	else if (funcp[0] == '\0')
 		return (FALSE);
-	if ((s = add_autoexec(patp, funcp)) != TRUE)
+	if ((s = addauto(patp, funcp, 1)) != TRUE)
 		return (s);
 	return (TRUE);
 }

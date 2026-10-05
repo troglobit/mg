@@ -530,6 +530,11 @@ The pattern is tried against both the full path and the last path
 component, so
 .Ql .bashrc
 matches that file in any directory.
+Every matching hook runs, with one exception among the built-in ones:
+a mode's pattern that names the file, like
+.Ql CMakeLists.txt ,
+outranks the built-in patterns it only matches by wildcard, like
+.Ql *.txt .
 .It Ic auto-fill-mode
 Toggle auto-fill mode (sometimes called
 .Ic mail-mode )
