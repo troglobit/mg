@@ -178,17 +178,39 @@ main(int argc, char **argv)
 #ifdef ENABLE_CMODE
 		cmode_init();
 #endif
+#ifdef MODE_CONF
 		confmode_init();
+#endif
+#ifdef MODE_DIFF
 		diffmode_init();
+#endif
+#ifdef MODE_GIT
 		gitmode_init();
+#endif
+#ifdef MODE_TEXT
 		textmode_init();
+#endif
+#ifdef MODE_YAML
 		yamlmode_init();
+#endif
+#ifdef MODE_SH
 		shmode_init();
+#endif
+#ifdef MODE_MARKDOWN
 		mdmode_init();
+#endif
+#ifdef MODE_M4
 		m4mode_init();
+#endif
+#ifdef MODE_CMAKE
 		cmakemode_init();
+#endif
+#ifdef MODE_MAKE
 		mkmode_init();
+#endif
+#ifdef MODE_PYTHON
 		pymode_init();
+#endif
 	}
 
 	if (init_fcn_name &&

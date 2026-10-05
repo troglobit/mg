@@ -393,8 +393,9 @@ tutorial(int f, int n)
 	 * back over it.
 	 */
 	bp->b_modes[0] = name_mode("fundamental");
-	bp->b_modes[1] = name_mode("markdown");
-	bp->b_nmodes = 1;
+	bp->b_nmodes = 0;
+	if ((bp->b_modes[1] = name_mode("markdown")) != NULL)
+		bp->b_nmodes = 1;
 	bp->b_flag &= ~BFREADONLY;
 	bp->b_fname[0] = '\0';
 	curwp->w_rflag |= WFFULL;

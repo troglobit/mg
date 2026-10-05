@@ -5,15 +5,12 @@ doc_DATA         = README
 endif
 
 bin_PROGRAMS     = mg
-mg_SOURCES       = basic.c bell.c buffer.c cinfo.c comment.c dir.c	\
+mg_SOURCES       = basic.c bell.c buffer.c cinfo.c dir.c		\
 		   display.c echo.c						\
 		   extend.c file.c fileio.c funmap.c help.c interpreter.c	\
-		   cmakemode.c confmode.c diffmode.c gitmode.c m4mode.c	\
-		   kbd.c keymap.c line.c macro.c main.c match.c mdmode.c	\
-		   mkmode.c pymode.c						\
+		   kbd.c keymap.c line.c macro.c main.c match.c		\
 		   modes.c							\
-		   paragraph.c region.c search.c shmode.c spawn.c syntax.c	\
-		   textmode.c yamlmode.c						\
+		   paragraph.c region.c search.c spawn.c			\
 		   tty.c ttyio.c ttykbd.c					\
 		   ttydef.h undo.c utf8.c util.c version.c window.c word.c	\
 		   yank.c							\
@@ -60,6 +57,46 @@ mg_SOURCES     += re_search.c
 endif
 if MGLOG
 mg_SOURCES     += log.c log.h
+endif
+if SYNTAX
+mg_SOURCES     += syntax.c comment.c
+endif
+
+#
+# The file modes, see --with-modes
+#
+if MODE_CMAKE
+mg_SOURCES     += cmakemode.c
+endif
+if MODE_CONF
+mg_SOURCES     += confmode.c
+endif
+if MODE_DIFF
+mg_SOURCES     += diffmode.c
+endif
+if MODE_GIT
+mg_SOURCES     += gitmode.c
+endif
+if MODE_M4
+mg_SOURCES     += m4mode.c
+endif
+if MODE_MAKE
+mg_SOURCES     += mkmode.c
+endif
+if MODE_MARKDOWN
+mg_SOURCES     += mdmode.c
+endif
+if MODE_PYTHON
+mg_SOURCES     += pymode.c
+endif
+if MODE_SH
+mg_SOURCES     += shmode.c
+endif
+if MODE_TEXT
+mg_SOURCES     += textmode.c
+endif
+if MODE_YAML
+mg_SOURCES     += yamlmode.c
 endif
 
 #

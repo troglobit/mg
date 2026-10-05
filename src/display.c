@@ -408,6 +408,7 @@ visualmark(int f, int n)
 	return (TRUE);
 }
 
+#ifdef ENABLE_SYNTAX
 int
 fontlock(int f, int n)
 {
@@ -421,6 +422,7 @@ fontlock(int f, int n)
 
 	return (TRUE);
 }
+#endif
 
 /*
  * Prepare syntax highlighting for the window being rendered.

@@ -660,6 +660,7 @@ char		*getkeyname(char  *, size_t, int);
 #define SYN_QUOTE	8
 
 struct syntax;
+#ifdef ENABLE_SYNTAX
 const struct syntax *syntax_lookup(struct buffer *);
 int		 syn_multiline(struct buffer *);
 int		 syn_comment(struct buffer *, const char **, const char **);
@@ -668,6 +669,13 @@ int		 syn_parse(const struct syntax *, const struct line *,
 		     int, char *);
 int		 syn_state(const struct syntax *, struct buffer *,
 		     struct line *);
+#else
+/* without the engine, no buffer has syntax rules */
+#define syntax_lookup(bp)		NULL
+#define syn_multiline(bp)		0
+#define syn_state(sy, bp, lp)		0
+#define syn_parse(sy, lp, st, attr)	0
+#endif
 
 /* utf8.c */
 void		 utf8_init(void);

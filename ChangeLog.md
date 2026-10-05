@@ -43,6 +43,9 @@ All relevant changes to the project are documented in this file.
   substitutions in `Makefile.am` and `Makefile.in`
 - New `m4-mode` for `configure.ac`, `configure.in` and `*.m4`
 - New `cmake-mode` for `CMakeLists.txt` and `*.cmake`
+- The file modes can be picked at build time with `--with-modes=LIST`,
+  and syntax highlighting left out with `--disable-syntax`; both are
+  part of `--disable-all`.  See the README for the mode names
 - New `previous-buffer` and `next-buffer` on `C-x` and the left and right
   arrow keys, as in GNU Emacs.  The buffer list now runs from the buffer
   used last, which is also the order of `list-buffers`

@@ -68,9 +68,11 @@ static struct funmap functnames[] = {
 	{changedir, "cd", 0, NULL},
 	{clearmark, "clear-mark", 0, NULL},
 	{colnotoggle, "column-number-mode", 0, NULL},
+#ifdef ENABLE_SYNTAX
 	{commentdwim, "comment-dwim", 0, NULL},
 	{commentline, "comment-line", 0, NULL},
 	{commentregion, "comment-region", 0, NULL},
+#endif
 	{copyregion, "copy-region-as-kill", 0, NULL},
 #ifdef	REGEX
 	{cntmatchlines, "count-matches", 1, NULL},
@@ -138,7 +140,9 @@ static struct funmap functnames[] = {
 #ifdef ENABLE_CTAGS
 	{findtag, "find-tag", 1, NULL},
 #endif
+#ifdef ENABLE_SYNTAX
 	{fontlock, "font-lock-mode", 0, NULL},
+#endif
 	{forwchar, "forward-char", 1, NULL},
 	{gotoeop, "forward-paragraph", 1, NULL},
 	{forwword, "forward-word", 1, NULL},
@@ -239,7 +243,9 @@ static struct funmap functnames[] = {
 	{setcasefold, "set-case-fold-search", 0, NULL},
 #endif /* REGEX */
 	{setcasereplace, "set-case-replace", 0, NULL},
+#ifdef ENABLE_SYNTAX
 	{setcommentcol, "set-comment-column", 1, NULL},
+#endif
 	{set_default_mode, "set-default-mode", 1, NULL},
 	{setfillcol, "set-fill-column", 1, NULL},
 	{setmark, "set-mark-command", 0, NULL},
@@ -267,7 +273,9 @@ static struct funmap functnames[] = {
 	{transposepara, "transpose-paragraphs", 0, NULL},
 	{transposeword, "transpose-words", 0, NULL},
 	{tutorial, "tutorial", 0, NULL},
+#ifdef ENABLE_SYNTAX
 	{uncommentregion, "uncomment-region", 0, NULL},
+#endif
 	{undo, "undo", 0, NULL},
 	{undo_add_boundary, "undo-boundary", 0, NULL},
 	{undo_boundary_enable, "undo-boundary-toggle", 0, NULL},

@@ -127,14 +127,44 @@ with the official Mg.  By default, all below features are enabled:
     --disable-cscope     Disable Cscope support
     --disable-ctags      Disable ctags(1) support, required by Cscope
     --disable-dired      Disable directory editor
-    --disable-notab      Disable notab mode support (not in OpenBSD)
     --disable-regexp     Disable full regexp search
+    --disable-syntax     Disable syntax highlighting and comment-dwim
     --disable-togglenl   Disable toggle-newline-prompt extension (not in OpenBSD)
     --disable-all        Disable all optional features
     [..]
+    --with-modes=LIST    File modes to build, default: all
+    --without-modes      Build no file modes
     --with-startup=FILE  Init file to run at startup if ~/.mg is missing
     --with-mglog         Enable debugging to log file, default: ./log/*.log
     --without-curses     Build without curses/termcap, default: auto
+
+The file modes are picked with `--with-modes`, a list separated by
+commas or spaces.  Each name builds one mode, which is turned on for the
+files listed, and can be turned on by hand with its `M-x` command:
+
+| Name       | Mode                | Files                                        |
+|------------|---------------------|----------------------------------------------|
+| `cmake`    | `cmake-mode`        | `CMakeLists.txt`, `*.cmake`                  |
+| `conf`     | `conf-mode`         | `*.conf`, `*.ini`, `*.toml`, systemd units, `fstab`, `ssh_config`, `.gitconfig`, ... |
+| `diff`     | `diff-mode`         | `*.diff`, `*.patch`, `*.rej`                 |
+| `git`      | `git-commit-mode`   | `COMMIT_EDITMSG`, `MERGE_MSG`, `TAG_EDITMSG`, `git-rebase-todo`, ... |
+| `m4`       | `m4-mode`           | `configure.ac`, `configure.in`, `*.m4`       |
+| `make`     | `makefile-mode`     | `Makefile`, `Makefile.am`, `Makefile.in`, `*.mk`, ... |
+| `markdown` | `markdown-mode`     | `*.md`, `*.markdown`                         |
+| `python`   | `python-mode`       | `*.py`, scripts run by python                |
+| `sh`       | `shell-script-mode` | `*.sh`, `.bashrc`, `.profile`, scripts run by sh, bash, ... |
+| `text`     | `text-mode`         | `*.txt`, `README`, `NEWS`, `TODO`, ...       |
+| `yaml`     | `yaml-mode`         | `*.yml`, `*.yaml`, `.clang-format`, `.yamllint` |
+
+C is not in the list, since C mode has its own switch, `--disable-cmode`.
+For example, a build with only the modes for a small system's shell
+scripts and configuration files:
+
+    ./configure --with-modes=sh,conf
+
+Without `--disable-syntax` the modes color what they recognize; without
+syntax highlighting they still set up indentation, tabs and fill for
+their files.
 
 To build the smallest possible mg, with many features removed:
 

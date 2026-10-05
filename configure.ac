@@ -1,4 +1,5 @@
 # Written by Joachim Wiberg <troglobit@gmail.com> and put in the public domain.
+m4_define([MG_MODES], [cmake conf diff git m4 make markdown python sh text yaml])
 AC_INIT([Mg], [4.1], [https://github.com/troglobit/mg/issues], [mg])
 AC_CONFIG_AUX_DIR(build-aux)
 AM_INIT_AUTOMAKE([1.11 foreign])
@@ -51,8 +52,13 @@ AC_ARG_ENABLE(cscope,   AS_HELP_STRING([--disable-cscope],   [Disable Cscope sup
 AC_ARG_ENABLE(ctags,    AS_HELP_STRING([--disable-ctags],    [Disable ctags(1) support, required by Cscope]))
 AC_ARG_ENABLE(dired,    AS_HELP_STRING([--disable-dired],    [Disable directory editor]))
 AC_ARG_ENABLE(regexp,   AS_HELP_STRING([--disable-regexp],   [Disable full regexp search]))
+AC_ARG_ENABLE(syntax,   AS_HELP_STRING([--disable-syntax],   [Disable syntax highlighting and comment-dwim]))
 AC_ARG_ENABLE(togglenl, AS_HELP_STRING([--disable-togglenl], [Disable toggle-newline-prompt extension]))
 AC_ARG_ENABLE(all,      AS_HELP_STRING([--disable-all],      [Disable all optional features]))
+
+AC_ARG_WITH(modes,
+	AS_HELP_STRING([--with-modes=LIST], [File modes to build, from: ]MG_MODES[, default: all]),
+	[modes=$withval], [modes=all])
 
 AC_ARG_WITH(startup,
         AS_HELP_STRING([--with-startup=FILE], [If ~/.mg is missing, default: $sysconfdir/mg]),
@@ -114,6 +120,8 @@ AS_IF([test "x$enable_all" = "xno"],
 	enable_dired="no"
 	enable_regexp="no"
 	enable_togglenl="no"
+	enable_syntax="no"
+	modes="no"
 	startup="no")
 
 # Enable features
@@ -154,6 +162,25 @@ AS_IF([test "x$enable_regexp" != "xno"], enable_regexp="yes"
 AS_IF([test "x$enable_togglenl" != "xno"], enable_togglenl="yes"
 	AC_DEFINE(TOGGLENL, 1, [Enable toggle-newline-prompt support]))
 
+AS_IF([test "x$enable_syntax" != "xno"], enable_syntax="yes"
+	AC_DEFINE(ENABLE_SYNTAX, 1, [Enable syntax highlighting]))
+
+# The file modes, all by default, given as a list with spaces or commas
+AS_CASE(["$modes"],
+	[yes|all], [modes="MG_MODES"],
+	[no|none], [modes=""])
+modes=`echo "$modes" | tr ',' ' '`
+for mg_m in $modes; do
+	AS_CASE([" MG_MODES "], [*" $mg_m "*], [],
+		[AC_MSG_ERROR([Unknown mode in --with-modes: $mg_m])])
+done
+m4_foreach_w([mg_mode], MG_MODES, [
+	AS_CASE([" $modes "], [*" mg_mode "*], [mg_on=yes], [mg_on=no])
+	AS_IF([test "x$mg_on" = "xyes"],
+		[AC_DEFINE(m4_toupper([MODE_]mg_mode), 1, [Build the ]mg_mode[ file mode])])
+	AM_CONDITIONAL(m4_toupper([MODE_]mg_mode), [test "x$mg_on" = "xyes"])
+])
+
 AS_IF([test "x$startup" != "xno"],[
 	AS_IF([test "x$startup" = "xyes"],[
 		AC_MSG_ERROR([Must supply argument])])]
@@ -164,6 +191,7 @@ AS_IF([test "x$with_mglog" != "xno"],
 
 # Control build with automake flags
 AM_CONDITIONAL(REGEX,    [test "x$enable_regexp"   = "xyes"])
+AM_CONDITIONAL(SYNTAX,   [test "x$enable_syntax"   = "xyes"])
 AM_CONDITIONAL(AUTOEXEC, [test "x$enable_autoexec" = "xyes"])
 AM_CONDITIONAL(CMODE,    [test "x$enable_cmode"    = "xyes"])
 AM_CONDITIONAL(COMPILE,  [test "x$enable_compile"  = "xyes"])
@@ -213,6 +241,8 @@ cat <<EOF
   ctags..........: $enable_ctags
   dired..........: $enable_dired
   regexp.........: $enable_regexp
+  syntax.........: $enable_syntax
+  file modes.....: ${modes:-no}
   toggle newline.: $enable_togglenl
 
 ------------- Compiler version --------------

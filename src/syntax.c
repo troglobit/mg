@@ -23,6 +23,7 @@
  * the word, for dotted keywords like make's special targets.  A
  * trailing '*' makes it a prefix, matching every word it begins.
  */
+#ifdef ENABLE_CMODE
 static const char *c_keywords[] = {
 	"auto", "break", "case", "continue", "default", "do", "else",
 	"enum", "extern", "for", "goto", "if", "inline", "register",
@@ -35,7 +36,9 @@ static const char *c_keywords[] = {
 	"uint8_t|", "uint16_t|", "uint32_t|", "uint64_t|",
 	NULL
 };
+#endif
 
+#ifdef MODE_SH
 static const char *sh_keywords[] = {
 	"break", "case", "continue", "do", "done", "elif", "else",
 	"esac", "exit", "fi", "for", "function", "if", "in", "return",
@@ -47,7 +50,9 @@ static const char *sh_keywords[] = {
 	"unalias|", "unset|", "wait|",
 	NULL
 };
+#endif
 
+#ifdef MODE_MAKE
 static const char *mk_keywords[] = {
 	"define", "else", "endef", "endif", "export", "if", "ifdef", "ifeq",
 	"ifndef", "ifneq", "include", "override", "sinclude", "undefine",
@@ -57,7 +62,9 @@ static const char *mk_keywords[] = {
 	".POSIX|", ".PRECIOUS|", ".SECONDARY|", ".SUFFIXES|",
 	NULL
 };
+#endif
 
+#ifdef MODE_PYTHON
 static const char *py_keywords[] = {
 	"and", "as", "assert", "async", "await", "break", "class",
 	"continue", "def", "del", "elif", "else", "except", "finally",
@@ -71,7 +78,9 @@ static const char *py_keywords[] = {
 	"sum|", "super|", "tuple|", "type|", "zip|",
 	NULL
 };
+#endif
 
+#ifdef MODE_M4
 static const char *m4_keywords[] = {
 	/* m4 itself */
 	"changecom", "changequote", "decr", "define", "defn", "divert",
@@ -86,7 +95,9 @@ static const char *m4_keywords[] = {
 	"if|", "in|", "then|", "until|", "while|",
 	NULL
 };
+#endif
 
+#ifdef MODE_CMAKE
 static const char *cmake_keywords[] = {
 	"add_compile_definitions", "add_compile_options",
 	"add_custom_command", "add_custom_target", "add_definitions",
@@ -115,7 +126,9 @@ static const char *cmake_keywords[] = {
 	"TRUE|", "VERSION|", "WARNING|", "WORKING_DIRECTORY|",
 	NULL
 };
+#endif
 
+#ifdef MODE_CONF
 static const char *conf_keywords[] = {
 	"false|", "no|", "none|", "off|", "on|", "true|", "yes|",
 	"m|", "n|", "y|",
@@ -123,10 +136,19 @@ static const char *conf_keywords[] = {
 };
 
 static int	 conf_lead(const struct line *, char *);
+#endif
+#ifdef MODE_GIT
 static int	 commit_parse(const struct line *, int, char *);
+#endif
+#if defined(MODE_DIFF) || defined(MODE_GIT)
 static int	 diff_parse(const struct line *, int, char *);
+#endif
+#ifdef MODE_MARKDOWN
 static int	 md_parse(const struct line *, int, char *);
+#endif
+#ifdef MODE_YAML
 static int	 yaml_parse(const struct line *, int, char *);
+#endif
 
 struct syntax {
 	const char	 *sy_mode;	/* buffer mode this applies to	*/
@@ -154,31 +176,53 @@ struct syntax {
 };
 
 static const struct syntax syntab[] = {
+#ifdef ENABLE_CMODE
 	{ .sy_mode = "c", .sy_keywords = c_keywords, .sy_slcomm = { "//" },
 	    .sy_mcs = "/*", .sy_mce = "*/", .sy_preproc = 1,
 	    .sy_cstart = "/*", .sy_cend = "*/" },
+#endif
+#ifdef MODE_SH
 	{ .sy_mode = "shell-script", .sy_keywords = sh_keywords,
 	    .sy_slcomm = { "#" }, .sy_slsep = 1, .sy_dollar = "{#?@*$!-",
 	    .sy_cstart = "#" },
+#endif
+#ifdef MODE_MAKE
 	{ .sy_mode = "makefile", .sy_keywords = mk_keywords,
 	    .sy_slcomm = { "#" }, .sy_dollar = "({@<^?*+$%|", .sy_atsubst = 1,
 	    .sy_cstart = "#" },
+#endif
+#ifdef MODE_M4
 	{ .sy_mode = "m4", .sy_keywords = m4_keywords,
 	    .sy_slcomm = { "#", "dnl" }, .sy_slsep = 1, .sy_dollar = "{#?@*$!-",
 	    .sy_atsubst = 1, .sy_cstart = "dnl" },
+#endif
+#ifdef MODE_CMAKE
 	{ .sy_mode = "cmake", .sy_keywords = cmake_keywords,
 	    .sy_slcomm = { "#" }, .sy_mcs = "#[[", .sy_mce = "]]",
 	    .sy_dollar = "{", .sy_cstart = "#" },
+#endif
+#ifdef MODE_PYTHON
 	{ .sy_mode = "python", .sy_keywords = py_keywords, .sy_slcomm = { "#" },
 	    .sy_atword = 1, .sy_mstr = { "\"\"\"", "'''" }, .sy_cstart = "#" },
+#endif
+#ifdef MODE_CONF
 	{ .sy_mode = "conf", .sy_keywords = conf_keywords, .sy_wordchr = "-",
 	    .sy_slcomm = { "#" }, .sy_slsep = 1, .sy_dollar = "{",
 	    .sy_lead = conf_lead, .sy_cstart = "#" },
+#endif
+#ifdef MODE_DIFF
 	{ .sy_mode = "diff", .sy_parse = diff_parse },
+#endif
+#ifdef MODE_GIT
 	{ .sy_mode = "git-commit", .sy_parse = commit_parse, .sy_cstart = "#" },
+#endif
+#ifdef MODE_MARKDOWN
 	{ .sy_mode = "markdown", .sy_parse = md_parse,
 	    .sy_cstart = "<!--", .sy_cend = "-->" },
+#endif
+#ifdef MODE_YAML
 	{ .sy_mode = "yaml", .sy_parse = yaml_parse, .sy_cstart = "#" },
+#endif
 	{ NULL }
 };
 
@@ -508,6 +552,7 @@ syn_parse(const struct syntax *sy, const struct line *lp, int incom,
 	return (incom);
 }
 
+#ifdef MODE_CONF
 /*
  * The leading part of a configuration file line, used through
  * sy_lead: a [section] header, or the key of a key = value pair.
@@ -542,7 +587,9 @@ conf_lead(const struct line *lp, char *attr)
 	setattrs(attr, i, j - i, SYN_KEYWORD);
 	return (j);
 }
+#endif
 
+#if defined(MODE_DIFF) || defined(MODE_GIT)
 /*
  * Lines that head a file in a diff.
  */
@@ -609,7 +656,9 @@ diff_parse(const struct line *lp, int inhunk, char *attr)
 		}
 	return (0);
 }
+#endif
 
+#ifdef MODE_GIT
 /*
  * The trailers git and the kernel process, colored so that the ones
  * C-c C-s and its siblings add stand out from the message.
@@ -651,7 +700,9 @@ commit_parse(const struct line *lp, int state, char *attr)
 		}
 	return (0);
 }
+#endif
 
+#if defined(MODE_MARKDOWN) || defined(MODE_YAML)
 /*
  * The index of the next occurrence of c at or after i, or the
  * line length when not found.
@@ -663,7 +714,9 @@ scanto(const struct line *lp, int i, int c)
 		i++;
 	return (i);
 }
+#endif
 
+#ifdef MODE_MARKDOWN
 /*
  * A line of one repeated punctuation character, at least two of
  * = - * or _ with nothing else but spaces: a setext heading
@@ -903,7 +956,9 @@ md_parse(const struct line *lp, int state, char *attr)
 	state = md_line(lp, state & 0xff, attr, &list);
 	return (state | (list << 8));
 }
+#endif
 
+#ifdef MODE_YAML
 static const char *yaml_words[] = {
 	"true", "false", "null", "yes", "no", "on", "off",
 	"True", "False", "Null", "Yes", "No", "On", "Off",
@@ -1103,6 +1158,7 @@ yaml_parse(const struct line *lp, int blkind, char *attr)
 	}
 	return (yaml_value(lp, i, indent, attr));
 }
+#endif
 
 /*
  * The multiline comment state at the start of line stop, found by

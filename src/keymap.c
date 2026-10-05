@@ -194,7 +194,11 @@ static PF cX0[] = {
 };
 
 static PF cXsemi[] = {
+#ifdef ENABLE_SYNTAX
 	setcommentcol		/* ; */
+#else
+	rescan			/* ; */
+#endif
 };
 
 static PF cXeq[] = {
@@ -316,7 +320,11 @@ static PF metami[] = {
 	digit_argument,		/* 8 */
 	digit_argument,		/* 9 */
 	rescan,			/* : */
+#ifdef ENABLE_SYNTAX
 	commentdwim,		/* ; */
+#else
+	rescan,			/* ; */
+#endif
 	gotobob,		/* < */
 	rescan,			/* = */
 	gotoeob			/* > */
