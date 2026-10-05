@@ -159,6 +159,8 @@ static PF cXcB[] = {
 static PF cXcJ[] = {
 #ifdef ENABLE_DIRED
 	dired_jump,		/* ^J */
+#else
+	rescan,			/* ^J */
 #endif
 	rescan,			/* ^K */
 	lowerregion,		/* ^L */
