@@ -48,7 +48,7 @@ static const char *sh_keywords[] = {
 };
 
 static const char *mk_keywords[] = {
-	"define", "else", "endef", "endif", "export", "ifdef", "ifeq",
+	"define", "else", "endef", "endif", "export", "if", "ifdef", "ifeq",
 	"ifndef", "ifneq", "include", "override", "sinclude", "undefine",
 	"unexport", "vpath",
 	".DEFAULT|", ".DELETE_ON_ERROR|", ".EXPORT_ALL_VARIABLES|",
@@ -98,6 +98,7 @@ struct syntax {
 					 * may start with; { and ( also
 					 * open a bracketed span	*/
 	int		  sy_atword;	/* @decorator words		*/
+	int		  sy_atsubst;	/* @VAR@ configure substitutions */
 	const char	 *sy_mstr[2];	/* multiline string delimiters	*/
 	/* the start of a line; may not open cross-line state */
 	int		(*sy_lead)(const struct line *, char *);
@@ -113,7 +114,8 @@ static const struct syntax syntab[] = {
 	    .sy_slcomm = "#", .sy_slsep = 1, .sy_dollar = "{#?@*$!-",
 	    .sy_cstart = "#" },
 	{ .sy_mode = "makefile", .sy_keywords = mk_keywords,
-	    .sy_slcomm = "#", .sy_dollar = "({@<^?*+$%|", .sy_cstart = "#" },
+	    .sy_slcomm = "#", .sy_dollar = "({@<^?*+$%|", .sy_atsubst = 1,
+	    .sy_cstart = "#" },
 	{ .sy_mode = "python", .sy_keywords = py_keywords, .sy_slcomm = "#",
 	    .sy_atword = 1, .sy_mstr = { "\"\"\"", "'''" }, .sy_cstart = "#" },
 	{ .sy_mode = "conf", .sy_keywords = conf_keywords, .sy_wordchr = "-",
@@ -372,6 +374,17 @@ syn_parse(const struct syntax *sy, const struct line *lp, int incom,
 			}
 			prev_sep = 0;
 			continue;
+		}
+		if (sy->sy_atsubst && c == '@') {
+			for (j = i + 1; j < len && (isalnum(lgetc(lp, j)) ||
+			    lgetc(lp, j) == '_'); j++)
+				;
+			if (j > i + 1 && j < len && lgetc(lp, j) == '@') {
+				setattrs(attr, i, j + 1 - i, SYN_TYPE);
+				i = j + 1;
+				prev_sep = 0;
+				continue;
+			}
 		}
 		if (sy->sy_atword && c == '@' && prev_sep) {
 			setattr(attr, i, SYN_PREPROC);
