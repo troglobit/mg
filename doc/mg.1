@@ -615,6 +615,9 @@ upper case, and subsequent letters to lower case.
 Change the global working directory.
 See also
 .Ic global-wd-mode .
+.It Ic column-number-mode
+Toggle whether the column number is displayed in the modeline.
+Enabled by default.
 .It Ic comment-dwim
 Do what a comment key should here, as in GNU Emacs.
 With the mark set, comment the region out, or back in when every
@@ -634,9 +637,6 @@ With the mark set, the region, as
 does.
 .It Ic comment-region
 Comment out every line of code in the region, at its indentation.
-.It Ic column-number-mode
-Toggle whether the column number is displayed in the modeline.
-Enabled by default.
 .It Ic conf-mode
 Toggle configuration file mode, which selects the conf rules for
 syntax highlighting: comments started by # or ;, [section] headers,
@@ -1018,6 +1018,16 @@ from that file.
 Bind a key mapping in the local (topmost) mode.
 .It Ic local-unset-key
 Unbind a key mapping in the local (topmost) mode.
+.It Ic m4-mode
+Toggle m4 mode, for configure.ac and other autoconf and m4 sources,
+which selects the m4 rules for syntax highlighting: dnl and #
+comments, the m4 builtins, every AC_, AM_, AS_, AX_, LT_, PKG_ and
+m4_ macro, the shell keywords of the code between them, strings, and
+$variable and @VAR@ references.
+.Ic comment-dwim
+uses dnl.
+Files named configure.ac, configure.in and *.m4 get the mode
+automatically.
 .It Ic make-backup-files
 Toggle generation of backup files.
 Enabled by default.

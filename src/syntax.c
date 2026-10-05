@@ -20,7 +20,8 @@
 /*
  * Keywords are NULL-terminated lists; a trailing '|' marks the
  * second class, shown in the type color.  A leading '.' is part of
- * the word, for dotted keywords like make's special targets.
+ * the word, for dotted keywords like make's special targets.  A
+ * trailing '*' makes it a prefix, matching every word it begins.
  */
 static const char *c_keywords[] = {
 	"auto", "break", "case", "continue", "default", "do", "else",
@@ -71,6 +72,21 @@ static const char *py_keywords[] = {
 	NULL
 };
 
+static const char *m4_keywords[] = {
+	/* m4 itself */
+	"changecom", "changequote", "decr", "define", "defn", "divert",
+	"divnum", "errprint", "eval", "ifdef", "ifelse", "include", "incr",
+	"index", "len", "popdef", "pushdef", "shift", "sinclude", "substr",
+	"translit", "undefine", "undivert", "m4_*",
+	/* autoconf, automake, libtool, pkg-config and the archive */
+	"AC_*", "AH_*", "AM_*", "AS_*", "AT_*", "AU_*", "AX_*", "LT_*",
+	"PKG_*",
+	/* the shell code between the macros */
+	"case|", "do|", "done|", "elif|", "else|", "esac|", "fi|", "for|",
+	"if|", "in|", "then|", "until|", "while|",
+	NULL
+};
+
 static const char *conf_keywords[] = {
 	"false|", "no|", "none|", "off|", "on|", "true|", "yes|",
 	"m|", "n|", "y|",
@@ -87,7 +103,9 @@ struct syntax {
 	const char	 *sy_mode;	/* buffer mode this applies to	*/
 	const char	**sy_keywords;
 	const char	 *sy_wordchr;	/* extra characters inside a word */
-	const char	 *sy_slcomm;	/* single line comment starter	*/
+	const char	 *sy_slcomm[2];	/* single line comment starters;
+					 * one ending in a word character
+					 * must end the word, like dnl	*/
 	int		  sy_slsep;	/* which needs a separator first */
 	const char	 *sy_mcs;	/* multiline comment start	*/
 	const char	 *sy_mce;	/* multiline comment end	*/
@@ -107,19 +125,22 @@ struct syntax {
 };
 
 static const struct syntax syntab[] = {
-	{ .sy_mode = "c", .sy_keywords = c_keywords, .sy_slcomm = "//",
+	{ .sy_mode = "c", .sy_keywords = c_keywords, .sy_slcomm = { "//" },
 	    .sy_mcs = "/*", .sy_mce = "*/", .sy_preproc = 1,
 	    .sy_cstart = "/*", .sy_cend = "*/" },
 	{ .sy_mode = "shell-script", .sy_keywords = sh_keywords,
-	    .sy_slcomm = "#", .sy_slsep = 1, .sy_dollar = "{#?@*$!-",
+	    .sy_slcomm = { "#" }, .sy_slsep = 1, .sy_dollar = "{#?@*$!-",
 	    .sy_cstart = "#" },
 	{ .sy_mode = "makefile", .sy_keywords = mk_keywords,
-	    .sy_slcomm = "#", .sy_dollar = "({@<^?*+$%|", .sy_atsubst = 1,
+	    .sy_slcomm = { "#" }, .sy_dollar = "({@<^?*+$%|", .sy_atsubst = 1,
 	    .sy_cstart = "#" },
-	{ .sy_mode = "python", .sy_keywords = py_keywords, .sy_slcomm = "#",
+	{ .sy_mode = "m4", .sy_keywords = m4_keywords,
+	    .sy_slcomm = { "#", "dnl" }, .sy_slsep = 1, .sy_dollar = "{#?@*$!-",
+	    .sy_atsubst = 1, .sy_cstart = "dnl" },
+	{ .sy_mode = "python", .sy_keywords = py_keywords, .sy_slcomm = { "#" },
 	    .sy_atword = 1, .sy_mstr = { "\"\"\"", "'''" }, .sy_cstart = "#" },
 	{ .sy_mode = "conf", .sy_keywords = conf_keywords, .sy_wordchr = "-",
-	    .sy_slcomm = "#", .sy_slsep = 1, .sy_dollar = "{",
+	    .sy_slcomm = { "#" }, .sy_slsep = 1, .sy_dollar = "{",
 	    .sy_lead = conf_lead, .sy_cstart = "#" },
 	{ .sy_mode = "diff", .sy_parse = diff_parse },
 	{ .sy_mode = "git-commit", .sy_parse = commit_parse, .sy_cstart = "#" },
@@ -304,11 +325,17 @@ syn_parse(const struct syntax *sy, const struct line *lp, int incom,
 			i++;
 			continue;
 		}
-		if (sy->sy_slcomm != NULL &&
-		    (!sy->sy_slsep || prev_sep) &&
-		    matchat(lp, i, sy->sy_slcomm) != 0) {
-			setattrs(attr, i, len - i, SYN_COMMENT);
-			break;
+		if (!sy->sy_slsep || prev_sep) {
+			for (j = 0; j < 2 && sy->sy_slcomm[j] != NULL; j++)
+				if ((n = matchat(lp, i, sy->sy_slcomm[j])) != 0 &&
+				    (i + n >= len ||
+				    !iswordc(sy, lgetc(lp, i + n)) ||
+				    !iswordc(sy, sy->sy_slcomm[j][n - 1])))
+					break;
+			if (j < 2 && sy->sy_slcomm[j] != NULL) {
+				setattrs(attr, i, len - i, SYN_COMMENT);
+				break;
+			}
 		}
 		if (sy->sy_mcs != NULL &&
 		    (n = matchat(lp, i, sy->sy_mcs)) != 0) {
@@ -429,10 +456,11 @@ syn_parse(const struct syntax *sy, const struct line *lp, int incom,
 			for (kw = sy->sy_keywords; *kw != NULL; kw++) {
 				j = strlen(*kw);
 				n = ((*kw)[j - 1] == '|');
-				if (j - n != end - i)
-					continue;
-				if (memcmp(ltext(lp) + i, *kw,
-				    end - i) != 0)
+				/* the length to compare, less a prefix's '*' */
+				j -= n + ((*kw)[j - n - 1] == '*');
+				if (((*kw)[j] == '*' ? end - i < j :
+				    end - i != j) ||
+				    memcmp(ltext(lp) + i, *kw, j) != 0)
 					continue;
 				setattrs(attr, i, end - i,
 				    n ? SYN_TYPE : SYN_KEYWORD);

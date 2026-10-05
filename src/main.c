@@ -164,6 +164,7 @@ main(int argc, char **argv)
 		extern void yamlmode_init(void);
 		extern void shmode_init(void);
 		extern void mdmode_init(void);
+		extern void m4mode_init(void);
 		extern void mkmode_init(void);
 		extern void pymode_init(void);
 
@@ -183,6 +184,7 @@ main(int argc, char **argv)
 		yamlmode_init();
 		shmode_init();
 		mdmode_init();
+		m4mode_init();
 		mkmode_init();
 		pymode_init();
 	}
