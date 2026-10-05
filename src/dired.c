@@ -60,7 +60,7 @@ static void	 redelete(struct buffer *);
 static char 	 *findfname(struct line *, char *);
 
 extern struct KEYMAPE (2) helpmap;
-extern struct KEYMAPE (6) cXmap;
+extern struct KEYMAPE (7) cXmap;
 extern struct KEYMAPE (8) metamap;
 
 const char DDELCHAR = 'D';
