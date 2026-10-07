@@ -3,33 +3,11 @@ Change Log
 
 All relevant changes to the project are documented in this file.
 
-[v4.2][UNRELEASED]
+[v4.2][] - 2026-10-07
 ---------------------
 
 ### Changes
 
-- New secure mode, `-S` or `MGSECURE=1`, for use as the editor of a
-  restricted shell.  Commands that run other programs are disabled, the
-  startup file is skipped, and `-b`/`-u` are refused
-- New single-file mode, `-s`, where only the files named on the command
-  line can be visited, inserted, or written.  Combine with `-S` for the
-  editor of a restricted shell
-- New `display-line-numbers-mode`, showing line numbers in a gutter at the
-  left of the text.  Off by default; set it per buffer, or with
-  `set-default-mode linum` in `~/.mg`, issue #31
-- The minibuffer reads keys through the same keymap as the editor, so
-  Home, End, Delete, Ctrl and Meta with the arrow keys, M-b, M-f, M-d and
-  M-DEL now move and delete by word and character there too, instead of
-  inserting the terminal's escape sequence
-- Minibuffer history: Up, Down, M-p and M-n walk what was entered before
-  at the same kind of prompt, one history each for command names, buffer
-  names and file names, and one per other prompt
-- New `whitespace-cleanup`, as in GNU Emacs: trailing whitespace, empty
-  lines at the start and end of the buffer, and indentation redone with
-  tabs, or spaces in `no-tab-mode`; the region only when the mark is set
-- Indenting a region with TAB in the C, shell and python modes leaves dot
-  and mark where they were, as in GNU Emacs, instead of dot on the last
-  line and the mark where dot was
 - New `comment-dwim` on `M-;`, with `comment-line`, `comment-region` and
   `uncomment-region`, as in GNU Emacs.  The delimiters come from the
   buffer's mode: `/* */` in C, `#` in shell, make, python, conf, yaml and
@@ -38,25 +16,62 @@ All relevant changes to the project are documented in this file.
 - New `sort-lines`, `reverse-region` and `delete-duplicate-lines`, over
   the whole lines of the region, as in GNU Emacs
 - New `transpose-lines` on `C-x C-t`, as in GNU Emacs
-- New `kill-current-buffer` and `rename-buffer`, as in GNU Emacs
-- makefile-mode colors the automake `if` conditional and the `@VAR@`
-  substitutions in `Makefile.am` and `Makefile.in`
-- New `m4-mode` for `configure.ac`, `configure.in` and `*.m4`
-- New `cmake-mode` for `CMakeLists.txt` and `*.cmake`
-- The file modes can be picked at build time with `--with-modes=LIST`,
-  and syntax highlighting left out with `--disable-syntax`; both are
-  part of `--disable-all`.  See the README for the mode names
+- New `whitespace-cleanup`, as in GNU Emacs: trailing whitespace, empty
+  lines at the start and end of the buffer, and indentation redone with
+  tabs, or spaces in `no-tab-mode`; the region only when the mark is set
 - New `previous-buffer` and `next-buffer` on `C-x` and the left and right
   arrow keys, as in GNU Emacs.  The buffer list now runs from the buffer
   used last, which is also the order of `list-buffers`
+- New `kill-current-buffer` and `rename-buffer`, as in GNU Emacs
 - The names GNU Emacs binds to the same keys today work in `M-x` too, e.g.
   `kill-ring-save`, `read-only-mode`, `split-window-below`,
   `xref-find-definitions` and the `kmacro-*` names
+- The minibuffer reads keys through the same keymap as the editor, so
+  Home, End, Delete, Ctrl and Meta with the arrow keys, M-b, M-f, M-d and
+  M-DEL now move and delete by word and character there too, instead of
+  inserting the terminal's escape sequence
+- Minibuffer history: Up, Down, M-p and M-n walk what was entered before
+  at the same kind of prompt, one history each for command names, buffer
+  names and file names, and one per other prompt
+- New `display-line-numbers-mode`, showing line numbers in a gutter at the
+  left of the text.  Off by default; set it per buffer, or with
+  `set-default-mode linum` in `~/.mg`, issue #31
+- New `m4-mode` for `configure.ac`, `configure.in` and `*.m4`
+- New `cmake-mode` for `CMakeLists.txt` and `*.cmake`
+- makefile-mode colors the automake `if` conditional and the `@VAR@`
+  substitutions in `Makefile.am` and `Makefile.in`
+- Markdown colors `<!-- -->` as a comment, and block quotes in a class of
+  their own, drawn in the same color as before
+- Indenting a region with TAB in the C, shell and python modes leaves dot
+  and mark where they were, as in GNU Emacs, instead of dot on the last
+  line and the mark where dot was
+- New secure mode, `-S` or `MGSECURE=1`, for use as the editor of a
+  restricted shell.  Commands that run other programs are disabled, the
+  startup file is skipped, and `-b`/`-u` are refused
+- New single-file mode, `-s`, where only the files named on the command
+  line can be visited, inserted, or written.  Combine with `-S` for the
+  editor of a restricted shell
+- The file modes can be picked at build time with `--with-modes=LIST`,
+  and syntax highlighting left out with `--disable-syntax`; both are
+  part of `--disable-all`.  See the README for the mode names
 
 ### Fixes
 
 - Fix shell command injection when opening a `.gz` file whose name
   contains shell metacharacters
+- Fix `query-replace`, `replace-string` and the regexp replace commands
+  eating the text before each match, and breaking UTF-8, when the pattern
+  has non-ASCII letters like å, ä or ö; isearch skipped matches of such
+  patterns
+- Fix `M-d` and `M-DEL` deleting only part of a word with non-ASCII
+  letters, and the undo of `upcase-word` and its siblings on such words
+- Tell words in UTF-8 text by their Unicode class: a curly quote or a dash
+  is no longer part of a word, so `M-.` offers `foo`, not `“foo”`, and the
+  minibuffer moves and deletes over whole characters
+- Fix switching a window to a buffer shown in another window taking the
+  cursor from a window that shows a different buffer
+- Fix `pop-tag-mark` opening a new, empty file instead of going back to a
+  buffer whose name is not its file name, like `foo.c<2>`
 - Draw the divider between side by side windows on every row of a wrapped
   line; it kept stale cells on the rows the line continued from
 - Markdown: a paragraph in a list item, indented to the item's content
@@ -564,7 +579,9 @@ set as Mg3a.
 	functions.  Some simply marked as "don't care"
   - Fix missing initialization of stack variables
 
-[UNRELEASED]: https://github.com/troglobit/mg/compare/v4.1...HEAD
+[UNRELEASED]: https://github.com/troglobit/mg/compare/v4.2...HEAD
+[v4.2]:       https://github.com/troglobit/mg/compare/v4.1...v4.2
+[v4.1]:       https://github.com/troglobit/mg/compare/v4.0...v4.1
 [v4.0]:       https://github.com/troglobit/mg/compare/v3.7...v4.0
 [v3.7]:       https://github.com/troglobit/mg/compare/v3.6...v3.7
 [v3.6]:       https://github.com/troglobit/mg/compare/v3.5...v3.6

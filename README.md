@@ -220,6 +220,8 @@ goes something like this:
 * Aug 13, 2023: Mg v3.7, sync with OpenBSD, improved usability
 * Jul 10, 2026: Mg v4.0, initial UTF-8 support by Joachim Wiberg
 * Sep  7, 2026: Mg v4.1, Unicode 17 support and lots of new modes
+* Oct  7, 2026: Mg v4.2, GNU Emacs commands, minibuffer editing and
+  history, secure mode, and optional modes for a small build
 
 See the source distribution for the list of [AUTHORS][].
 
@@ -240,13 +242,21 @@ New features include, but are not limited to:
 
 * UTF-8 support: multibyte characters can be typed, displayed, and edited
   in UTF-8 locales, with double-width CJK taking two columns
-* Syntax highlighting in buffers with a language mode, `c`, `conf`, `diff`,
-  `git-commit`, `makefile`, `markdown`, `python`, `shell-script`, and
-  `yaml`, toggled with `M-x font-lock-mode`.  The mode follows the file
-  name, or the `#!` line, and sets the buffer up for it: hard tabs for
-  makefiles, spaces for python and YAML
+* Syntax highlighting in buffers with a language mode, `c`, `cmake`,
+  `conf`, `diff`, `git-commit`, `m4`, `makefile`, `markdown`, `python`,
+  `shell-script`, and `yaml`, toggled with `M-x font-lock-mode`.  The mode
+  follows the file name, or the `#!` line, and sets the buffer up for it:
+  hard tabs for makefiles, spaces for python and YAML
+* `M-;` comments code out and back in, `comment-dwim` as in GNU Emacs,
+  with the comment syntax of the buffer's mode
 * Line wrap with `M-x line-wrap-mode`: a line too long for the window
   continues on the rows below instead of being truncated at the edge
+* Line numbers in a gutter with `M-x display-line-numbers-mode`
+* Buffer cycling with `C-x left` and `C-x right`, most recently used first
+* A minibuffer that edits like a buffer, the same keys for word and line
+  motion, with a history per kind of prompt on Up, Down, M-p and M-n
+* `sort-lines`, `transpose-lines`, `whitespace-cleanup`, `rename-buffer`,
+  and the names GNU Emacs uses today, like `kill-ring-save`, in `M-x`
 * `text-mode` for prose, which turns on `auto-fill-mode` for *.txt,
   README, and the files a source tree keeps without a suffix
 * `git-commit-mode` for COMMIT_EDITMSG and its siblings, with `C-c C-c`
@@ -261,7 +271,11 @@ New features include, but are not limited to:
 * Smart Tab indent in: `c`, `python`, and `shell-script` modes
 * Emacs-like modeline naming the major mode, with `(row,col)` and
   `display-time-mode`
+* A secure mode, `-S`, and a single-file mode, `-s`, for use as the
+  editor of a restricted shell
 * Support for building without curses, using termios + escape seq.
+* Pick the file modes to build with `--with-modes`, or leave out syntax
+  highlighting with `--disable-syntax`, for a small editor
 * Support for exhuberant/universal ctags `tags` file format
 * Built-in `*quick*` help using `C-h q`
 * Tutorial accessible using `C-h t`
