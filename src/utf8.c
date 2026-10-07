@@ -20,6 +20,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <wctype.h>
 
 #include "def.h"
 
@@ -42,6 +43,22 @@ utf8_init(void)
 	if (utf8_mode)
 		for (c = 0x80; c <= 0xff; c++)
 			cinfo[c] = _MG_W;
+}
+
+/*
+ * Whether the character starting at s, with avail bytes to read, is
+ * part of a word: by the Unicode class of a UTF-8 letter or digit,
+ * else by the cinfo table.
+ */
+int
+utf8_isword(const char *s, int avail)
+{
+	int	 cp, len;
+
+	if (utf8_mode && (unsigned char)*s >= 0x80 &&
+	    (cp = utf8_decode(s, avail, &len)) != -1)
+		return (iswalnum(cp));
+	return (ISWORD(*s));
 }
 
 /*

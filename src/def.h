@@ -680,6 +680,7 @@ int		 syn_state(const struct syntax *, struct buffer *,
 /* utf8.c */
 void		 utf8_init(void);
 int		 utf8_iscont(int);
+int		 utf8_isword(const char *, int);
 int		 utf8_seqlen(int);
 int		 utf8_decode(const char *, int, int *);
 int		 utf8_get(const struct line *, int, int *);

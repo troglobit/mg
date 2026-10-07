@@ -410,12 +410,17 @@ searchpat(char *s_pat)
 int
 atbow(void)
 {
-	if (curwp->w_doto == 0)
+	struct line	*lp = curwp->w_dotp;
+	int		 o = curwp->w_doto;
+
+	if (o == 0)
 		return (TRUE);
-	if (ISWORD(curwp->w_dotp->l_text[curwp->w_doto]) &&
-	    !ISWORD(curwp->w_dotp->l_text[curwp->w_doto - 1]))
-	    	return (TRUE);
-	return (FALSE);
+	if (!inword())
+		return (FALSE);
+	/* the character before dot, which may take more than a byte */
+	while (--o > 0 && utf8_mode && utf8_iscont(lgetc(lp, o)))
+		;
+	return (!utf8_isword(&lp->l_text[o], llength(lp) - o));
 }
 
 /*

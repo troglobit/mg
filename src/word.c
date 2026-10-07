@@ -506,7 +506,7 @@ out:
 int
 inword(void)
 {
-	/* can't use lgetc in ISWORD due to bug in OSK cpp */
 	return (curwp->w_doto != llength(curwp->w_dotp) &&
-	    ISWORD(curwp->w_dotp->l_text[curwp->w_doto]));
+	    utf8_isword(&curwp->w_dotp->l_text[curwp->w_doto],
+	    llength(curwp->w_dotp) - curwp->w_doto));
 }

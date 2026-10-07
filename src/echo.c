@@ -264,6 +264,32 @@ mbredraw(void)
 }
 
 /*
+ * Where the character before, or after, byte i of the line starts,
+ * and whether the one at i is part of a word.
+ */
+static int
+mbprevchar(int i)
+{
+	while (--i > 0 && mbwidth(mb.buf[i]) == 0)
+		;
+	return (i);
+}
+
+static int
+mbnextchar(int i)
+{
+	while (++i < mb.epos && mbwidth(mb.buf[i]) == 0)
+		;
+	return (i);
+}
+
+static int
+mbisword(int i)
+{
+	return (utf8_isword(mb.buf + i, mb.epos - i));
+}
+
+/*
  * Move the cursor one character left or right.
  */
 static void
@@ -273,9 +299,8 @@ mbleft(void)
 
 	if (mb.cpos == 0)
 		return;
-	do {
-		w = mbwidth(mb.buf[--mb.cpos]);
-	} while (w == 0 && mb.cpos > 0);
+	mb.cpos = mbprevchar(mb.cpos);
+	w = mbwidth(mb.buf[mb.cpos]);
 	while (w-- > 0) {
 		ttputc('\b');
 		--ttcol;
@@ -288,14 +313,7 @@ mbleft(void)
 static int
 mbcharlen(void)
 {
-	int	 n;
-
-	if (mb.cpos >= mb.epos)
-		return (0);
-	n = 1;
-	while (mb.cpos + n < mb.epos && mbwidth(mb.buf[mb.cpos + n]) == 0)
-		n++;
-	return (n);
+	return (mb.cpos < mb.epos ? mbnextchar(mb.cpos) - mb.cpos : 0);
 }
 
 static void
@@ -322,12 +340,12 @@ mbgoto(int pos)
 static int
 mbprevword(void)
 {
-	int	 i = mb.cpos;
+	int	 i = mb.cpos, j;
 
-	while (i > 0 && !ISWORD(mb.buf[i - 1]))
-		i--;
-	while (i > 0 && ISWORD(mb.buf[i - 1]))
-		i--;
+	while (i > 0 && !mbisword(j = mbprevchar(i)))
+		i = j;
+	while (i > 0 && mbisword(j = mbprevchar(i)))
+		i = j;
 	return (i);
 }
 
@@ -336,10 +354,10 @@ mbnextword(void)
 {
 	int	 i = mb.cpos;
 
-	while (i < mb.epos && !ISWORD(mb.buf[i]))
-		i++;
-	while (i < mb.epos && ISWORD(mb.buf[i]))
-		i++;
+	while (i < mb.epos && !mbisword(i))
+		i = mbnextchar(i);
+	while (i < mb.epos && mbisword(i))
+		i = mbnextchar(i);
 	return (i);
 }
 
