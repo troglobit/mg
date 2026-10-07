@@ -541,7 +541,7 @@ ldelnewline(void)
 }
 
 /*
- * Replace plen characters before dot with argument string.  Control-J
+ * Replace plen bytes before dot with argument string.  Control-J
  * characters in st are interpreted as newlines.  There is a casehack
  * disable flag (normally it likes to match case of replacement to what
  * was there).
@@ -572,7 +572,7 @@ lreplace(RSIZE plen, char *st)
 	rlen = strlen(repl);
 
 	undo_boundary_enable(FFRAND, 0);
-	(void)backchar(FFARG | FFRAND, (int)plen);
+	bytesback((int)plen);
 
 	if (casereplace != TRUE)
 		goto done;

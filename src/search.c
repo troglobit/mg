@@ -486,7 +486,7 @@ is_find(int dir)
 	plen = strlen(pat);
 	if (plen != 0) {
 		if (dir == SRCH_FORW) {
-			(void)backchar(FFARG | FFRAND, plen);
+			bytesback(plen);
 			if (forwsrch() == FALSE) {
 				curwp->w_doto = odoto;
 				curwp->w_dotp = odotp;
@@ -496,7 +496,7 @@ is_find(int dir)
 			return (TRUE);
 		}
 		if (dir == SRCH_BACK) {
-			(void)forwchar(FFARG | FFRAND, plen);
+			bytesforw(plen);
 			if (backsrch() == FALSE) {
 				curwp->w_doto = odoto;
 				curwp->w_dotp = odotp;

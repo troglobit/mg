@@ -690,6 +690,8 @@ int		 gotobol(int, int);
 int		 backchar(int, int);
 int		 gotoeol(int, int);
 int		 forwchar(int, int);
+void		 bytesback(int);
+void		 bytesforw(int);
 int		 gotobob(int, int);
 int		 gotoeob(int, int);
 int		 forwline(int, int);

@@ -84,6 +84,37 @@ gotoeol(int f, int n)
 }
 
 /*
+ * Move dot back, or forward, over n bytes, a line break being one.
+ */
+void
+bytesback(int n)
+{
+	while (n > curwp->w_doto && lback(curwp->w_dotp) != curbp->b_headp) {
+		n -= curwp->w_doto + 1;
+		curwp->w_dotp = lback(curwp->w_dotp);
+		curwp->w_dotline--;
+		curwp->w_doto = llength(curwp->w_dotp);
+	}
+	curwp->w_doto = n < curwp->w_doto ? curwp->w_doto - n : 0;
+	curwp->w_rflag |= WFMOVE;
+}
+
+void
+bytesforw(int n)
+{
+	while (n > llength(curwp->w_dotp) - curwp->w_doto &&
+	    lforw(curwp->w_dotp) != curbp->b_headp) {
+		n -= llength(curwp->w_dotp) - curwp->w_doto + 1;
+		curwp->w_dotp = lforw(curwp->w_dotp);
+		curwp->w_dotline++;
+		curwp->w_doto = 0;
+	}
+	curwp->w_doto = n < llength(curwp->w_dotp) - curwp->w_doto ?
+	    curwp->w_doto + n : llength(curwp->w_dotp);
+	curwp->w_rflag |= WFMOVE;
+}
+
+/*
  * Move cursor forwards. Do the
  * right thing if the count is less than
  * 0. Error if you try to move forward
