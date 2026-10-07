@@ -601,7 +601,7 @@ indent(int f, int n)
  * a UTF-8 sequence is one character.  Counts past the end of buffer
  * so that ldelete() fails there, just as a plain byte count does.
  */
-static RSIZE
+RSIZE
 forwbytes(struct line *lp, int o, int n)
 {
 	RSIZE	 bytes = 0;

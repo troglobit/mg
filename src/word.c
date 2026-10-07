@@ -386,7 +386,7 @@ countfword()
 out:
 	curwp->w_dotp = dotp;
 	curwp->w_doto = doto;
-	return (size);
+	return (forwbytes(dotp, doto, size));
 }
 
 
@@ -437,7 +437,7 @@ delfword(int f, int n)
 out:
 	curwp->w_dotp = dotp;
 	curwp->w_doto = doto;
-	return (ldelete(size, KFORW));
+	return (ldelete(forwbytes(dotp, doto, size), KFORW));
 }
 
 /*
@@ -496,7 +496,7 @@ delbword(int f, int n)
 	/* undo assumed delete */
 	--size;
 out:
-	return (ldelete(size, KBACK));
+	return (ldelete(forwbytes(curwp->w_dotp, curwp->w_doto, size), KBACK));
 }
 
 /*

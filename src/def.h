@@ -731,6 +731,7 @@ int		 deblank(int, int);
 int		 justone(int, int);
 int		 delwhite(int, int);
 int		 delleadwhite(int, int);
+RSIZE		 forwbytes(struct line *, int, int);
 int		 wscleanup(int, int);
 int		 deltrailwhite(int, int);
 int		 lfindent(int, int);
