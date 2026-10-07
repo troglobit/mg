@@ -62,6 +62,13 @@ All relevant changes to the project are documented in this file.
 - Markdown: a paragraph in a list item, indented to the item's content
   after a blank line, is no longer colored as a code block; a code block
   in an item needs four columns more, as in CommonMark
+- Fix the key bindings from `C-x C-k` to `C-x C-x` being shifted by one
+  in builds without dired, including `--disable-all`: `C-x C-s` ran
+  `transpose-lines` and `C-x C-w` `exchange-point-and-mark`.  Reported
+  by Per Weijnitz, issue #45
+- Fix c-mode losing its TAB and RET bindings in builds without compile
+- Fix `--disable-ctags` being ignored while cscope, on by default, was
+  enabled; cscope needs ctags, so it is now left out too
 
 [v4.1][] - 2026-09-07
 ---------------------
