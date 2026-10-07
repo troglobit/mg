@@ -1,3 +1,29 @@
+mg2a (4.2) unstable; urgency=medium
+
+  * New commands from GNU Emacs: comment-dwim on M-;, sort-lines,
+    reverse-region, delete-duplicate-lines, transpose-lines on C-x C-t,
+    whitespace-cleanup, kill-current-buffer and rename-buffer
+  * Buffer cycling with previous-buffer and next-buffer on C-x left and
+    right; the buffer list now runs from the buffer used last
+  * The minibuffer edits like a buffer, with the editor's keys for word
+    and line motion, and keeps a history per kind of prompt
+  * New display-line-numbers-mode, issue #31
+  * New m4-mode for configure.ac and *.m4, and cmake-mode for
+    CMakeLists.txt and *.cmake; makefile-mode colors automake's if and
+    @VAR@
+  * New secure mode, -S or MGSECURE, and single-file mode, -s, for use
+    as the editor of a restricted shell
+  * The file modes and syntax highlighting are build options,
+    --with-modes=LIST and --disable-syntax
+  * Fix shell command injection when opening a .gz file whose name has
+    shell metacharacters
+  * Fix query-replace and isearch with non-ASCII patterns, and M-d and
+    M-DEL on words with non-ASCII letters
+  * Fix the C-x bindings shifted by one in builds without dired,
+    reported by Per Weijnitz, issue #45
+
+ -- Joachim Wiberg <troglobit@gmail.com>  Wed, 07 Oct 2026 15:14:22 +0200
+
 mg2a (4.1) unstable; urgency=medium
 
   * New language modes: conf, diff, git-commit, makefile, text, and yaml.
