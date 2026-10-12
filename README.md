@@ -221,8 +221,8 @@ goes something like this:
 * Aug 13, 2023: Mg v3.7, sync with OpenBSD, improved usability
 * Jul 10, 2026: Mg v4.0, initial UTF-8 support by Joachim Wiberg
 * Sep  7, 2026: Mg v4.1, Unicode 17 support and lots of new modes
-* Oct  7, 2026: Mg v4.2, GNU Emacs commands, minibuffer editing and
-  history, secure mode, and optional modes for a small build
+* Oct  7, 2026: Mg v4.2, minibuffer editing and history, secure mode
+* Oct 12, 2026: Mg v4.3, ido-mode and delete-selection-mode
 
 See the source distribution for the list of [AUTHORS][].
 
@@ -248,8 +248,8 @@ New features include, but are not limited to:
   `shell-script`, and `yaml`, toggled with `M-x font-lock-mode`.  The mode
   follows the file name, or the `#!` line, and sets the buffer up for it:
   hard tabs for makefiles, spaces for python and YAML
-* `M-;` comments code out and back in, `comment-dwim` as in GNU Emacs,
-  with the comment syntax of the buffer's mode
+* `M-;` comments code out and back in, `comment-dwim`, with the comment
+  syntax of the buffer's mode
 * Line wrap with `M-x line-wrap-mode`: a line too long for the window
   continues on the rows below instead of being truncated at the edge
 * Line numbers in a gutter with `M-x display-line-numbers-mode`
@@ -258,8 +258,7 @@ New features include, but are not limited to:
   motion, with a history per kind of prompt on Up, Down, M-p and M-n
 * Ido mode: the `M-x`, buffer and file prompts match what you type as a
   substring and show the matches on the echo line, the arrow keys step
-  through them, and file prompts walk directories, like ido-mode in
-  GNU Emacs
+  through them, and file prompts walk directories
 * `sort-lines`, `transpose-lines`, `whitespace-cleanup`, `rename-buffer`,
   and the names GNU Emacs uses today, like `kill-ring-save`, in `M-x`
 * `text-mode` for prose, which turns on `auto-fill-mode` for *.txt,
@@ -267,16 +266,16 @@ New features include, but are not limited to:
 * `git-commit-mode` for COMMIT_EDITMSG and its siblings, with `C-c C-c`
   to finish the commit, `C-c C-k` to cancel it, and `C-c C-s` to sign off
 * Visual mark mode: the region between mark and dot is shown in reverse
-  video, like transient-mark-mode in GNU Emacs
+  video
 * Marking text with Shift + arrow keys, or a page at a time with
   Shift + PgUp/PgDn
 * Delete selection mode: typing over the marked region replaces it, and
-  DEL deletes it, like delete-selection-mode in GNU Emacs
+  DEL deletes it
 * Side by side windows with `C-x 3`, `split-window-horizontally`
 * Window movement with `M-arrow keys`, resize with `M-S-arrow keys`, and
   `C-x +` to balance them
 * Smart Tab indent in: `c`, `python`, and `shell-script` modes
-* Emacs-like modeline naming the major mode, with `(row,col)` and
+* A modeline naming the major mode, with `(row,col)` and
   `display-time-mode`
 * A secure mode, `-S`, and a single-file mode, `-s`, for use as the
   editor of a restricted shell
@@ -286,7 +285,7 @@ New features include, but are not limited to:
 * Support for exhuberant/universal ctags `tags` file format
 * Built-in `*quick*` help using `C-h q`
 * Tutorial accessible using `C-h t`
-* Support for Ctrl-cursor + Ctrl-Home/End and Ctrl-PgUp/PgDn like Emacs
+* Support for Ctrl-cursor + Ctrl-Home/End and Ctrl-PgUp/PgDn
 * Support for `M-x no-tab-mode` and `M-x version`
 * Support for opening gzipped text files in read-only mode
 

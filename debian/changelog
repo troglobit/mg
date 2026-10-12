@@ -1,3 +1,18 @@
+mg2a (4.3) unstable; urgency=medium
+
+  * New ido-mode: the M-x, buffer and file prompts
+    match what is typed as a substring and show the matches on the echo
+    line; the arrow keys step through them and file prompts walk
+    directories.  Enabled by default
+  * New delete-selection-mode: typing over the marked region replaces it,
+    and DEL deletes it.  Enabled by default
+  * C-SPC C-SPC sets the mark without activating it
+  * C-Home and C-End move to the beginning and end of the buffer
+  * Fix C-d and DEL leaving the deleted text in the kill ring when it
+    was empty, so the next C-y brought it back
+
+ -- Joachim Wiberg <troglobit@gmail.com>  Mon, 12 Oct 2026 08:49:21 +0200
+
 mg2a (4.2) unstable; urgency=medium
 
   * New commands from GNU Emacs: comment-dwim on M-;, sort-lines,

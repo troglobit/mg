@@ -3,34 +3,32 @@ Change Log
 
 All relevant changes to the project are documented in this file.
 
-[v4.3][UNRELEASED]
+[v4.3][] - 2026-10-12
 ---------------------
 
 ### Changes
 
-- New `delete-selection-mode`, as in GNU Emacs: typing, yanking, or
-  inserting a newline with the mark active replaces the region, and
-  `C-d` or DEL deletes it.  The region is not killed.  Enabled by
-  default, like `visual-mark-mode`
-- `C-SPC C-SPC` sets the mark without activating it, as in GNU Emacs,
-  for the mark used as a place to return to with `C-x C-x`
-- `C-Home` and `C-End` move to the beginning and end of the buffer, as
-  in GNU Emacs, alongside `C-PgUp` and `C-PgDn`
-- New `ido-mode`, as in GNU Emacs: the `M-x`, buffer and file prompts
-  match what is typed as a substring and show the matches on the echo
-  line.  RET picks the first, the left and right arrow keys, or `C-s`
-  and `C-r`, step through them, TAB completes what they have in common,
-  `C-j` takes the text as typed and `C-f` at the end of the text falls
-  back to plain completion.  At a file prompt the directory
-  is part of the prompt: RET enters a subdirectory, DEL with nothing
-  typed goes up, `~/` and `//` jump to the home directory and the root.
-  Enabled by default, `ido-mode 0` in `~/.mg` turns it off
+- New `delete-selection-mode`: typing, yanking, or inserting a newline
+  with the mark active replaces the region, and `C-d` or DEL deletes it.
+  The region is not killed.  Enabled by default, like `visual-mark-mode`
+- `C-SPC C-SPC` sets the mark without activating it, for the mark used
+  as a place to return to with `C-x C-x`
+- `C-Home` and `C-End` move to the beginning and end of the buffer
+- New `ido-mode`: the `M-x`, buffer and file prompts match what is typed
+  as a substring and show the matches on the echo line, the selected one
+  in bold.  RET picks it, the left and right arrow keys, or `C-s` and
+  `C-r`, step through the matches, TAB completes what they have in
+  common, `C-j` takes the text as typed and `C-f` at the end of the text
+  falls back to plain completion.  At a file prompt the directory is
+  part of the prompt: RET enters a subdirectory, DEL with nothing typed
+  goes up, `~/` and `//` jump to the home directory and the root, and
+  `C-d` with nothing typed opens the directory in dired.  Enabled by
+  default, `ido-mode 0` in `~/.mg` disables it
 
 ### Fixes
 
 - Fix `C-d` and DEL leaving the deleted text in the kill ring when it
   was empty, so the next `C-y` brought it back
-
 
 [v4.2][] - 2026-10-07
 ---------------------
@@ -608,7 +606,8 @@ set as Mg3a.
 	functions.  Some simply marked as "don't care"
   - Fix missing initialization of stack variables
 
-[UNRELEASED]: https://github.com/troglobit/mg/compare/v4.2...HEAD
+[UNRELEASED]: https://github.com/troglobit/mg/compare/v4.3...HEAD
+[v4.3]:       https://github.com/troglobit/mg/compare/v4.2...v4.3
 [v4.2]:       https://github.com/troglobit/mg/compare/v4.1...v4.2
 [v4.1]:       https://github.com/troglobit/mg/compare/v4.0...v4.1
 [v4.0]:       https://github.com/troglobit/mg/compare/v3.7...v4.0

@@ -1,7 +1,7 @@
 .\"	$OpenBSD: mg.1,v 1.138 2024/07/09 14:51:37 op Exp $
 .\" This file is in the public domain.
 .\"
-.Dd $Mdocdate: October 7 2026 $
+.Dd $Mdocdate: October 12 2026 $
 .Dt MG 1
 .Os
 .Sh NAME
@@ -414,7 +414,7 @@ windmove-up, windmove-down, windmove-left, windmove-right
 resize-window-up, resize-window-down, resize-window-left,
 resize-window-right
 .It S-up, S-down, S-left, S-right, S-Home, S-End
-mark text while moving, like shift-select-mode in GNU Emacs
+mark text while moving
 .It S-PgUp, S-PgDn
 mark text by page
 .It C-S-up, C-S-down, C-S-left, C-S-right
@@ -575,8 +575,7 @@ Paragraphs are delimited by <NL><NL> or <NL><TAB> or <NL><SPACE>.
 .It Ic backward-word
 Move cursor backwards by the specified number of words.
 .It Ic balance-windows
-Even out the sizes of all windows, heights and widths alike, like
-in GNU Emacs.
+Even out the sizes of all windows, heights and widths alike.
 The quick help pop-up keeps its height.
 .It Ic beginning-of-buffer
 Move cursor to the top of the buffer.
@@ -601,7 +600,7 @@ some systems if the backspace key doesn't work correctly.
 .It Ic c-mode
 Toggle a KNF-compliant mode for editing C program files.
 TAB indents the current line, or every line in the region when the
-mark is active, like in GNU Emacs.
+mark is active.
 Files named *.c and *.h get the mode automatically, as do C++
 sources and headers.
 .It Ic call-last-kbd-macro
@@ -626,7 +625,7 @@ Files named CMakeLists.txt and *.cmake get the mode automatically.
 Toggle whether the column number is displayed in the modeline.
 Enabled by default.
 .It Ic comment-dwim
-Do what a comment key should here, as in GNU Emacs.
+Do what a comment key should here.
 With the mark set, comment the region out, or back in when every
 line of code in it is already commented.
 On a line with a comment, move into it; with a numeric argument, kill
@@ -746,7 +745,6 @@ The region is not saved in the kill buffer.
 Undo restores the region and removes the inserted text in one step.
 Deactivate the mark with C-g, or set it without activating it with
 C-SPC C-SPC, to edit next to the region instead.
-As in GNU Emacs.
 .It Ic delete-window
 Delete current window.
 .It Ic describe-bindings
@@ -819,7 +817,7 @@ Enlarge the current window by shrinking either the window above
 or below it.
 .It Ic enlarge-window-horizontally
 Widen the current window by taking columns from the window beside
-it, like in GNU Emacs.
+it.
 .It Ic eval-current-buffer
 Evaluate the current buffer as a series of
 .Nm
@@ -952,7 +950,6 @@ subdirectory enters it, DEL with nothing typed goes to the parent,
 a slash in the text moves to that directory, ~/ to the home directory
 and // to the root, and C-d with nothing typed opens the directory in
 dired.
-Like ido-mode in GNU Emacs.
 .It Ic help-help
 Prompts for one of (a)propos, (b)indings, des(c)ribe key briefly.
 .It Ic insert
@@ -1400,7 +1397,7 @@ for example:
 .It Ic shift-scroll-up
 Move like the unshifted command, activating the mark at dot first,
 so holding shift with the arrow, Home/End, and PgUp/PgDn keys marks
-text like in GNU Emacs, by word and paragraph with control held too.
+text, by word and paragraph with control held too.
 The first unshifted command drops the selection again; a mark set
 with C-SPC is left alone.
 Bound to the shifted keys on terminals that send xterm style
@@ -1411,7 +1408,7 @@ The window immediately below is expanded to pick up the slack.
 If only one window is present, this command has no effect.
 .It Ic shrink-window-horizontally
 Narrow the current window, giving the columns to the window beside
-it, like in GNU Emacs.
+it.
 .It Ic sort-lines
 Sort the lines in the region, byte by byte as
 .Xr sort 1
@@ -1528,7 +1525,7 @@ Move the cursor forward by the specified number of words.
 As it moves, convert any characters to upper case.
 .It Ic use-short-answers
 Toggle accepting a single y or n in place of a spelled out yes or no
-answer to important questions, like in GNU Emacs.
+answer to important questions.
 Enabled by default, unlike GNU Emacs.
 .It Ic visible-bell
 Toggle the visible bell.
@@ -1546,7 +1543,6 @@ and
 .Ic exchange-point-and-mark .
 The highlight is removed when the buffer is modified, the command
 is aborted with C-g, or the region is copied.
-This is transient-mark-mode in GNU Emacs.
 .It Ic what-cursor-position
 Display a bunch of useful information about the current location of
 dot.
@@ -1556,7 +1552,7 @@ percentage) is displayed.
 The column position assumes an infinite
 position display; it does not truncate just because the screen does.
 .It Ic whitespace-cleanup
-Clean up whitespace in the buffer, as in GNU Emacs: delete trailing
+Clean up whitespace in the buffer: delete trailing
 whitespace on every line and empty lines at the start and end of the
 buffer, and redo the indentation of each line with tabs and spaces, or
 with spaces alone in
@@ -1568,8 +1564,7 @@ empty lines are kept.
 .It Ic windmove-left
 .It Ic windmove-right
 .It Ic windmove-up
-Select the window beside the current one in the given direction,
-like windmove in GNU Emacs.
+Select the window beside the current one in the given direction.
 With several neighbors the topmost, or leftmost, is chosen.
 Bound to Meta and an arrow key on terminals that send xterm style
 sequences; note that some terminals grab these keys for their own
