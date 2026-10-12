@@ -93,6 +93,9 @@ cmode_init(void)
 	funmap_add(cc_tab, "c-tab-or-indent", 0);
 	funmap_add(cc_indent, "c-indent", 0);
 	funmap_add(cc_lfindent, "c-indent-and-newline", 0);
+	delsel_add(cc_char, FALSE);
+	delsel_add(cc_brace, FALSE);
+	delsel_add(cc_lfindent, FALSE);
 	maps_add((KEYMAP *)&cmodemap, "c");
 #ifdef ENABLE_AUTOEXEC
 	(void)add_autoexec("*.c", "c-mode");

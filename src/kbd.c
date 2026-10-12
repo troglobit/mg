@@ -466,5 +466,5 @@ mgwrap(PF funct, int f, int n)
 		ofp = funct;
 	}
 
-	return ((*funct)(f, n));
+	return (delsel(funct, f, n));
 }

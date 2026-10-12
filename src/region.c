@@ -26,6 +26,30 @@
 
 #define TIMEOUT 10000
 
+/*
+ * Commands that replace the active region, like the delete-selection
+ * property in GNU Emacs.  A superseding command only deletes it.
+ * Modes add theirs with delsel_add().
+ */
+static struct delsel {
+	PF	 fn;
+	int	 supersede;
+} delsels[32] = {
+	{selfinsert, FALSE},
+	{ask_selfinsert, FALSE},
+	{insert, FALSE},
+	{quote, FALSE},
+	{showmatch, FALSE},
+	{fillword, FALSE},
+	{enewline, FALSE},
+	{lfindent, FALSE},
+	{yank, FALSE},
+	{forwdel, TRUE},
+	{backdel, TRUE},
+};
+static	int	delsel_mode = TRUE;
+
+static	int	delregion(struct region *, int);
 static	int	getregion(struct region *);
 static	int	iomux(int, char * const, int);
 static	int	preadin(int);
@@ -50,11 +74,81 @@ killregion(int f, int n)
 	if ((lastflag & CFKILL) == 0)
 		kdelete();
 	thisflag |= CFKILL;
-	curwp->w_dotp = region.r_linep;
-	curwp->w_doto = region.r_offset;
-	curwp->w_dotline = region.r_lineno;
-	s = ldelete(region.r_size, KFORW | KREG);
+	s = delregion(&region, KFORW | KREG);
 	clearmark(FFARG, 0);
+
+	return (s);
+}
+
+/* Delete the region, leaving dot at its start. */
+static int
+delregion(struct region *rp, int kflag)
+{
+	curwp->w_dotp = rp->r_linep;
+	curwp->w_doto = rp->r_offset;
+	curwp->w_dotline = rp->r_lineno;
+
+	return (ldelete(rp->r_size, kflag));
+}
+
+int
+delselmode(int f, int n)
+{
+	if (f & FFARG)
+		delsel_mode = n > 0;
+	else
+		delsel_mode = !delsel_mode;
+	ewprintf("Delete selection mode %sabled", delsel_mode ? "en" : "dis");
+
+	return (TRUE);
+}
+
+static struct delsel *
+delsel_find(PF fn)
+{
+	struct delsel	*ds;
+
+	for (ds = delsels; ds < &delsels[NELEMS(delsels)] && ds->fn; ds++)
+		if (ds->fn == fn)
+			return (ds);
+
+	return (NULL);
+}
+
+void
+delsel_add(PF fn, int supersede)
+{
+	struct delsel	*ds;
+
+	if (delsel_find(fn) != NULL || (ds = delsel_find(NULL)) == NULL)
+		return;
+	ds->fn = fn;
+	ds->supersede = supersede;
+}
+
+/*
+ * Run a command.  With the mark active, a command in delsels[] first
+ * deletes the region, like delete-selection-mode in GNU Emacs.  The
+ * text is not killed, and the region undoes together with the
+ * command's own edit.
+ */
+int
+delsel(PF fn, int f, int n)
+{
+	struct region	region;
+	struct delsel	*ds = NULL;
+	int	 s;
+
+	if (delsel_mode && curwp->w_markact && curwp->w_markp != NULL)
+		ds = delsel_find(fn);
+	if (ds == NULL || getregion(&region) != TRUE || region.r_size == 0)
+		return ((*fn)(f, n));
+
+	undo_boundary_enable(FFRAND, 0);
+	s = delregion(&region, KREG);
+	if (s == TRUE && !ds->supersede)
+		s = (*fn)(f, n);
+	undo_boundary_enable(FFRAND, 1);
 
 	return (s);
 }

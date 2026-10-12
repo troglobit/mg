@@ -93,7 +93,7 @@ executemacro(int f, int n)
 				num = macro[++j].m_count;
 				continue;
 			}
-			if ((*funct)(flag, num) != TRUE) {
+			if (delsel(funct, flag, num) != TRUE) {
 				inmacro = FALSE;
 				return (FALSE);
 			}

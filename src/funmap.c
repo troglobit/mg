@@ -105,6 +105,7 @@ static struct funmap functnames[] = {
 	{delnonmatchlines, "delete-non-matching-lines", 1, NULL},
 #endif /* REGEX */
 	{onlywind, "delete-other-windows", 0, NULL},
+	{delselmode, "delete-selection-mode", 0, NULL},
 	{deltrailwhite, "delete-trailing-space", 0, NULL},
 	{delwind, "delete-window", 0, NULL},
 	{wallchart, "describe-bindings", 0, NULL},

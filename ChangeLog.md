@@ -3,6 +3,17 @@ Change Log
 
 All relevant changes to the project are documented in this file.
 
+[v4.3][UNRELEASED]
+---------------------
+
+### Changes
+
+- New `delete-selection-mode`, as in GNU Emacs: typing, yanking, or
+  inserting a newline with the mark active replaces the region, and
+  `C-d` or DEL deletes it.  The region is not killed.  Enabled by
+  default, like `visual-mark-mode`
+
+
 [v4.2][] - 2026-10-07
 ---------------------
 

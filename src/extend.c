@@ -543,7 +543,7 @@ extend(int f, int n)
 			maclcur->l_fp = lp->l_fp;
 			free(lp);
 		}
-		return ((*funct)(f, n));
+		return (delsel(funct, f, n));
 	}
 	return (dobeep_msg("[No match]"));
 }
@@ -917,7 +917,7 @@ excline(char *line, int llen, int lnum)
 	case BINDNO:
 		inmacro = TRUE;
 		maclcur = maclcur->l_fp;
-		status = (*fp)(f, n);
+		status = delsel(fp, f, n);
 		inmacro = FALSE;
 	}
 cleanup:

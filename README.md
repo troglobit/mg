@@ -265,6 +265,8 @@ New features include, but are not limited to:
   video, like transient-mark-mode in GNU Emacs
 * Marking text with Shift + arrow keys, or a page at a time with
   Shift + PgUp/PgDn
+* Delete selection mode: typing over the marked region replaces it, and
+  DEL deletes it, like delete-selection-mode in GNU Emacs
 * Side by side windows with `C-x 3`, `split-window-horizontally`
 * Window movement with `M-arrow keys`, resize with `M-S-arrow keys`, and
   `C-x +` to balance them

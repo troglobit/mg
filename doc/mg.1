@@ -734,6 +734,19 @@ Delete all lines after dot that don't contain a string matching
 the supplied regular expression.
 .It Ic delete-other-windows
 Make the current window the only window visible on the screen.
+.It Ic delete-selection-mode
+Toggle delete selection mode, enabled by default.
+When enabled, typing, yanking, or inserting a newline with the mark
+active replaces the region with the inserted text, and
+.Ic delete-char
+or
+.Ic delete-backward-char
+deletes the region instead of a character.
+The region is not saved in the kill buffer.
+Undo restores the region and removes the inserted text in one step.
+Deactivate the mark with C-g, or set it without activating it with
+C-SPC C-SPC, to edit next to the region instead.
+As in GNU Emacs.
 .It Ic delete-window
 Delete current window.
 .It Ic describe-bindings
