@@ -26,6 +26,7 @@ static char	*veread(const char *, char *, size_t, int, va_list)
 			__attribute__((__format__ (printf, 1, 0)));
 static int	 complt(int, int, char *, size_t, int, int *);
 static int	 complt_list(int, char *, int);
+static int	 complt_show(struct list *);
 static void	 eformat(const char *, va_list)
 			__attribute__((__format__ (printf, 1, 0)));
 static void	 eputi(int, int);
@@ -33,6 +34,7 @@ static void	 eputl(long, int);
 static void	 eputs(const char *);
 static void	 eputc(char);
 static struct list	*copy_list(struct list *);
+static int	 list_push(struct list **, const char *);
 
 int		epresf = FALSE;		/* stuff in echo line flag */
 int		helpsh = TRUE;		/* help-text in echo buffer */
@@ -932,38 +934,17 @@ complt(int flags, int c, char *buf, size_t nbuf, int cpos, int *nx)
 static int
 complt_list(int flags, char *buf, int cpos)
 {
-	struct list	*lh, *lh2, *lh3;
+	struct list	*lh = NULL, *ml = NULL;
 	struct list	*wholelist = NULL;
-	struct buffer	*bp;
-	int	 i, maxwidth, width;
 	int	 preflen = 0;
-	int	 oldrow = ttrow;
-	int	 oldcol = ttcol;
-	int	 oldhue = tthue;
-	char	 *linebuf;
-	size_t	 linesize, len;
-	char *cp;
-
-	lh = NULL;
-
-	ttflush();
-
-	/* The results are put into a completion buffer. */
-	bp = bfind("*Completions*", TRUE);
-	if (bclear(bp) == FALSE)
-		return (FALSE);
-	bp->b_flag |= BFREADONLY;
+	char	*cp;
 
 	/*
 	 * First get the list of objects.  This list may contain only
 	 * the ones that complete what has been typed, or may be the
 	 * whole list of all objects of this type.  They are filtered
-	 * later in any case.  Set wholelist if the list has been
-	 * cons'ed up just for us, so we can free it later.  We have
-	 * to copy the buffer list for this function even though we
-	 * didn't for complt.  The sorting code does destructive
-	 * changes to the list, which we don't want to happen to the
-	 * main buffer list!
+	 * below in any case.  The buffer list is copied, since the
+	 * sort would otherwise reorder the main buffer list.
 	 */
 	if ((flags & EFBUF) != 0)
 		wholelist = lh = copy_list(&(bheadp->b_list));
@@ -983,6 +964,43 @@ complt_list(int flags, char *buf, int cpos)
 			preflen = cp - buf + 1;
 	} else
 		panic("broken complt call: flags");
+
+	for (; lh != NULL; lh = lh->l_next) {
+		if (strncmp(buf, lh->l_name, cpos) == 0 &&
+		    list_push(&ml, lh->l_name + preflen) == FALSE)
+			break;
+	}
+	free_file_list(wholelist);
+
+	return (complt_show(ml));
+}
+
+/*
+ * Show the names in lh, sorted, in columns, in a *Completions*
+ * window, and free the list.
+ */
+static int
+complt_show(struct list *lh)
+{
+	struct list	*lh2, *lh3;
+	struct buffer	*bp;
+	int	 maxwidth, width;
+	int	 oldrow = ttrow;
+	int	 oldcol = ttcol;
+	int	 oldhue = tthue;
+	char	 *linebuf;
+	size_t	 linesize, len;
+	char *cp;
+
+	ttflush();
+
+	/* The results are put into a completion buffer. */
+	bp = bfind("*Completions*", TRUE);
+	if (bclear(bp) == FALSE) {
+		free_file_list(lh);
+		return (FALSE);
+	}
+	bp->b_flag |= BFREADONLY;
 
 	/*
 	 * Sort the list, since users expect to see it in alphabetic
@@ -1007,20 +1025,12 @@ complt_list(int flags, char *buf, int cpos)
 	 * put several on a line.
 	 */
 	maxwidth = 0;
-	lh2 = lh;
-	while (lh2 != NULL) {
-		for (i = 0; i < cpos; ++i) {
-			if (buf[i] != lh2->l_name[i])
-				break;
-		}
-		if (i == cpos) {
-			width = strlen(lh2->l_name);
-			if (width > maxwidth)
-				maxwidth = width;
-		}
-		lh2 = lh2->l_next;
+	for (lh2 = lh; lh2 != NULL; lh2 = lh2->l_next) {
+		width = strlen(lh2->l_name);
+		if (width > maxwidth)
+			maxwidth = width;
 	}
-	maxwidth += 1 - preflen;
+	maxwidth += 1;
 
 	/*
 	 * Now do the display.  Objects are written into linebuf until
@@ -1028,7 +1038,7 @@ complt_list(int flags, char *buf, int cpos)
 	 */
 	linesize = (ncol > maxwidth ? ncol : maxwidth) + 1;
 	if ((linebuf = malloc(linesize)) == NULL) {
-		free_file_list(wholelist);
+		free_file_list(lh);
 		return (FALSE);
 	}
 	width = 0;
@@ -1039,39 +1049,26 @@ complt_list(int flags, char *buf, int cpos)
 	 */
 	linebuf[0] = '\0';
 	for (lh2 = lh; lh2 != NULL; lh2 = lh2->l_next) {
-		for (i = 0; i < cpos; ++i) {
-			if (buf[i] != lh2->l_name[i])
-				break;
+		/* if it wraps */
+		if ((width + maxwidth) > ncol) {
+			addline(bp, linebuf);
+			linebuf[0] = '\0';
+			width = 0;
 		}
-		/* if we have a match */
-		if (i == cpos) {
-			/* if it wraps */
-			if ((width + maxwidth) > ncol) {
-				addline(bp, linebuf);
-				linebuf[0] = '\0';
-				width = 0;
-			}
-			len = strlcat(linebuf, lh2->l_name + preflen,
-			    linesize);
-			width += maxwidth;
-			if (len < (size_t)width && (size_t)width < linesize) {
-				/* pad so the objects nicely line up */
-				memset(linebuf + len, ' ',
-				    maxwidth - strlen(lh2->l_name + preflen));
-				linebuf[width] = '\0';
-			}
+		len = strlcat(linebuf, lh2->l_name, linesize);
+		width += maxwidth;
+		if (len < (size_t)width && (size_t)width < linesize) {
+			/* pad so the objects nicely line up */
+			memset(linebuf + len, ' ',
+			    maxwidth - strlen(lh2->l_name));
+			linebuf[width] = '\0';
 		}
 	}
 	if (width > 0)
 		addline(bp, linebuf);
 	free(linebuf);
+	free_file_list(lh);
 
-	/*
-	 * Note that we free lists only if they are put in wholelist lists
-	 * that were built just for us should be freed.  However when we use
-	 * the buffer list, obviously we don't want it freed.
-	 */
-	free_file_list(wholelist);
 	popbuftop(bp, WEPHEM);	/* split the screen and put up the help
 				 * buffer */
 	update(CMODE);		/* needed to make the new stuff actually
@@ -1287,32 +1284,33 @@ free_file_list(struct list *lp)
 	}
 }
 
+/* Put a copy of name at the head of the list; FALSE when out of memory. */
+static int
+list_push(struct list **lh, const char *name)
+{
+	struct list	*lp;
+
+	if ((lp = malloc(sizeof(*lp))) == NULL)
+		return (FALSE);
+	if ((lp->l_name = strdup(name)) == NULL) {
+		free(lp);
+		return (FALSE);
+	}
+	lp->l_next = *lh;
+	*lh = lp;
+	return (TRUE);
+}
+
 static struct list *
 copy_list(struct list *lp)
 {
-	struct list	*current, *last, *nxt;
+	struct list	*last = NULL;
 
-	last = NULL;
-	while (lp) {
-		current = malloc(sizeof(struct list));
-		if (current == NULL)
-			goto fail;
-		current->l_name = strdup(lp->l_name);
-		if (current->l_name == NULL) {
-			free(current);
-			goto fail;
+	for (; lp != NULL; lp = lp->l_next) {
+		if (list_push(&last, lp->l_name) == FALSE) {
+			free_file_list(last);
+			return (NULL);
 		}
-		current->l_next = last;
-		last = current;
-		lp = lp->l_next;
 	}
 	return (last);
-
- fail:
-	for (current = last; current; current = nxt) {
-		nxt = current->l_next;
-		free(current->l_name);
-		free(current);
-	}
-	return (NULL);
 }
