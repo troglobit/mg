@@ -483,9 +483,14 @@ isetmark(void)
 int
 setmark(int f, int n)
 {
+	int	 again = lastflag & CFSETMARK;
+
+	/* C-SPC C-SPC sets the mark without activating it, as in GNU Emacs */
+	if (again)
+		mark_deactivate(curwp);
 	isetmark();
-	curwp->w_markact = TRUE;
-	thisflag |= CFMARK;
+	curwp->w_markact = !again;
+	thisflag |= CFMARK | CFSETMARK;
 	ewprintf("Mark set");
 	return (TRUE);
 }

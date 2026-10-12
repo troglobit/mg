@@ -1332,6 +1332,10 @@ Used by
 .Ic auto-fill-mode .
 .It Ic set-mark-command
 Sets the mark in the current window to the current dot location.
+Typed twice in a row, the mark is set but not activated, so the
+region is neither shown nor replaced by typing.
+Use it for a place to return to with
+.Ic exchange-point-and-mark .
 .It Ic set-prefix-string
 Sets the prefix string to be used by the
 .Ic prefix-region

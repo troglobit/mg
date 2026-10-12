@@ -12,6 +12,8 @@ All relevant changes to the project are documented in this file.
   inserting a newline with the mark active replaces the region, and
   `C-d` or DEL deletes it.  The region is not killed.  Enabled by
   default, like `visual-mark-mode`
+- `C-SPC C-SPC` sets the mark without activating it, as in GNU Emacs,
+  for the mark used as a place to return to with `C-x C-x`
 
 
 [v4.2][] - 2026-10-07

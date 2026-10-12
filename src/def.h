@@ -152,6 +152,7 @@ typedef int	(*PF)(int, int);	/* generally useful type */
 #define CFSHIFT	0x0010		/* Last command was a shifted move */
 #define CFMARK	0x0020		/* Last command activated the mark */
 #define CFBUFCYC 0x0040		/* Last command cycled buffers	 */
+#define CFSETMARK 0x0080	/* Last command was set-mark	 */
 
 /*
  * File I/O.
