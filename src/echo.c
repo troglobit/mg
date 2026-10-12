@@ -235,6 +235,9 @@ static struct {
 	size_t	 nbuf;
 	int	 cpos, epos;		/* cursor and end position in buf */
 	int	 dynbuf;		/* buf is ours to grow */
+	int	 lo;			/* where the editable text starts */
+	int	 ido;			/* ido-mode is on at this prompt */
+	int	 stale;			/* the matches shown are out of date */
 } mb;
 
 /*
@@ -263,6 +266,7 @@ mbredraw(void)
 	for (i = mb.cpos; i < mb.epos; i++)
 		eputc(mb.buf[i]);
 	ttmove(rr, cc);
+	mb.stale = TRUE;
 }
 
 /*
@@ -272,7 +276,7 @@ mbredraw(void)
 static int
 mbprevchar(int i)
 {
-	while (--i > 0 && mbwidth(mb.buf[i]) == 0)
+	while (--i > mb.lo && mbwidth(mb.buf[i]) == 0)
 		;
 	return (i);
 }
@@ -299,7 +303,7 @@ mbleft(void)
 {
 	int	 w;
 
-	if (mb.cpos == 0)
+	if (mb.cpos == mb.lo)
 		return;
 	mb.cpos = mbprevchar(mb.cpos);
 	w = mbwidth(mb.buf[mb.cpos]);
@@ -344,9 +348,9 @@ mbprevword(void)
 {
 	int	 i = mb.cpos, j;
 
-	while (i > 0 && !mbisword(j = mbprevchar(i)))
+	while (i > mb.lo && !mbisword(j = mbprevchar(i)))
 		i = j;
-	while (i > 0 && mbisword(j = mbprevchar(i)))
+	while (i > mb.lo && mbisword(j = mbprevchar(i)))
 		i = j;
 	return (i);
 }
@@ -428,15 +432,202 @@ mbinsertc(int c)
 }
 
 /*
- * Replace the line with s.  Returns what mbinsert() does.
+ * Replace the text with s.  Returns what mbinsert() does.
  */
 static int
 mbset(const char *s)
 {
-	mbgoto(0);
+	mbgoto(mb.lo);
 	mbdelto(mb.epos);
 	return (mbinsert(s, strlen(s)));
 }
+
+#ifdef ENABLE_IDO
+/*
+ * The text after the directory of a file prompt, NUL terminated.
+ */
+static char *
+mbtext(void)
+{
+	mb.buf[mb.epos] = '\0';
+	return (mb.buf + mb.lo);
+}
+
+/*
+ * The column after the text, and drawing pre, emph marked, and post
+ * there with the cursor put back.
+ */
+static int
+mbendcol(void)
+{
+	int	 i, w = ttcol;
+
+	for (i = mb.cpos; i < mb.epos; i++)
+		w += mbwidth(mb.buf[i]);
+	return (w);
+}
+
+static void
+mbtail(const char *pre, const char *emph, const char *post)
+{
+	int	 rr = ttrow, cc = ttcol;
+
+	ttmove(rr, mbendcol());
+	tteeol();
+	if (pre != NULL)
+		eputs(pre);
+	if (emph != NULL) {
+		ttemph(TRUE);
+		eputs(emph);
+		ttemph(FALSE);
+	}
+	if (post != NULL)
+		eputs(post);
+	ttmove(rr, cc);
+}
+
+/*
+ * In ido-mode, match the text after the directory and draw the
+ * matches after it, the selected one marked, when they changed.
+ */
+static void
+mbido(void)
+{
+	char	 list[ncol + 1];
+	const char	*sel;
+	int	 col;
+
+	if (ido_match(mbtext()) == TRUE)
+		mb.stale = TRUE;
+	if (!mb.stale)
+		return;
+	mb.stale = FALSE;
+	if ((sel = ido_selected()) == NULL) {
+		mbtail(" [No match]", NULL, NULL);
+		return;
+	}
+	col = mbendcol() + 2 + strlen(sel);
+	ido_list(list, ncol > col ? ncol - col : 1);
+	mbtail(ido_nmatch() == 1 ? " [" : " {", sel, list);
+}
+
+static void
+mbrotate(int dir)
+{
+	ido_rotate(dir);
+	mb.stale = TRUE;
+}
+
+/*
+ * Replace the directory a file prompt shows before the text, and the
+ * text.  Returns what mbinsert() does.
+ */
+static int
+mbsetdir(const char *dir, const char *text)
+{
+	int	 y;
+
+	mb.lo = 0;
+	if ((y = mbset(dir)) != TRUE)
+		return (y);
+	mb.lo = mb.epos;
+	return (mbinsert(text, strlen(text)));
+}
+
+/*
+ * After a key in ido-mode: a slash in the text of a file prompt
+ * moves it to that directory, then the matches are redrawn.  Returns
+ * what mbinsert() does.
+ */
+static int
+mbidoupdate(int flag)
+{
+	char	 text[NFILEN];
+	int	 y = TRUE;
+
+	if ((flag & EFFILE) != 0 &&
+	    strlcpy(text, mbtext(), sizeof(text)) < sizeof(text) &&
+	    ido_slash(text) == TRUE)
+		y = mbsetdir(ido_dir(), text);
+	if (y == TRUE)
+		mbido();
+	return (y);
+}
+
+/* The matches as a list, for the *Completions* window. */
+static struct list *
+mbidolist(void)
+{
+	struct list	*lh = NULL;
+	int		 i;
+
+	for (i = 0; i < ido_nmatch(); i++)
+		if (list_push(&lh, ido_matchname(i)) == FALSE)
+			break;
+	return (lh);
+}
+
+/*
+ * The keys ido-mode takes at a prompt.  Returns what mbinsert() does,
+ * or MBPASS for a key the editor gets.
+ */
+#define MBPASS	(-1)
+
+static int
+mbidokey(int *c, int flag, int *cwin)
+{
+	const char	*sel;
+	char	 name[NFILEN];
+	int	 y;
+
+	switch (*c) {
+	case CCHR('S'):
+	case CCHR('R'):
+		mbrotate(*c == CCHR('S') ? 1 : -1);
+		return (TRUE);
+	case CCHR('D'):			/* nothing typed: the directory itself */
+		if ((flag & EFFILE) != 0 && mb.epos == mb.lo)
+			*c = CCHR('M');
+		return (MBPASS);
+	case CCHR('F'):			/* at the end: plain completion */
+		if (mb.cpos < mb.epos)
+			return (MBPASS);
+		mb.ido = FALSE;
+		mb.lo = 0;
+		ido_stop();
+		mbtail(NULL, NULL, NULL);
+		return (TRUE);
+	case CCHR('M'):
+		if ((sel = ido_selected()) == NULL ||
+		    (mb.epos == mb.lo && !ido_rotated() && (flag & EFFILE) == 0))
+			return (MBPASS);
+		if ((flag & EFFILE) != 0 && ido_enter(sel) == TRUE)
+			return (mbsetdir(ido_dir(), ""));
+		if ((y = mbset(sel)) != TRUE)
+			return (y);
+		return (MBPASS);	/* RET takes the match as typed */
+	case CCHR('I'):
+		if (ido_nmatch() == 1)
+			return (mbset(ido_selected()));
+		if (ido_common(mbtext(), name, sizeof(name)))
+			return (mbset(name));
+		if (ido_nmatch() > 1) {
+			complt_show(mbidolist());
+			*cwin = TRUE;
+		}
+		return (TRUE);
+	case CCHR('H'):
+	case CCHR('?'):
+		if ((flag & EFFILE) == 0 || mb.epos > mb.lo)
+			return (MBPASS);
+		if (ido_updir() == TRUE)
+			return (mbsetdir(ido_dir(), ""));
+		dobeep();
+		return (TRUE);
+	}
+	return (MBPASS);
+}
+#endif /* ENABLE_IDO */
 
 /*
  * What was typed at earlier prompts, newest last, one list per kind
@@ -532,7 +723,7 @@ mbhist(int dir)
 	}
 	if (mbh.pos == mbh.h->n) {
 		free(mbh.cur);
-		if ((mbh.cur = strndup(mb.buf, mb.epos)) == NULL)
+		if ((mbh.cur = strndup(mb.buf + mb.lo, mb.epos - mb.lo)) == NULL)
 			return (ABORT);
 	}
 	mbh.pos = pos;
@@ -620,7 +811,7 @@ mbcommand(PF funct, int c)
 	else if (funct == forwchar)
 		mbright();
 	else if (funct == gotobol)
-		mbgoto(0);
+		mbgoto(mb.lo);
 	else if (funct == gotoeol)
 		mbgoto(mb.epos);
 	else if (funct == backword)
@@ -628,7 +819,7 @@ mbcommand(PF funct, int c)
 	else if (funct == forwword)
 		mbgoto(mbnextword());
 	else if (funct == backdel) {
-		if (mb.cpos > 0) {
+		if (mb.cpos > mb.lo) {
 			mbleft();
 			mbdelete(mbcharlen());
 		}
@@ -652,10 +843,15 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 {
 	int	 c, i, y;
 	int	 cplflag;		/* display completion list */
+	PF	 funct;
 	int	 cwin = FALSE;		/* completion list created */
 	struct buffer	*bp;			/* completion list buffer */
 	struct mgwin	*wp;			/* window for compl list */
 	char	*ret;			/* return value */
+#ifdef ENABLE_IDO
+	char	 text[NFILEN];
+	int	 esc;
+#endif
 
 	static char emptyval[] = "";	/* XXX hackish way to return err msg*/
 
@@ -687,17 +883,42 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 	} else
 		eputc(' ');
 	eformat(fp, ap);
-	if ((flag & EFDEF) != 0) {
+	mb.lo = 0;
+	mb.ido = FALSE;
+#ifdef ENABLE_IDO
+	mb.ido = ido_mode && (flag & EFAUTO) != 0 && buf != NULL;
+	if (mb.ido) {
+		strlcpy(text, (flag & EFDEF) != 0 ? buf : "", sizeof(text));
+		if (ido_start(flag, text) != TRUE)
+			mb.ido = FALSE;
+	}
+#endif
+	if ((flag & EFDEF) != 0 && !mb.ido) {
 		if (buf == NULL)
 			return (NULL);
 		eputs(buf);
 		mb.epos = mb.cpos += strlen(buf);
 	}
 	tteeol();
+#ifdef ENABLE_IDO
+	if (mb.ido) {
+		/* the directory of a file prompt first, read only */
+		if (mbsetdir(ido_dir(), text) == TRUE)
+			mbido();
+		else {
+			mb.ido = FALSE;
+			ido_stop();
+		}
+	}
+#endif
 	ttflush();
 	for (;;) {
-		y = TRUE;
 		c = getkey(FALSE);
+#ifdef ENABLE_IDO
+		if (mb.ido && (y = mbidokey(&c, flag, &cwin)) != MBPASS)
+			goto next;
+#endif
+		y = TRUE;
 		if ((flag & EFAUTO) != 0 && c == CCHR('I')) {
 			if (mb.buf == NULL)
 				goto memfail;
@@ -780,7 +1001,7 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 		case CCHR('X'):			/* kill line */
 			/* fallthrough */
 		case CCHR('U'):
-			mbdelto(0);
+			mbdelto(mb.lo);
 			break;
 
 		case CCHR('W'):			/* kill to beginning of word */
@@ -794,8 +1015,25 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 			break;
 
 		default:			/* as bound in the editor */
-			y = mbcommand(mbkey(&c), c);
+#ifdef ENABLE_IDO
+			esc = (c == CCHR('['));
+#endif
+			funct = mbkey(&c);
+#ifdef ENABLE_IDO
+			/* the arrow keys step through the matches in ido-mode */
+			if (mb.ido && esc &&
+			    (funct == forwchar || funct == backchar)) {
+				mbrotate(funct == forwchar ? 1 : -1);
+				break;
+			}
+#endif
+			y = mbcommand(funct, c);
 		}
+#ifdef ENABLE_IDO
+next:
+		if (y == TRUE && mb.ido)
+			y = mbidoupdate(flag);
+#endif
 		if (y == ABORT)
 			goto memfail;
 		if (y == FALSE)
@@ -806,6 +1044,9 @@ toolong:
 		dobeep_msg("Line too long. Press Control-g to escape.");
 	}
 done:
+#ifdef ENABLE_IDO
+	ido_stop();
+#endif
 	if (cwin == TRUE) {
 		/* blow away cpltion window */
 		bp = bfind("*Completions*", TRUE);
@@ -820,6 +1061,9 @@ done:
 	}
 	return (ret);
 memfail:
+#ifdef ENABLE_IDO
+	ido_stop();
+#endif
 	if (mb.dynbuf)
 		free(mb.buf);
 	dobeep();

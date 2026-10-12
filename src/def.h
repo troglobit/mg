@@ -447,6 +447,7 @@ void		 ttwindow(int, int);
 void		 ttnowindow(void);
 void		 ttcolor(int);
 void		 ttattr(int, int);
+void		 ttemph(int);
 void		 ttresize(void);
 
 extern volatile sig_atomic_t winch_flag;
@@ -827,6 +828,26 @@ int		 killregion(int, int);
 int		 delselmode(int, int);
 int		 delsel(PF, int, int);
 void		 delsel_add(PF, int);
+
+#ifdef ENABLE_IDO
+/* ido.c */
+extern int	 ido_mode;
+int		 idomode(int, int);
+int		 ido_start(int, char *);
+void		 ido_stop(void);
+int		 ido_match(const char *);
+const char	*ido_selected(void);
+int		 ido_nmatch(void);
+const char	*ido_matchname(int);
+int		 ido_rotated(void);
+void		 ido_rotate(int);
+int		 ido_common(const char *, char *, size_t);
+void		 ido_list(char *, size_t);
+const char	*ido_dir(void);
+int		 ido_enter(const char *);
+int		 ido_updir(void);
+int		 ido_slash(char *);
+#endif /* ENABLE_IDO */
 int		 copyregion(int, int);
 int		 lowerregion(int, int);
 int		 upperregion(int, int);

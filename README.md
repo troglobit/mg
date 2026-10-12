@@ -127,6 +127,7 @@ with the official Mg.  By default, all below features are enabled:
     --disable-cscope     Disable Cscope support
     --disable-ctags      Disable ctags(1) support, required by Cscope
     --disable-dired      Disable directory editor
+    --disable-ido        Disable ido-mode, substring matching at prompts
     --disable-regexp     Disable full regexp search
     --disable-syntax     Disable syntax highlighting and comment-dwim
     --disable-togglenl   Disable toggle-newline-prompt extension (not in OpenBSD)
@@ -255,6 +256,10 @@ New features include, but are not limited to:
 * Buffer cycling with `C-x left` and `C-x right`, most recently used first
 * A minibuffer that edits like a buffer, the same keys for word and line
   motion, with a history per kind of prompt on Up, Down, M-p and M-n
+* Ido mode: the `M-x`, buffer and file prompts match what you type as a
+  substring and show the matches on the echo line, the arrow keys step
+  through them, and file prompts walk directories, like ido-mode in
+  GNU Emacs
 * `sort-lines`, `transpose-lines`, `whitespace-cleanup`, `rename-buffer`,
   and the names GNU Emacs uses today, like `kill-ring-save`, in `M-x`
 * `text-mode` for prose, which turns on `auto-fill-mode` for *.txt,

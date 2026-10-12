@@ -51,6 +51,7 @@ AC_ARG_ENABLE(compile,  AS_HELP_STRING([--disable-compile],  [Disable C compile 
 AC_ARG_ENABLE(cscope,   AS_HELP_STRING([--disable-cscope],   [Disable Cscope support]))
 AC_ARG_ENABLE(ctags,    AS_HELP_STRING([--disable-ctags],    [Disable ctags(1) support, required by Cscope]))
 AC_ARG_ENABLE(dired,    AS_HELP_STRING([--disable-dired],    [Disable directory editor]))
+AC_ARG_ENABLE(ido,      AS_HELP_STRING([--disable-ido],      [Disable ido-mode, substring matching at prompts]))
 AC_ARG_ENABLE(regexp,   AS_HELP_STRING([--disable-regexp],   [Disable full regexp search]))
 AC_ARG_ENABLE(syntax,   AS_HELP_STRING([--disable-syntax],   [Disable syntax highlighting and comment-dwim]))
 AC_ARG_ENABLE(togglenl, AS_HELP_STRING([--disable-togglenl], [Disable toggle-newline-prompt extension]))
@@ -118,6 +119,7 @@ AS_IF([test "x$enable_all" = "xno"],
 	enable_cscope="no"
 	enable_ctags="no"
 	enable_dired="no"
+	enable_ido="no"
 	enable_regexp="no"
 	enable_togglenl="no"
 	enable_syntax="no"
@@ -165,6 +167,9 @@ AS_IF([test "x$enable_togglenl" != "xno"], enable_togglenl="yes"
 AS_IF([test "x$enable_syntax" != "xno"], enable_syntax="yes"
 	AC_DEFINE(ENABLE_SYNTAX, 1, [Enable syntax highlighting]))
 
+AS_IF([test "x$enable_ido" != "xno"], enable_ido="yes"
+	AC_DEFINE(ENABLE_IDO, 1, [Enable ido-mode at the prompts]))
+
 # The file modes, all by default, given as a list with spaces or commas
 AS_CASE(["$modes"],
 	[yes|all], [modes="MG_MODES"],
@@ -198,6 +203,7 @@ AM_CONDITIONAL(COMPILE,  [test "x$enable_compile"  = "xyes"])
 AM_CONDITIONAL(CSCOPE,   [test "x$enable_cscope"   = "xyes"])
 AM_CONDITIONAL(CTAGS,    [test "x$enable_ctags"    = "xyes"])
 AM_CONDITIONAL(DIRED,    [test "x$enable_dired"    = "xyes"])
+AM_CONDITIONAL(IDO,      [test "x$enable_ido"      = "xyes"])
 AM_CONDITIONAL(TINY,     [test "x$enable_tiny"     = "xyes"])
 AM_CONDITIONAL(MGLOG,    [test "x$with_mglog"     != "xno"])
 AM_CONDITIONAL(DOCS,     [test "x$with_docs"      != "xno"])
@@ -240,6 +246,7 @@ cat <<EOF
   cscope.........: $enable_cscope
   ctags..........: $enable_ctags
   dired..........: $enable_dired
+  ido-mode.......: $enable_ido
   regexp.........: $enable_regexp
   syntax.........: $enable_syntax
   file modes.....: ${modes:-no}

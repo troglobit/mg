@@ -16,6 +16,15 @@ All relevant changes to the project are documented in this file.
   for the mark used as a place to return to with `C-x C-x`
 - `C-Home` and `C-End` move to the beginning and end of the buffer, as
   in GNU Emacs, alongside `C-PgUp` and `C-PgDn`
+- New `ido-mode`, as in GNU Emacs: the `M-x`, buffer and file prompts
+  match what is typed as a substring and show the matches on the echo
+  line.  RET picks the first, the left and right arrow keys, or `C-s`
+  and `C-r`, step through them, TAB completes what they have in common,
+  `C-j` takes the text as typed and `C-f` at the end of the text falls
+  back to plain completion.  At a file prompt the directory
+  is part of the prompt: RET enters a subdirectory, DEL with nothing
+  typed goes up, `~/` and `//` jump to the home directory and the root.
+  Enabled by default, `ido-mode 0` in `~/.mg` turns it off
 
 ### Fixes
 

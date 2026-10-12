@@ -936,6 +936,23 @@ When disabled, a working directory is set for each buffer.
 Go to a specific line.
 If an argument is present, then
 it is the line number, else prompt for a line number to use.
+.It Ic ido-mode
+Toggle ido mode, enabled by default.
+When enabled, the M-x, buffer and file prompts match what is typed as
+a substring of the candidates, case ignored, and show the matches
+after the text: the selected one first, in bold and underlined, a
+prefix match before a substring match.
+RET picks the selected match, C-s and C-r, or the right and left
+arrow keys, select the next and previous one, TAB completes what the
+matches have in common or lists them, C-j takes the text as typed,
+and C-f at the end of the text returns to plain completion for the
+rest of the prompt.
+At a file prompt the directory is part of the prompt: RET on a
+subdirectory enters it, DEL with nothing typed goes to the parent,
+a slash in the text moves to that directory, ~/ to the home directory
+and // to the root, and C-d with nothing typed opens the directory in
+dired.
+Like ido-mode in GNU Emacs.
 .It Ic help-help
 Prompts for one of (a)propos, (b)indings, des(c)ribe key briefly.
 .It Ic insert

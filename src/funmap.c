@@ -155,6 +155,9 @@ static struct funmap functnames[] = {
 	{gotoline, "goto-line", 1, NULL},
 	{help_help, "help-help", 0, NULL},
 	{indent, "indent-current-line", 0, NULL},
+#ifdef ENABLE_IDO
+	{idomode, "ido-mode", 0, NULL},
+#endif
 	{insert, "insert", 1, NULL},
 	{bufferinsert, "insert-buffer", 1, NULL},
 	{fileinsert, "insert-file", 1, NULL},

@@ -446,6 +446,26 @@ ttattr(int class, int rev)
 }
 
 /*
+ * Mark the selected match on the echo line, bold and underlined, or
+ * in reverse video on a terminal without attributes.
+ */
+void
+ttemph(int on)
+{
+	ttattr(SYN_NONE, FALSE);
+	if (!on)
+		return;
+	if (exit_attribute_mode == NULL) {
+		ttcolor(CMODE);
+		return;
+	}
+	if (enter_bold_mode != NULL)
+		putpad(enter_bold_mode, 1);
+	if (enter_underline_mode != NULL)
+		putpad(enter_underline_mode, 1);
+}
+
+/*
  * This routine is called by the "refresh the screen" command to try
  * to resize the display. Look in "window.c" to see how
  * the caller deals with a change.

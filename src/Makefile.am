@@ -52,6 +52,9 @@ endif
 if DIRED
 mg_SOURCES     += dired.c
 endif
+if IDO
+mg_SOURCES     += ido.c
+endif
 if REGEX
 mg_SOURCES     += re_search.c
 endif
