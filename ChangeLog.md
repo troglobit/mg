@@ -14,6 +14,8 @@ All relevant changes to the project are documented in this file.
   default, like `visual-mark-mode`
 - `C-SPC C-SPC` sets the mark without activating it, as in GNU Emacs,
   for the mark used as a place to return to with `C-x C-x`
+- `C-Home` and `C-End` move to the beginning and end of the buffer, as
+  in GNU Emacs, alongside `C-PgUp` and `C-PgDn`
 
 ### Fixes
 

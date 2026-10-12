@@ -281,7 +281,7 @@ New features include, but are not limited to:
 * Support for exhuberant/universal ctags `tags` file format
 * Built-in `*quick*` help using `C-h q`
 * Tutorial accessible using `C-h t`
-* Support for Ctrl-cursor + Ctrl-PgUp/PgDn like Emacs
+* Support for Ctrl-cursor + Ctrl-Home/End and Ctrl-PgUp/PgDn like Emacs
 * Support for `M-x no-tab-mode` and `M-x version`
 * Support for opening gzipped text files in read-only mode
 

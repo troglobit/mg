@@ -36,6 +36,8 @@ char	*key_aright = "\e[1;3C";
 char	*key_aleft  = "\e[1;3D";
 char	*key_cpgup  = "\e[5;5~";
 char	*key_cpgdn  = "\e[6;5~";
+char	*key_chome  = "\e[1;5H";
+char	*key_cend   = "\e[1;5F";
 char	*key_shiftup    = "\e[1;2A";
 char	*key_shiftdown  = "\e[1;2B";
 char	*key_shiftright = "\e[1;2C";
@@ -236,6 +238,10 @@ ttykeymapinit(void)
 		dobindkey(fundamental_map, "beginning-of-buffer", key_cpgup);
 	if (key_cpgdn)
 		dobindkey(fundamental_map, "end-of-buffer", key_cpgdn);
+	if (key_chome)
+		dobindkey(fundamental_map, "beginning-of-buffer", key_chome);
+	if (key_cend)
+		dobindkey(fundamental_map, "end-of-buffer", key_cend);
 
 	/* C-x and an arrow key, or C-arrow, cycle through the buffers */
 	bindcx("previous-buffer", key_left);
