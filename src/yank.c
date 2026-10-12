@@ -108,12 +108,14 @@ kremove(int n)
 }
 
 /*
- * Copy a string into the kill buffer. kflag gives direction.
- * if KNONE, do nothing.
+ * Copy a string into the kill buffer. kflag gives direction;
+ * with neither KFORW nor KBACK set, do nothing.
  */
 int
 kchunk(char *cp1, RSIZE chunk, int kflag)
 {
+	if ((kflag & (KFORW | KBACK)) == 0)
+		return (TRUE);
 	/*
 	 * HACK - doesn't matter, and fixes back-over-nl bug for empty
 	 *	kill buffers.

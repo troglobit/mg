@@ -15,6 +15,11 @@ All relevant changes to the project are documented in this file.
 - `C-SPC C-SPC` sets the mark without activating it, as in GNU Emacs,
   for the mark used as a place to return to with `C-x C-x`
 
+### Fixes
+
+- Fix `C-d` and DEL leaving the deleted text in the kill ring when it
+  was empty, so the next `C-y` brought it back
+
 
 [v4.2][] - 2026-10-07
 ---------------------
