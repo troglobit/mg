@@ -28,6 +28,13 @@ All relevant changes to the project are documented in this file.
 - The `display-time-mode` clock is kept current while waiting for a
   key, instead of only on the next redraw
 
+### Fixes
+
+- Fix a line longer than 127 bytes in `~/.mg`, or in a buffer given to
+  `eval-current-buffer`, silently ending the load: that line and every
+  one after it were ignored.  An `auto-execute` pattern can now be as
+  long as a file name
+
 [v4.3][] - 2026-10-12
 ---------------------
 

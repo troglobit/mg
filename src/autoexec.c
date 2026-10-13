@@ -141,7 +141,7 @@ add_autoexec(const char *pattern, const char *func)
 int
 auto_execute(int f, int n)
 {
-	char	patbuf[BUFSIZE], funcbuf[BUFSIZE], *patp, *funcp;
+	char	patbuf[NFILEN], funcbuf[BUFSIZE], *patp, *funcp;
 	int	s;
 
 	if ((patp = eread("Filename pattern: ", patbuf, sizeof(patbuf),

@@ -593,19 +593,18 @@ evalbuffer(int f, int n)
 {
 	struct line		*lp;
 	struct buffer		*bp = curbp;
-	int		 s, llen, lnum = 0;
-	static char	 excbuf[BUFSIZE];
+	char			*line;
+	int		 s, lnum = 0;
 
 	for (lp = bfirstlp(bp); lp != bp->b_headp; lp = lforw(lp)) {
 		lnum++;
-		llen = llength(lp);
-		if (llen >= BUFSIZE)
-			return (FALSE);
-		(void)strncpy(excbuf, ltext(lp), llen);
-
-		/* make sure the line is terminated */
-		excbuf[llen] = '\0';
-		if ((s = excline(excbuf, llen, lnum)) != TRUE) {
+		if ((line = linetostr(lp)) == NULL) {
+			cleanup();
+			return (dobeep_msg("Out of memory"));
+		}
+		s = excline(line, llength(lp), lnum);
+		free(line);
+		if (s != TRUE) {
 			cleanup();
 			return (s);
 		}
@@ -657,25 +656,26 @@ static char	 loaderr[NFILEN + 64];	/* where load() last gave up */
 int
 load(FILE *ffp, const char *fname)
 {
-	int	 s = TRUE, line;
-	int	 nbytes = 0;
-	char	 excbuf[BUFSIZE];
+	char	*excbuf = NULL;
+	size_t	 size = 0;
+	ssize_t	 len;
+	int	 line = 0;
 
-	line = 0;
-	while ((s = ffgetline(ffp, excbuf, sizeof(excbuf) - 1, &nbytes))
-	    == FIOSUC) {
+	while ((len = getline(&excbuf, &size, ffp)) != -1) {
 		line++;
-		excbuf[nbytes] = '\0';
-		if (excline(excbuf, nbytes, line) != TRUE)
+		if (excbuf[len - 1] == '\n')
+			excbuf[--len] = '\0';
+		if (excline(excbuf, len, line) != TRUE)
 			goto err;
 	}
-	excbuf[nbytes] = '\0';
-	if (s != FIOEOF)
-		return (FALSE);
-	if (nbytes && excline(excbuf, nbytes, ++line) != TRUE)
+	if (ferror(ffp)) {
+		line++;
 		goto err;
+	}
+	free(excbuf);
 	return (TRUE);
 err:
+	free(excbuf);
 	dobeep();
 	snprintf(loaderr, sizeof(loaderr), "Error loading file %s at line %d",
 	    fname, line);

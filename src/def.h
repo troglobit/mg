@@ -203,7 +203,7 @@ typedef int	(*PF)(int, int);	/* generally useful type */
 
 #define MAX_TOKEN 64
 
-#define	BUFSIZE	128	/* Size of line contents in extend.c  */
+#define	BUFSIZE	128	/* Size of command argument buffers  */
 /*
  * Previously from sysdef.h
  */
