@@ -577,6 +577,10 @@ int		 getbufcwd(char *, size_t);
 int		 checkdirty(struct buffer *);
 int		 revertbuffer(int, int);
 int		 revertbp(struct buffer *);
+extern int	 autorevert, autorevert_interval;
+int		 autorevertmode(int, int);
+int		 setautorevertint(int, int);
+int		 autorevert_check(void);
 int		 diffbuffer(int, int);
 struct buffer	*findbuffer(char *);
 
@@ -587,7 +591,9 @@ void		 vttidy(void);
 void		 update(int);
 int		 linenotoggle(int, int);
 int		 colnotoggle(int, int);
+extern int	 timesh;
 int		 timetoggle(int, int);
+int		 timeupdate(void);
 int		 visualmark(int, int);
 int		 fontlock(int, int);
 

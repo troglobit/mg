@@ -13,8 +13,15 @@ All relevant changes to the project are documented in this file.
   copies it and `S-Insert` yanks.  `C-Delete` kills the word after dot.
   Most terminal emulators keep `S-Insert`, and some `C-Insert`, for the
   system selection and never pass them on
+- New `auto-revert-mode`: while waiting for a key, a file buffer whose
+  file changed on disk is reloaded, as long as it has no unsaved edits,
+  with each window on it keeping its line.  Checked every five seconds,
+  `set-auto-revert-interval` changes that.  Enabled by default,
+  `auto-revert-mode 0` in `~/.mg` disables it
 - `revert-buffer` keeps the line in every window showing the buffer,
   not only the current one
+- The `display-time-mode` clock is kept current while waiting for a
+  key, instead of only on the next redraw
 
 [v4.3][] - 2026-10-12
 ---------------------

@@ -8,6 +8,7 @@
 
 #include <signal.h>
 #include <stdio.h>
+#include <time.h>
 
 #include "def.h"
 #include "kbd.h"
@@ -73,6 +74,28 @@ ungetkey(int c)
 	pushed = TRUE;
 }
 
+/*
+ * Wait for a key.  Meanwhile reload files changed on disk, see
+ * auto-revert-mode, and keep the display-time-mode clock current.
+ */
+static void
+idle(void)
+{
+	int ms, clock, reverted;
+
+	for (;;) {
+		ms = autorevert ? autorevert_interval * 1000 : 0;
+		clock = timesh ? (60 - time(NULL) % 60) * 1000 : 0;
+		if (clock != 0 && (ms == 0 || clock < ms))
+			ms = clock;
+		if (ms == 0 || ttwait(ms) == FALSE)
+			return;
+		reverted = autorevert && autorevert_check();
+		if (timeupdate() || reverted)
+			update(CMODE);
+	}
+}
+
 int
 getkey(int flag)
 {
@@ -88,6 +111,8 @@ getkey(int flag)
 		}
 		if (promptp > prompt)
 			*(promptp - 1) = ' ';
+		else
+			idle();
 	}
 	if (pushed) {
 		c = pushedc;

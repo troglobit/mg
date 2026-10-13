@@ -561,6 +561,19 @@ Can be set globally with
 .Ic set-default-mode .
 Naming it in the startup file does the same, since there is no buffer
 there yet to toggle it in.
+.It Ic auto-revert-mode
+Toggle auto revert mode, enabled by default.
+While waiting for a key,
+.Nm
+checks every five seconds whether a file has changed on disk and
+reloads the buffer, as long as it has no unsaved edits.
+Each window showing the buffer keeps its line.
+A buffer with unsaved edits is left alone, and asks before the next
+edit as before.
+.Ic auto-revert-mode 0
+in the startup file disables it, and
+.Ic set-auto-revert-interval
+changes how often to check.
 .It Ic back-to-indentation
 Move the dot to the first non-whitespace character on the current line.
 .It Ic backup-to-home-directory
@@ -798,6 +811,9 @@ Can be set globally with
 or by naming it in the startup file.
 .It Ic display-time-mode
 Toggle whether the current time is displayed in the modeline.
+The clock is kept current while
+.Nm
+waits for a key.
 .It Ic downcase-region
 Set all characters in the region to lower case.
 .It Ic downcase-word
@@ -1334,6 +1350,10 @@ Toggle double or single spaces for end of sentences.
 Double is the default.
 Currently only affects
 .Ic fill-paragraph .
+.It Ic set-auto-revert-interval
+Set the number of seconds between the checks made by
+.Ic auto-revert-mode ,
+five by default.
 .It Ic set-case-fold-search
 Set case-fold searching, causing case not to matter
 in regular expression searches.

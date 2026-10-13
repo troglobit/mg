@@ -109,7 +109,7 @@ struct score *score;			/* [NROW * NROW] */
 
 static int	 linenos = TRUE;
 static int	 colnos  = TRUE;
-static int	 timesh  = FALSE;
+int		 timesh  = FALSE;
 
 static int	 visual_mark = TRUE;	/* draw region after set-mark	*/
 static int	 font_lock = TRUE;	/* syntax highlighting		*/
@@ -520,6 +520,27 @@ timetoggle(int f, int n)
 		timesh = !timesh;
 
 	sgarbf = TRUE;
+
+	return (TRUE);
+}
+
+/*
+ * Mark the modelines for redraw once the clock reaches the next
+ * minute, called while waiting for a key.  Returns TRUE if it did.
+ */
+int
+timeupdate(void)
+{
+	static time_t	 last;
+	time_t		 now;
+
+	if (!timesh)
+		return (FALSE);
+	now = time(NULL) / 60;
+	if (now == last)
+		return (FALSE);
+	last = now;
+	upmodes(NULL);
 
 	return (TRUE);
 }
