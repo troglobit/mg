@@ -54,6 +54,8 @@ char	*key_csup       = "\e[1;6A";
 char	*key_csdown     = "\e[1;6B";
 char	*key_csright    = "\e[1;6C";
 char	*key_csleft     = "\e[1;6D";
+char	*key_cins       = "\e[2;5~";
+char	*key_cdel       = "\e[3;5~";
 
 /*
  * Shifted movement, like shift-select-mode in GNU Emacs: activate
@@ -194,6 +196,11 @@ ttykeymapinit(void)
 		dobindkey(fundamental_map, "overwrite-mode", key_ic);
 	if (key_dc)
 		dobindkey(fundamental_map, "delete-char", key_dc);
+	/* IBM CUA cut and paste, from the Borland DOS editors */
+	if (key_sdc)
+		dobindkey(fundamental_map, "kill-region", key_sdc);
+	if (key_sic)
+		dobindkey(fundamental_map, "yank", key_sic);
 
 	/* Bind function keys */
 	if (key_f1)
@@ -277,6 +284,10 @@ ttykeymapinit(void)
 	dobindkey(fundamental_map, "shift-forward-word", key_csright);
 	dobindkey(fundamental_map, "shift-backward-paragraph", key_csup);
 	dobindkey(fundamental_map, "shift-forward-paragraph", key_csdown);
+
+	/* IBM CUA copy, and C-Delete as kill-word */
+	dobindkey(fundamental_map, "copy-region-as-kill", key_cins);
+	dobindkey(fundamental_map, "kill-word", key_cdel);
 
 	/* Check for $TERM specific .mg startup file */
 	if ((cp = getenv("TERM")) != NULL &&

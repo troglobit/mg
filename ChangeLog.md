@@ -3,6 +3,17 @@ Change Log
 
 All relevant changes to the project are documented in this file.
 
+[UNRELEASED][]
+--------------
+
+### Changes
+
+- The IBM Common User Access (CUA) cut, copy and paste keys, known from
+  the Borland DOS editors: `S-Delete` kills the region, `C-Insert`
+  copies it and `S-Insert` yanks.  `C-Delete` kills the word after dot.
+  Most terminal emulators keep `S-Insert`, and some `C-Insert`, for the
+  system selection and never pass them on
+
 [v4.3][] - 2026-10-12
 ---------------------
 

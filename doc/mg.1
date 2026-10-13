@@ -201,6 +201,15 @@ In the following examples, C-x means Control-x, and M-x means Meta-x,
 where the Meta key may be either a special key on the keyboard
 or the ALT key; otherwise ESC followed by the key X works as well.
 .Pp
+The cut, copy and paste keys of the IBM Common User Access (CUA)
+standard, known from the Borland DOS editors, are bound as well:
+Shift and an arrow key marks text, S-Delete cuts it, C-Insert copies
+it and S-Insert pastes.
+C-Delete deletes the word after dot.
+See
+.Sx CAVEATS
+for terminals that keep these keys for themselves.
+.Pp
 .Bl -tag -width xxxxxxxxxxxx -offset indent -compact
 .It C-@, C-SPC
 set-mark-command
@@ -272,7 +281,7 @@ transpose-chars
 universal-argument
 .It C-v
 scroll-up
-.It C-w
+.It C-w, S-Delete
 kill-region
 .It C-x C-b
 list-buffers
@@ -370,7 +379,7 @@ undo
 shrink-window-horizontally
 .It C-x }
 enlarge-window-horizontally
-.It C-y
+.It C-y, S-Insert
 yank
 .It C-z
 suspend-emacs
@@ -400,7 +409,7 @@ join-line
 backward-word
 .It M-c
 capitalize-word
-.It M-d
+.It M-d, C-Delete
 kill-word
 .It M-f, C-right
 forward-word
@@ -435,7 +444,7 @@ transpose-words
 upcase-word
 .It M-v
 scroll-down
-.It M-w
+.It M-w, C-Insert
 copy-region-as-kill
 .It M-x
 execute-extended-command
@@ -1775,6 +1784,14 @@ in startup files.
 On terminals that signal the Meta key by setting the eighth bit,
 Meta bindings only work after enabling
 .Ic meta-key-mode .
+.Pp
+Most terminal emulators act on S-Insert themselves, pasting the
+system selection, and some do the same with C-Insert for copy.
+Those keys never reach
+.Nm
+unless the terminal is told to pass them on.
+C-Insert and C-Delete also need a terminal that sends xterm style
+sequences for them.
 .Pp
 In UTF-8 locales, multibyte characters are edited and displayed as
 single characters.

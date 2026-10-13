@@ -269,6 +269,9 @@ New features include, but are not limited to:
   video
 * Marking text with Shift + arrow keys, or a page at a time with
   Shift + PgUp/PgDn
+* IBM CUA cut, copy and paste, as in the Borland DOS editors:
+  Shift-Delete, Ctrl-Insert and Shift-Insert, and Ctrl-Delete to kill
+  a word
 * Delete selection mode: typing over the marked region replaces it, and
   DEL deletes it
 * Side by side windows with `C-x 3`, `split-window-horizontally`

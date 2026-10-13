@@ -45,6 +45,8 @@ extern TERMINAL *cur_term;
 #define key_end              CUR t_str[52]
 #define key_ic               CUR t_str[50]
 #define key_dc               CUR t_str[51]
+#define key_sic              CUR t_str[70]
+#define key_sdc              CUR t_str[71]
 
 #define key_f1               CUR t_str[58]
 #define key_f2               CUR t_str[59]

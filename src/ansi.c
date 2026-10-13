@@ -99,6 +99,8 @@ int setupterm(const char *term, int filedes, int *errret)
 			"\e[21~",	/* 67: F10   */
 			"\e[23~",	/* 68: F11   */
 			"\e[24~",	/* 69: F12   */
+			"\e[2;2~",	/* 70: S-Ins */
+			"\e[3;2~",	/* 71: S-Del */
 		}
 	};
 	struct	termios	 ostate;	/* saved tty state */
