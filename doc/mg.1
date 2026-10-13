@@ -1299,7 +1299,7 @@ Move a window edge in the given direction: the edge on that side
 of the current window when it is a divider, otherwise the opposite
 one, so the arrow and the divider travel together.
 Bound to Meta, shift and an arrow key on terminals that send xterm
-style sequences.
+or rxvt style sequences.
 .It Ic require-final-newline <nil | T | ask>
 Require files to have a final newline added when saving.  By default
 this is disabled (nil).  To always add a missing newline set to
@@ -1452,7 +1452,7 @@ so holding shift with the arrow, Home/End, and PgUp/PgDn keys marks
 text, by word and paragraph with control held too.
 The first unshifted command drops the selection again; a mark set
 with C-SPC is left alone.
-Bound to the shifted keys on terminals that send xterm style
+Bound to the shifted keys on terminals that send xterm or rxvt style
 sequences.
 .It Ic shrink-window
 Shrink current window by one line.
@@ -1618,8 +1618,8 @@ empty lines are kept.
 .It Ic windmove-up
 Select the window beside the current one in the given direction.
 With several neighbors the topmost, or leftmost, is chosen.
-Bound to Meta and an arrow key on terminals that send xterm style
-sequences; note that some terminals grab these keys for their own
+Bound to Meta and an arrow key on terminals that send xterm or rxvt
+style sequences; note that some terminals grab these keys for their own
 split panes.
 .It Ic write-file
 Ask for a file name and write the contents of the current buffer to
@@ -1835,6 +1835,11 @@ Those keys never reach
 unless the terminal is told to pass them on.
 C-Insert and C-Delete also need a terminal that sends xterm or rxvt
 style sequences for them.
+.Pp
+rxvt and urxvt keep S-PgUp and S-PgDn for their scrollback.
+They also send the same for control, shift and an arrow key as for
+shift and the arrow alone, so marking by word and paragraph only works
+with keysym resources that make them send the xterm sequences.
 .Pp
 In UTF-8 locales, multibyte characters are edited and displayed as
 single characters.

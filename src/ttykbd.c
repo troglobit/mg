@@ -56,8 +56,46 @@ char	*key_csright    = "\e[1;6C";
 char	*key_csleft     = "\e[1;6D";
 char	*key_cins       = "\e[2;5~";
 char	*key_cdel       = "\e[3;5~";
-char	*key_rxvt_cins  = "\e[2^";		/* rxvt, urxvt */
-char	*key_rxvt_cdel  = "\e[3^";
+
+/*
+ * rxvt and urxvt send Shift as $ or a lower case arrow letter, Ctrl
+ * as ^ or ESC O, and Alt as a leading ESC.
+ */
+static const struct {
+	const char	*seq;
+	const char	*func;
+} rxvtkeys[] = {
+	{ "\e[7~",  "beginning-of-line" },
+	{ "\e[8~",  "end-of-line" },
+	{ "\eOa",   "backward-paragraph" },
+	{ "\eOb",   "forward-paragraph" },
+	{ "\eOc",   "forward-word" },
+	{ "\eOd",   "backward-word" },
+	{ "\e\e[A", "windmove-up" },
+	{ "\e\e[B", "windmove-down" },
+	{ "\e\e[C", "windmove-right" },
+	{ "\e\e[D", "windmove-left" },
+	{ "\e\e[a", "resize-window-up" },
+	{ "\e\e[b", "resize-window-down" },
+	{ "\e\e[c", "resize-window-right" },
+	{ "\e\e[d", "resize-window-left" },
+	{ "\e[5^",  "beginning-of-buffer" },
+	{ "\e[6^",  "end-of-buffer" },
+	{ "\e[7^",  "beginning-of-buffer" },
+	{ "\e[8^",  "end-of-buffer" },
+	{ "\e[a",   "shift-previous-line" },
+	{ "\e[b",   "shift-next-line" },
+	{ "\e[c",   "shift-forward-char" },
+	{ "\e[d",   "shift-backward-char" },
+	{ "\e[7$",  "shift-beginning-of-line" },
+	{ "\e[8$",  "shift-end-of-line" },
+	{ "\e[5$",  "shift-scroll-down" },
+	{ "\e[6$",  "shift-scroll-up" },
+	{ "\e[2$",  "yank" },
+	{ "\e[3$",  "kill-region" },
+	{ "\e[2^",  "copy-region-as-kill" },
+	{ "\e[3^",  "kill-word" },
+};
 
 /*
  * Shifted movement, like shift-select-mode in GNU Emacs: activate
@@ -172,6 +210,7 @@ ttykeymapinit(void)
 {
 	char	*cp, file[NFILEN];
 	FILE	*ffp;
+	size_t	 i;
 
 	/* Bind keypad function keys. */
 	if (key_left)
@@ -255,8 +294,10 @@ ttykeymapinit(void)
 	/* C-x and an arrow key, or C-arrow, cycle through the buffers */
 	bindcx("previous-buffer", key_left);
 	bindcx("previous-buffer", key_cleft);
+	bindcx("previous-buffer", "\eOd");
 	bindcx("next-buffer", key_right);
 	bindcx("next-buffer", key_cright);
+	bindcx("next-buffer", "\eOc");
 	/* The goto-line prefix from newer GNU Emacs; C-x g remains */
 	dobindkey(fundamental_map, "goto-line", "\egg");
 	dobindkey(fundamental_map, "goto-line", "\eg\eg");
@@ -289,9 +330,11 @@ ttykeymapinit(void)
 
 	/* IBM CUA copy, and C-Delete as kill-word */
 	dobindkey(fundamental_map, "copy-region-as-kill", key_cins);
-	dobindkey(fundamental_map, "copy-region-as-kill", key_rxvt_cins);
 	dobindkey(fundamental_map, "kill-word", key_cdel);
-	dobindkey(fundamental_map, "kill-word", key_rxvt_cdel);
+
+	/* rxvt and urxvt */
+	for (i = 0; i < NELEMS(rxvtkeys); i++)
+		dobindkey(fundamental_map, rxvtkeys[i].func, rxvtkeys[i].seq);
 
 	/* Check for $TERM specific .mg startup file */
 	if ((cp = getenv("TERM")) != NULL &&

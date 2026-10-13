@@ -30,6 +30,10 @@ All relevant changes to the project are documented in this file.
 
 ### Fixes
 
+- Fix shift, control and Meta with the arrow keys, Home, End, PgUp,
+  PgDn, Insert and Delete in rxvt and urxvt.  These terminals send
+  their own sequences for the keys, which mg did not bind.  Without
+  curses, plain Home and End did not work there either
 - Fix a line longer than 127 bytes in `~/.mg`, or in a buffer given to
   `eval-current-buffer`, silently ending the load: that line and every
   one after it were ignored.  An `auto-execute` pattern can now be as
