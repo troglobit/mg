@@ -56,6 +56,8 @@ char	*key_csright    = "\e[1;6C";
 char	*key_csleft     = "\e[1;6D";
 char	*key_cins       = "\e[2;5~";
 char	*key_cdel       = "\e[3;5~";
+char	*key_rxvt_cins  = "\e[2^";		/* rxvt, urxvt */
+char	*key_rxvt_cdel  = "\e[3^";
 
 /*
  * Shifted movement, like shift-select-mode in GNU Emacs: activate
@@ -287,7 +289,9 @@ ttykeymapinit(void)
 
 	/* IBM CUA copy, and C-Delete as kill-word */
 	dobindkey(fundamental_map, "copy-region-as-kill", key_cins);
+	dobindkey(fundamental_map, "copy-region-as-kill", key_rxvt_cins);
 	dobindkey(fundamental_map, "kill-word", key_cdel);
+	dobindkey(fundamental_map, "kill-word", key_rxvt_cdel);
 
 	/* Check for $TERM specific .mg startup file */
 	if ((cp = getenv("TERM")) != NULL &&
