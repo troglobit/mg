@@ -1088,7 +1088,7 @@ checkdirty(struct buffer *bp)
 			bp->b_flag |= BFIGNDIRTY;
 			return (TRUE);
 		case REVERT:
-			dorevert();
+			revertbp(curbp);
 			return (FALSE);
 		default:
 			return (s);
@@ -1114,47 +1114,100 @@ revertbuffer(int f, int n)
 	    curbp->b_fname);
 
 	if (eyorn(fbuf) == TRUE)
-		return dorevert();
+		return (revertbp(curbp));
 
 	return (FALSE);
 }
 
-int
-dorevert(void)
+/*
+ * The n'th line of bp, or its last when there are fewer.
+ */
+static struct line *
+nthline(struct buffer *bp, int *n)
 {
-	int lineno;
-	struct undo_rec *rec;
-	char fname[NFILEN];
+	struct line *lp = bfirstlp(bp);
+	int i;
 
-	if (access(curbp->b_fname, F_OK|R_OK) != 0) {
+	for (i = 1; i < *n && lforw(lp) != bp->b_headp; i++)
+		lp = lforw(lp);
+	*n = i;
+
+	return (lp);
+}
+
+/*
+ * Reload bp from its file.  Each window showing it keeps its line,
+ * and the buffer its own dot when shown nowhere.
+ */
+int
+revertbp(struct buffer *bp)
+{
+	struct buffer	*obp = curbp;
+	struct mgwin	*owp = curwp, *wp, win;
+	struct undo_rec	*rec;
+	char		 fname[NFILEN];
+	int		*lines, lineno, nwin, s;
+
+	if (access(bp->b_fname, F_OK|R_OK) != 0) {
 		dobeep();
 		if (errno == ENOENT)
-			ewprintf("File %s no longer exists!",
-			    curbp->b_fname);
+			ewprintf("File %s no longer exists!", bp->b_fname);
 		else
-			ewprintf("File %s is no longer readable!",
-			    curbp->b_fname);
+			ewprintf("File %s is no longer readable!", bp->b_fname);
 		return (FALSE);
 	}
 
-	/* Save our current line, so we can go back after reloading. */
-	lineno = curwp->w_dotline;
+	/* readin resets every window on the buffer to the top */
+	if ((lines = calloc(bp->b_nwnd + 1, sizeof(*lines))) == NULL)
+		return (dobeep_msg("Out of memory"));
+	nwin = 0;
+	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
+		if (wp->w_bufp == bp)
+			lines[nwin++] = wp->w_dotline;
+	lineno = bp->b_dotline;
 
 	/* Prevent readin from asking if we want to kill the buffer. */
-	curbp->b_flag &= ~BFCHG;
+	bp->b_flag &= ~BFCHG;
 
 	/* Clean up undo memory */
-	while ((rec = TAILQ_FIRST(&curbp->b_undo))) {
-		TAILQ_REMOVE(&curbp->b_undo, rec, next);
+	while ((rec = TAILQ_FIRST(&bp->b_undo))) {
+		TAILQ_REMOVE(&bp->b_undo, rec, next);
 		free_undo_record(rec);
 	}
 
-	/* don't use curbp->b_fname as src and dist of filename, causes mem overlap */
-	strlcpy(fname, curbp->b_fname, sizeof(fname));
+	/* don't use bp->b_fname as src and dist of filename, causes mem overlap */
+	strlcpy(fname, bp->b_fname, sizeof(fname));
 
-	if (readin(fname))
-		return(setlineno(lineno));
-	return (FALSE);
+	/*
+	 * readin inserts at dot in the current window, which may show
+	 * another buffer: give it a window on bp, as fresh as one just
+	 * created for it.
+	 */
+	memset(&win, 0, sizeof(win));
+	win.w_bufp = bp;
+	win.w_dotp = win.w_linep = bp->b_headp;
+	win.w_dotline = win.w_markline = 1;
+	curwp = &win;
+	curbp = bp;
+	s = readin(fname);
+	curwp = owp;
+	curbp = obp;
+
+	if (s == TRUE) {
+		nwin = 0;
+		for (wp = wheadp; wp != NULL; wp = wp->w_wndp) {
+			if (wp->w_bufp != bp)
+				continue;
+			wp->w_dotp = nthline(bp, &lines[nwin]);
+			wp->w_dotline = lines[nwin++];
+			wp->w_rflag |= WFMOVE;
+		}
+		bp->b_dotp = nthline(bp, &lineno);
+		bp->b_dotline = lineno;
+	}
+	free(lines);
+
+	return (s);
 }
 
 /*

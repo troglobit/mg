@@ -576,7 +576,7 @@ int		 popbuftop(struct buffer *, int);
 int		 getbufcwd(char *, size_t);
 int		 checkdirty(struct buffer *);
 int		 revertbuffer(int, int);
-int		 dorevert(void);
+int		 revertbp(struct buffer *);
 int		 diffbuffer(int, int);
 struct buffer	*findbuffer(char *);
 

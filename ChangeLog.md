@@ -13,6 +13,8 @@ All relevant changes to the project are documented in this file.
   copies it and `S-Insert` yanks.  `C-Delete` kills the word after dot.
   Most terminal emulators keep `S-Insert`, and some `C-Insert`, for the
   system selection and never pass them on
+- `revert-buffer` keeps the line in every window showing the buffer,
+  not only the current one
 
 [v4.3][] - 2026-10-12
 ---------------------

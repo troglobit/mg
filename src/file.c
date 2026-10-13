@@ -220,6 +220,7 @@ readin(char *fname)
 		if (wp->w_bufp == curbp) {
 			wp->w_dotp = wp->w_linep = bfirstlp(curbp);
 			wp->w_doto = 0;
+			wp->w_dotline = 1;
 			wp->w_markp = NULL;
 			wp->w_marko = 0;
 			wp->w_markact = FALSE;
