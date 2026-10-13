@@ -245,11 +245,17 @@ int
 ttwait(int msec)
 {
 	struct pollfd	pfd[1];
+	int		 n;
 
 	pfd[0].fd = 0;
 	pfd[0].events = POLLIN;
 
-	if ((poll(pfd, 1, msec)) == 0)
-		return (TRUE);
-	return (FALSE);
+	while ((n = poll(pfd, 1, msec)) == -1 && errno == EINTR) {
+		if (winch_flag) {
+			redraw(0, 0);
+			winch_flag = 0;
+		}
+	}
+
+	return (n == 0);
 }
