@@ -587,9 +587,15 @@ again and shown from the end.
 Tail mode works without
 .Ic auto-revert-mode ,
 on read-only buffers too, and checks as often.
-To follow every log file:
-.Pp
-.Dl auto-execute *.log auto-revert-tail-mode
+To follow every log file, and everything under
+.Pa /var/log ,
+where a
+.Ql *
+also matches subdirectories:
+.Bd -literal -offset indent
+auto-execute *.log auto-revert-tail-mode
+auto-execute /var/log/* auto-revert-tail-mode
+.Ed
 .It Ic back-to-indentation
 Move the dot to the first non-whitespace character on the current line.
 .It Ic backup-to-home-directory
