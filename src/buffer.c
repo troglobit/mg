@@ -6,6 +6,8 @@
  *		Buffer handling.
  */
 
+#include <sys/stat.h>
+
 #include <errno.h>
 #include <limits.h>
 #include <signal.h>
@@ -598,11 +600,7 @@ addlinef(struct buffer *bp, char *fmt, ...)
 	lp->l_used = strlen(lp->l_text);
 	va_end(ap);
 
-	bp->b_headp->l_bp->l_fp = lp;		/* Hook onto the end	 */
-	lp->l_bp = bp->b_headp->l_bp;
-	bp->b_headp->l_bp = lp;
-	lp->l_fp = bp->b_headp;
-	bp->b_lines++;
+	lappend(bp, lp);
 
 	return (TRUE);
 }
@@ -1257,28 +1255,69 @@ setautorevertint(int f, int n)
 
 /*
  * Reload the file buffers whose file changed on disk, leaving those
- * with unsaved edits, or told to ignore the disk, alone.  Returns TRUE
- * if any buffer was reloaded.
+ * with unsaved edits, or told to ignore the disk, alone.  A buffer in
+ * tail mode gets what was added to its file instead, and is reloaded
+ * only when the file shrank or was replaced, to be shown from the end.
+ * Tail mode works without auto-revert-mode.  Returns TRUE if any
+ * buffer changed.
  */
 int
 autorevert_check(void)
 {
-	struct buffer *bp;
-	int reverted = FALSE;
+	struct buffer	*bp;
+	struct mgwin	*wp;
+	struct stat	 sb;
+	int		 tail, changed = FALSE;
 
 	for (bp = bheadp; bp != NULL; bp = bp->b_bufp) {
 		if (bp->b_fname[0] == '\0' ||
-		    (bp->b_flag & (BFCHG | BFIGNDIRTY)) != 0 ||
-		    fchecktime(bp) == TRUE ||
+		    (bp->b_flag & (BFCHG | BFIGNDIRTY)) != 0)
+			continue;
+		tail = buf_hasmode(bp, "tail");
+		if (!autorevert && !tail)
+			continue;
+		if (stat(bp->b_fname, &sb) == -1 ||
+		    (sb.st_size == bp->b_fi.fi_size &&
+		    sb.st_mtim.tv_sec == bp->b_fi.fi_mtime.tv_sec &&
+		    sb.st_mtim.tv_nsec == bp->b_fi.fi_mtime.tv_nsec) ||
 		    access(bp->b_fname, R_OK) != 0)
 			continue;
-		if (revertbp(bp) == TRUE) {
-			ewprintf("Reverting buffer %s", bp->b_bname);
-			reverted = TRUE;
+		if (tail && sb.st_dev == bp->b_fi.fi_dev &&
+		    sb.st_ino == bp->b_fi.fi_ino &&
+		    sb.st_size >= bp->b_fi.fi_size) {
+			if (ftail(bp) == TRUE)
+				changed = TRUE;
+			continue;
 		}
+		if (revertbp(bp) != TRUE)
+			continue;
+		if (tail) {
+			for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
+				if (wp->w_bufp == bp)
+					wineob(wp);
+			bufeob(bp);
+		}
+		ewprintf("Reverting buffer %s", bp->b_bname);
+		changed = TRUE;
 	}
 
-	return (reverted);
+	return (changed);
+}
+
+/*
+ * TRUE when autorevert_check has a buffer to look at.
+ */
+int
+autorevert_on(void)
+{
+	struct buffer *bp;
+
+	if (autorevert)
+		return (TRUE);
+	for (bp = bheadp; bp != NULL; bp = bp->b_bufp)
+		if (buf_hasmode(bp, "tail"))
+			return (TRUE);
+	return (FALSE);
 }
 
 /*

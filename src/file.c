@@ -464,6 +464,9 @@ retry:
 		}
 	}
 endoffile:
+	/* where tail mode goes on from, the file may have grown since */
+	if (!pipe && replacebuf == TRUE && s == FIOEOF)
+		bp->b_fi.fi_size = ftello(ffp);
 	/* ignore errors */
 	if (pipe)
 		(void)ffgzclose(ffp);

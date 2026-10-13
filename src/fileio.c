@@ -168,6 +168,9 @@ ffstat(FILE *ffp, struct buffer *bp)
 		bp->b_fi.fi_uid = sb.st_uid;
 		bp->b_fi.fi_gid = sb.st_gid;
 		bp->b_fi.fi_mtime = sb.st_mtim;
+		bp->b_fi.fi_size = sb.st_size;
+		bp->b_fi.fi_dev = sb.st_dev;
+		bp->b_fi.fi_ino = sb.st_ino;
 		/* Clear the ignore flag */
 		bp->b_flag &= ~(BFIGNDIRTY | BFDIRTY);
 	}
@@ -716,6 +719,85 @@ fchecktime(struct buffer *bp)
 
 	return (TRUE);
 
+}
+
+/*
+ * Append to bp what its file gained since it was read, like tail -f.
+ * Each window with dot at the end of the buffer follows the new end.
+ * Returns FALSE if the file could not be read.
+ */
+int
+ftail(struct buffer *bp)
+{
+	struct mgwin	*wp;
+	struct line	*olast, *last;
+	struct stat	 sb;
+	FILE		*ffp;
+	char		 buf[BUFSIZ], *nl;
+	size_t		 i, n, s;
+	int		 olen, len, size;
+
+	if ((ffp = fopen(bp->b_fname, "r")) == NULL)
+		return (FALSE);
+	if (fstat(fileno(ffp), &sb) == -1 ||
+	    fseeko(ffp, bp->b_fi.fi_size, SEEK_SET) == -1)
+		goto fail;
+
+	olast = last = blastlp(bp);
+	olen = llength(olast);
+	if (last == bp->b_headp) {
+		/* nothing read yet, b_lines already counts this line */
+		if ((last = lalloc(0)) == NULL)
+			goto fail;
+		lappend(bp, last);
+		bp->b_lines--;
+	}
+
+	while ((n = fread(buf, 1, sizeof(buf), ffp)) > 0) {
+		for (s = 0; s <= n; s = i + 1) {
+			nl = memchr(&buf[s], *bp->b_nlchr, n - s);
+			i = nl ? (size_t)(nl - buf) : n;
+			len = i - s;
+			if (len > 0) {
+				/* grow by doubling, a log line may span many reads */
+				size = last->l_size;
+				if (size < llength(last) + len)
+					size *= 2;
+				if (size < llength(last) + len)
+					size = llength(last) + len;
+				if (lrealloc(last, size) == FALSE)
+					goto fail;
+				memcpy(ltext(last) + llength(last), &buf[s], len);
+				last->l_used += len;
+			}
+			if (nl == NULL)
+				break;
+			if ((last = lalloc(0)) == NULL)
+				goto fail;
+			lappend(bp, last);
+		}
+	}
+	if (ferror(ffp))
+		goto fail;
+
+	bp->b_fi.fi_size = ftello(ffp);
+	bp->b_fi.fi_mtime = sb.st_mtim;
+	(void)fclose(ffp);
+
+	for (wp = wheadp; wp != NULL; wp = wp->w_wndp) {
+		if (wp->w_bufp != bp)
+			continue;
+		if (wp->w_dotp == olast && wp->w_doto >= olen)
+			wineob(wp);
+		wp->w_rflag |= WFFULL | WFMODE;
+	}
+	if (bp->b_nwnd == 0 && bp->b_dotp == olast && bp->b_doto >= olen)
+		bufeob(bp);
+
+	return (TRUE);
+fail:
+	(void)fclose(ffp);
+	return (FALSE);
 }
 
 /*

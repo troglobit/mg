@@ -174,6 +174,29 @@ gotobob(int f, int n)
 }
 
 /*
+ * Put the dot bp keeps for when it is shown again at its end.
+ */
+void
+bufeob(struct buffer *bp)
+{
+	bp->b_dotp = blastlp(bp);
+	bp->b_doto = llength(bp->b_dotp);
+	bp->b_dotline = bp->b_lines;
+}
+
+/*
+ * Put dot at the end of the buffer in wp.
+ */
+void
+wineob(struct mgwin *wp)
+{
+	wp->w_dotp = blastlp(wp->w_bufp);
+	wp->w_doto = llength(wp->w_dotp);
+	wp->w_dotline = wp->w_bufp->b_lines;
+	wp->w_rflag |= WFMOVE;
+}
+
+/*
  * Go to the end of the buffer. Leave dot 3 lines from the bottom of the
  * window if buffer length is longer than window length; same as emacs.
  * Setting WFFULL is conservative, but almost always the case. A universal
@@ -189,9 +212,7 @@ gotoeob(int f, int n)
 		isetmark();
 		ewprintf("Mark set");
 	}
-	curwp->w_dotp = blastlp(curbp);
-	curwp->w_doto = llength(curwp->w_dotp);
-	curwp->w_dotline = curwp->w_bufp->b_lines;
+	wineob(curwp);
 
 	lp = curwp->w_dotp;
 	ln = curwp->w_ntrows - 3;

@@ -63,6 +63,19 @@ lalloc(int used)
 	return (lp);
 }
 
+/*
+ * Hook lp onto the end of bp.
+ */
+void
+lappend(struct buffer *bp, struct line *lp)
+{
+	lp->l_bp = blastlp(bp);
+	lp->l_fp = bp->b_headp;
+	blastlp(bp)->l_fp = lp;
+	bp->b_headp->l_bp = lp;
+	bp->b_lines++;
+}
+
 int
 lrealloc(struct line *lp, int newsize)
 {

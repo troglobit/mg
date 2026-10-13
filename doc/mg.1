@@ -574,6 +574,22 @@ edit as before.
 in the startup file disables it, and
 .Ic set-auto-revert-interval
 changes how often to check.
+.It Ic auto-revert-tail-mode
+Toggle tail mode in the current buffer, for following a log file
+like
+.Ql tail -f .
+What is added to the file is appended to the buffer, and each window
+with dot at the end of the buffer follows the new end, while a window
+scrolled up stays where it is.
+Turning the mode on moves to the end of the buffer.
+A file that shrinks or is replaced, as when a log is rotated, is read
+again and shown from the end.
+Tail mode works without
+.Ic auto-revert-mode ,
+on read-only buffers too, and checks as often.
+To follow every log file:
+.Pp
+.Dl auto-execute *.log auto-revert-tail-mode
 .It Ic back-to-indentation
 Move the dot to the first non-whitespace character on the current line.
 .It Ic backup-to-home-directory

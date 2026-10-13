@@ -275,7 +275,8 @@ New features include, but are not limited to:
 * Delete selection mode: typing over the marked region replaces it, and
   DEL deletes it
 * Auto revert mode: a file changed on disk is reloaded while the buffer
-  has no unsaved edits, checked every five seconds
+  has no unsaved edits, checked every five seconds, and tail mode to
+  follow a growing log file like `tail -f`
 * Side by side windows with `C-x 3`, `split-window-horizontally`
 * Window movement with `M-arrow keys`, resize with `M-S-arrow keys`, and
   `C-x +` to balance them

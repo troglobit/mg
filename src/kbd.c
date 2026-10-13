@@ -84,13 +84,13 @@ idle(void)
 	int ms, clock, reverted;
 
 	for (;;) {
-		ms = autorevert ? autorevert_interval * 1000 : 0;
+		ms = autorevert_on() ? autorevert_interval * 1000 : 0;
 		clock = timesh ? (60 - time(NULL) % 60) * 1000 : 0;
 		if (clock != 0 && (ms == 0 || clock < ms))
 			ms = clock;
 		if (ms == 0 || ttwait(ms) == FALSE)
 			return;
-		reverted = autorevert && autorevert_check();
+		reverted = autorevert_check();
 		if (timeupdate() || reverted)
 			update(CMODE);
 	}

@@ -50,6 +50,7 @@ static struct funmap functnames[] = {
 	{wrapmode, "line-wrap-mode", 0, NULL},
 	{indentmode, "auto-indent-mode", 0, NULL},
 	{autorevertmode, "auto-revert-mode", 0, NULL},
+	{tailmode, "auto-revert-tail-mode", 0, NULL},
 	{backtoindent, "back-to-indentation", 0, NULL},
 	{backuptohomedir, "backup-to-home-directory", 0, NULL},
 	{backchar, "backward-char", 1, NULL},

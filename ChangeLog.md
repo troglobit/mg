@@ -18,6 +18,11 @@ All relevant changes to the project are documented in this file.
   with each window on it keeping its line.  Checked every five seconds,
   `set-auto-revert-interval` changes that.  Enabled by default,
   `auto-revert-mode 0` in `~/.mg` disables it
+- New `auto-revert-tail-mode`, to follow a log file like `tail -f`:
+  what is added to the file is appended to the buffer, and the windows
+  at its end follow it.  A file that shrinks or is rotated is read
+  again.  Works without `auto-revert-mode`, and on read-only buffers.
+  `auto-execute *.log auto-revert-tail-mode` in `~/.mg` tails every log
 - `revert-buffer` keeps the line in every window showing the buffer,
   not only the current one
 - The `display-time-mode` clock is kept current while waiting for a

@@ -570,6 +570,18 @@ static struct KEYMAPE (1) linummap = {
 	}
 };
 
+static struct KEYMAPE (1) tailmap = {
+	0,
+	1,		/* 1 to avoid 0 sized array */
+	rescan,
+	{
+		/* unused dummy entry, see the mode files */
+		{
+			(KCHAR)0, (KCHAR)0, NULL, NULL
+		}
+	}
+};
+
 static struct KEYMAPE (1) notabmap = {
 	1,
 	1,
@@ -614,6 +626,7 @@ static struct maps_s map_table[] = {
 	{ .p_map = (KEYMAP *)&linummap, .p_name = "linum", .p_minor = 1 },
 	{ .p_map = (KEYMAP *)&notabmap, .p_name = "notab", .p_minor = 1 },
 	{ .p_map = (KEYMAP *)&overwmap, .p_name = "overwrite", .p_minor = 1 },
+	{ .p_map = (KEYMAP *)&tailmap, .p_name = "tail", .p_minor = 1 },
 	{ .p_map = (KEYMAP *)&wrapmap, .p_name = "wrap", .p_minor = 1 },
 	{ .p_map = (KEYMAP *)&metamap, .p_name = "esc prefix" },
 	{ .p_map = (KEYMAP *)&cXmap, .p_name = "c-x prefix" },

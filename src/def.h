@@ -361,6 +361,9 @@ struct fileinfo {
         gid_t           fi_gid;
         mode_t          fi_mode;
         struct timespec fi_mtime;       /* Last modified time */
+        off_t           fi_size;        /* Size the buffer reflects */
+        dev_t           fi_dev;
+        ino_t           fi_ino;
 };
 
 /*
@@ -499,6 +502,7 @@ int		 do_filevisitalt(char *);
 /* line.c X */
 struct line	*lalloc(int);
 int		 lrealloc(struct line *, int);
+void		 lappend(struct buffer *, struct line *);
 int		 lsettext(struct line *, const char *, int);
 void		 lfree(struct line *);
 void		 lchange(int);
@@ -581,6 +585,7 @@ extern int	 autorevert, autorevert_interval;
 int		 autorevertmode(int, int);
 int		 setautorevertint(int, int);
 int		 autorevert_check(void);
+int		 autorevert_on(void);
 int		 diffbuffer(int, int);
 struct buffer	*findbuffer(char *);
 
@@ -627,6 +632,7 @@ struct list	*make_file_list(char *);
 int		 fisdir(const char *);
 #endif
 int		 fchecktime(struct buffer *);
+int		 ftail(struct buffer *);
 int		 fupdstat(struct buffer *);
 int		 backuptohomedir(int, int);
 int		 toggleleavetmp(int, int);
@@ -703,6 +709,8 @@ void		 bytesback(int);
 void		 bytesforw(int);
 int		 gotobob(int, int);
 int		 gotoeob(int, int);
+void		 bufeob(struct buffer *);
+void		 wineob(struct mgwin *);
 int		 forwline(int, int);
 int		 backline(int, int);
 int		 prevhist(int, int);
@@ -907,6 +915,7 @@ int		 buf_hasmode(struct buffer *, const char *);
 int		 fillmode(int, int);
 int		 wrapmode(int, int);
 int		 linummode(int, int);
+int		 tailmode(int, int);
 struct maps_s	*buf_major(struct buffer *);
 void		 modetabw(int);
 int		 notabmode(int, int);
