@@ -29,6 +29,9 @@ All relevant changes to the project are documented in this file.
   key, instead of only on the next redraw
 - New `tabify` and `untabify` turn the spaces in the lines of the
   region into tabs and back, keeping the text in its columns
+- New `delete-trailing-whitespace`, for the whole buffer, or the region
+  when active.  `delete-trailing-space` still cleans only the current
+  line
 
 ### Fixes
 

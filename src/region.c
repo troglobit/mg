@@ -12,6 +12,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <paths.h>
@@ -503,11 +504,13 @@ savepos(struct regionpos *p)
 static void
 restorepos(const struct regionpos *p)
 {
-	setlineno(p->markline);
-	curwp->w_markp = curwp->w_dotp;
-	curwp->w_markline = curwp->w_dotline;
-	curwp->w_marko = p->marko < llength(curwp->w_dotp) ?
-	    p->marko : llength(curwp->w_dotp);
+	if (curwp->w_markp != NULL) {
+		setlineno(p->markline);
+		curwp->w_markp = curwp->w_dotp;
+		curwp->w_markline = curwp->w_dotline;
+		curwp->w_marko = p->marko < llength(curwp->w_dotp) ?
+		    p->marko : llength(curwp->w_dotp);
+	}
 	setlineno(p->dotline);
 	curwp->w_doto = p->doto < llength(curwp->w_dotp) ?
 	    p->doto : llength(curwp->w_dotp);
@@ -764,38 +767,59 @@ getlines(struct region *r, int n)
 }
 
 /*
- * Rewrite the lines of the region as fn leaves them, as one undo
- * step; not at all when it leaves them as they were.  fn returns how
- * many lines are left, or -1 when it fails, and moves no line that has
- * text of its own.
+ * Whether t is still the text of line lp.
  */
 static int
-rewritelines(int (*fn)(struct textline *, int))
+sameline(const struct textline *t, const struct line *lp)
 {
-	struct region	 r;
-	struct regionpos pos;
-	struct textline	*tl;
-	struct line	*lp;
-	int	 k, n, m, s;
+	return (t->s == ltext(lp) && t->len == llength(lp));
+}
 
-	if (curwp->w_markp == NULL)
-		return (dobeep_msg("No mark set in this window"));
+/*
+ * Rewrite the n lines of r as fn leaves them, as one undo step; not
+ * at all when it leaves them as they were.  fn returns how many lines
+ * are left, or -1 when it fails, and moves no line that has text of
+ * its own.
+ */
+static int
+rewritespan(struct region *r, int n, int (*fn)(struct textline *, int))
+{
+	struct regionpos pos;
+	struct region	 span;
+	struct textline	*tl;
+	struct line	*lp, *end;
+	int	 j, k, m, s;
+
 	if ((s = editable()) != TRUE)
 		return (s);
-	n = linesregion(&r);
-	if ((tl = getlines(&r, n)) == NULL)
+	if ((tl = getlines(r, n)) == NULL)
 		return (FALSE);
 	if ((m = fn(tl, n)) < 0)
 		s = FALSE;
 	else {
-		for (k = 0, lp = r.r_linep; k < m && k < n;
-		    k++, lp = lforw(lp))
-			if (tl[k].s != ltext(lp))
+		/* only from the first line changed to the last */
+		for (k = 0, lp = r->r_linep; k < m && k < n; k++, lp = lforw(lp))
+			if (!sameline(&tl[k], lp))
 				break;
-		if (m != n || k != n) {
+		if (m < n) {
+			j = n - 1;
+			/* keep a line to write, the rest are deleted */
+			if (k == m) {
+				k--;
+				lp = lback(lp);
+			}
+		} else if (k < n) {
+			for (j = k, end = lp; j < n - 1; j++)
+				end = lforw(end);
+			for (; j > k && sameline(&tl[j], end); j--)
+				end = lback(end);
+		}
+		if (k < n) {
+			spanof(lp, r->r_lineno + k, j - k + 1, &span);
 			savepos(&pos);
 			undo_boundary_enable(FFRAND, 0);
-			s = putlines(&r, tl, m, n);
+			s = putlines(&span, tl + k, (m < n ? m : j + 1) - k,
+			    j - k + 1);
 			undo_boundary_enable(FFRAND, 1);
 			restorepos(&pos);
 		}
@@ -804,6 +828,21 @@ rewritelines(int (*fn)(struct textline *, int))
 		free(tl[k].buf);
 	free(tl);
 	return (s);
+}
+
+/*
+ * Rewrite the lines of the region as fn leaves them.
+ */
+static int
+rewritelines(int (*fn)(struct textline *, int))
+{
+	struct region	 r;
+	int	 n;
+
+	if (curwp->w_markp == NULL)
+		return (dobeep_msg("No mark set in this window"));
+	n = linesregion(&r);
+	return (rewritespan(&r, n, fn));
 }
 
 /*
@@ -1009,6 +1048,50 @@ int
 tabify(int f, int n)
 {
 	return (rewritelines(tablines));
+}
+
+/*
+ * Drop the blanks at the end of each line.
+ */
+static int
+trimlines(struct textline *tl, int n)
+{
+	int	 k;
+
+	for (k = 0; k < n; k++)
+		while (tl[k].len > 0 &&
+		    isblank((unsigned char)tl[k].s[tl[k].len - 1]))
+			tl[k].len--;
+	return (n);
+}
+
+/*
+ * As trimlines(), and drop the empty lines at the end, but for the
+ * one that ends the last line of text.
+ */
+static int
+trimbuffer(struct textline *tl, int n)
+{
+	n = trimlines(tl, n);
+	while (n > 2 && tl[n - 1].len == 0 && tl[n - 2].len == 0)
+		n--;
+	return (n);
+}
+
+/*
+ * Delete the blanks at the end of the lines of the region when it is
+ * active, otherwise of every line, and the empty lines at the end of
+ * the buffer.
+ */
+int
+deltrailws(int f, int n)
+{
+	struct region	 r;
+
+	if (curwp->w_markact && curwp->w_markp != NULL)
+		return (rewritelines(trimlines));
+	spanof(lforw(curbp->b_headp), 1, curbp->b_lines, &r);
+	return (rewritespan(&r, curbp->b_lines, trimbuffer));
 }
 
 /*

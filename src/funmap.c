@@ -109,6 +109,7 @@ static struct funmap functnames[] = {
 	{onlywind, "delete-other-windows", 0, NULL},
 	{delselmode, "delete-selection-mode", 0, NULL},
 	{deltrailwhite, "delete-trailing-space", 0, NULL},
+	{deltrailws, "delete-trailing-whitespace", 0, NULL},
 	{delwind, "delete-window", 0, NULL},
 	{wallchart, "describe-bindings", 0, NULL},
 	{desckey, "describe-key-briefly", 1, NULL},
