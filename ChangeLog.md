@@ -33,6 +33,10 @@ All relevant changes to the project are documented in this file.
   when active.  `delete-trailing-space` still cleans only the current
   line
 - New `fill-region` fills each paragraph in the region
+- New sentence commands: `M-a` backward-sentence, `M-e` forward-sentence,
+  `M-k` kill-sentence and `C-x DEL` backward-kill-sentence.
+  `sentence-end-double-space` decides whether one space after a period
+  ends a sentence
 
 ### Fixes
 

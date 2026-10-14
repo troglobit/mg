@@ -241,7 +241,9 @@ static PF cXcar[] = {
 	rescan,			/* z */
 	shrinkwindh,		/* { */
 	rescan,			/* | */
-	enlargewindh		/* } */
+	enlargewindh,		/* } */
+	rescan,			/* ~ */
+	backkillsentence	/* DEL */
 };
 
 struct KEYMAPE (7) cXmap = {
@@ -268,7 +270,7 @@ struct KEYMAPE (7) cXmap = {
 			'=', '=', cXeq, NULL
 		},
 		{
-			'^', '}', cXcar, NULL
+			'^', CCHR('?'), cXcar, NULL
 		}
 	}
 };
@@ -337,14 +339,17 @@ static PF metasqf[] = {
 	joinline,		/* ^ */
 	rescan,			/* _ */
 	rescan,			/* ` */
-	rescan,			/* a */
+	backsentence,		/* a */
 	backword,		/* b */
 	capword,		/* c */
 	delfword,		/* d */
-	rescan,			/* e */
+	forwsentence,		/* e */
 	forwword,		/* f */
 	rescan,			/* g */
-	markpara		/* h */
+	markpara,		/* h */
+	rescan,			/* i */
+	rescan,			/* j */
+	killsentence		/* k */
 };
 
 static PF metal[] = {
@@ -409,7 +414,7 @@ struct KEYMAPE (8) metamap = {
 			'*', '>', metami, NULL
 		},
 		{
-			'[', 'h', metasqf, (KEYMAP *) &metasqlmap
+			'[', 'k', metasqf, (KEYMAP *) &metasqlmap
 		},
 		{
 			'l', '}', metal, NULL

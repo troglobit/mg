@@ -815,6 +815,10 @@ int		 gotobop(int, int);
 int		 gotoeop(int, int);
 int		 fillpara(int, int);
 int		 fillregion(int, int);
+int		 forwsentence(int, int);
+int		 backsentence(int, int);
+int		 killsentence(int, int);
+int		 backkillsentence(int, int);
 int		 killpara(int, int);
 int		 fillword(int, int);
 int		 setfillcol(int, int);
@@ -836,6 +840,7 @@ int		 transposeword(int, int);
 /* region.c X */
 int		 regionlines(int (*)(int, int));
 int		 linesregion(struct region *);
+int		 editable(void);
 int		 sortlines(int, int);
 int		 reverseregion(int, int);
 int		 deldupelines(int, int);

@@ -645,3 +645,283 @@ sentencespace(int f, int n)
 
 	return (TRUE);
 }
+
+/*
+ * A place in the buffer, for the sentence commands.
+ */
+struct spos {
+	struct line	*lp;
+	int		 o;
+	int		 line;
+};
+
+static int
+blankline(const struct line *lp)
+{
+	int	 i;
+
+	for (i = 0; i < llength(lp); i++)
+		if (!isspace(lgetc(lp, i)))
+			return (FALSE);
+	return (TRUE);
+}
+
+/*
+ * Whether a paragraph starts at the line after lp, or ends there.
+ */
+static int
+parabreak(const struct line *lp)
+{
+	lp = lforw(lp);
+	return (lp == curbp->b_headp || blankline(lp) || listitem(lp));
+}
+
+/*
+ * Whether lp is the first line of a paragraph.
+ */
+static int
+parafirst(const struct line *lp)
+{
+	return (lback(lp) == curbp->b_headp || blankline(lback(lp)) ||
+	    listitem(lp));
+}
+
+static int
+before(const struct spos *a, const struct spos *b)
+{
+	return (a->line < b->line || (a->line == b->line && a->o < b->o));
+}
+
+/*
+ * Where a sentence ends at offset o of lp: past its punctuation and any
+ * closing quotes or brackets, when the end of the line, a tab, or two
+ * blanks follow, or one blank without sentence-end-double-space.
+ * Otherwise -1.
+ */
+static int
+sentend(const struct line *lp, int o)
+{
+	int	 len = llength(lp);
+
+	if (!ISEOSP(lgetc(lp, o)))
+		return (-1);
+	while (++o < len && strchr(")]}\"'", lgetc(lp, o)) != NULL)
+		;
+	if (o == len || lgetc(lp, o) == '\t')
+		return (o);
+	if (lgetc(lp, o) != ' ')
+		return (-1);
+	if (!dblspace || o + 1 == len || isblank(lgetc(lp, o + 1)))
+		return (o);
+	return (-1);
+}
+
+/*
+ * Move p forward over whitespace and line ends to the next text, but
+ * not into the next paragraph when para is set.  FALSE when there is
+ * none.
+ */
+static int
+skiptotext(struct spos *p, int para)
+{
+	for (;;) {
+		while (p->o < llength(p->lp) && isspace(lgetc(p->lp, p->o)))
+			p->o++;
+		if (p->o < llength(p->lp))
+			return (TRUE);
+		if (lforw(p->lp) == curbp->b_headp ||
+		    (para && parabreak(p->lp)))
+			return (FALSE);
+		p->lp = lforw(p->lp);
+		p->line++;
+		p->o = 0;
+	}
+}
+
+/*
+ * Move p to the end of the next sentence, or of the paragraph when
+ * that comes first.
+ */
+static int
+nextsentence(struct spos *p)
+{
+	int	 e;
+
+	if (skiptotext(p, FALSE) == FALSE)
+		return (FALSE);
+	for (;;) {
+		for (; p->o < llength(p->lp); p->o++)
+			if ((e = sentend(p->lp, p->o)) != -1) {
+				p->o = e;
+				return (TRUE);
+			}
+		if (parabreak(p->lp))
+			break;
+		p->lp = lforw(p->lp);
+		p->line++;
+		p->o = 0;
+	}
+	/* the end of the paragraph's text */
+	while (p->o > 0 && isspace(lgetc(p->lp, p->o - 1)))
+		p->o--;
+	return (TRUE);
+}
+
+/*
+ * Move p to the start of the sentence it is in, or of the one before
+ * when it is at a start.
+ */
+static int
+prevsentence(struct spos *p)
+{
+	struct spos	 end, q;
+	int	 e;
+
+	/* back to the text before p */
+	while (p->o == 0 || isspace(lgetc(p->lp, p->o - 1))) {
+		if (p->o > 0)
+			p->o--;
+		else if (lback(p->lp) == curbp->b_headp)
+			return (FALSE);
+		else {
+			p->lp = lback(p->lp);
+			p->line--;
+			p->o = llength(p->lp);
+		}
+	}
+
+	/* back to the end of a sentence with text after it, before p */
+	end = *p;
+	for (;;) {
+		while (p->o > 0) {
+			if ((e = sentend(p->lp, --p->o)) == -1)
+				continue;
+			q = *p;
+			q.o = e;
+			if (skiptotext(&q, TRUE) && before(&q, &end)) {
+				*p = q;
+				return (TRUE);
+			}
+		}
+		if (parafirst(p->lp))
+			break;
+		p->lp = lback(p->lp);
+		p->line--;
+		p->o = llength(p->lp);
+	}
+
+	/* none, so the start of the paragraph's text */
+	(void)skiptotext(p, TRUE);
+	return (TRUE);
+}
+
+static void
+dotpos(struct spos *p)
+{
+	p->lp = curwp->w_dotp;
+	p->o = curwp->w_doto;
+	p->line = curwp->w_dotline;
+}
+
+static void
+setdot(const struct spos *p)
+{
+	curwp->w_dotp = p->lp;
+	curwp->w_doto = p->o;
+	curwp->w_dotline = p->line;
+	curwp->w_rflag |= WFMOVE;
+}
+
+/*
+ * Move dot n sentences with move, as far as it goes.  FALSE when it
+ * cannot move at all.
+ */
+static int
+sentences(int (*move)(struct spos *), int n)
+{
+	struct spos	 p, q;
+	int	 k;
+
+	dotpos(&p);
+	for (k = 0; k < n; k++) {
+		q = p;
+		if (move(&q) == FALSE)
+			break;
+		p = q;
+	}
+	setdot(&p);
+	return (k > 0 || n == 0);
+}
+
+/*
+ * Move forward to the end of the sentence, n times.
+ */
+int
+forwsentence(int f, int n)
+{
+	if (n < 0)
+		return (backsentence(f, -n));
+	return (sentences(nextsentence, n));
+}
+
+/*
+ * Move back to the start of the sentence, n times.
+ */
+int
+backsentence(int f, int n)
+{
+	if (n < 0)
+		return (forwsentence(f, -n));
+	return (sentences(prevsentence, n));
+}
+
+/*
+ * Kill from dot to where move leaves it.
+ */
+static int
+killmove(int (*move)(int, int), int n)
+{
+	struct spos	 from, to, t;
+	struct line	*lp;
+	RSIZE	 size;
+	int	 back, o, s;
+
+	if ((s = editable()) != TRUE)
+		return (s);
+	dotpos(&from);
+	if (move(FFRAND, n) != TRUE)
+		return (FALSE);
+	dotpos(&to);
+	if ((lastflag & CFKILL) == 0)
+		kdelete();
+	thisflag |= CFKILL;
+	if ((back = before(&to, &from))) {
+		t = from;
+		from = to;
+		to = t;
+	} else
+		setdot(&from);
+	for (size = 0, lp = from.lp, o = from.o; lp != to.lp;
+	    lp = lforw(lp), o = 0)
+		size += llength(lp) - o + 1;
+	size += to.o - o;
+	return (ldelete(size, back ? KBACK : KFORW));
+}
+
+/*
+ * Kill to the end of the sentence, n times.
+ */
+int
+killsentence(int f, int n)
+{
+	return (killmove(forwsentence, n));
+}
+
+/*
+ * Kill back to the start of the sentence, n times.
+ */
+int
+backkillsentence(int f, int n)
+{
+	return (killmove(backsentence, n));
+}

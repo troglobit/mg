@@ -668,7 +668,7 @@ uniqlines(struct textline *tl, int n)
  * Whether the buffer may be changed: not read only, and not changed
  * on disk unless the user says to go ahead.
  */
-static int
+int
 editable(void)
 {
 	int	 s;

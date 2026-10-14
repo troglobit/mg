@@ -313,6 +313,8 @@ find-alternate-file
 write-file
 .It C-x C-x
 exchange-point-and-mark
+.It C-x DEL
+backward-kill-sentence
 .It C-x left, C-x C-left
 previous-buffer
 .It C-x right, C-x C-right
@@ -405,18 +407,24 @@ end-of-buffer
 delete-horizontal-space
 .It M-^
 join-line
+.It M-a
+backward-sentence
 .It M-b, C-left
 backward-word
 .It M-c
 capitalize-word
 .It M-d, C-Delete
 kill-word
+.It M-e
+forward-sentence
 .It M-f, C-right
 forward-word
 .It M-g g, M-g M-g
 goto-line
 .It M-h
 mark-paragraph
+.It M-k
+kill-sentence
 .It M-up, M-down, M-left, M-right
 windmove-up, windmove-down, windmove-left, windmove-right
 .It M-S-up, M-S-down, M-S-left, M-S-right
@@ -607,6 +615,10 @@ Requires
 to be on.
 .It Ic backward-char
 Move cursor backwards one character.
+.It Ic backward-kill-sentence
+Kill back to the start of the sentence,
+.Va n
+times.
 .It Ic backward-kill-word
 Kill text backwards by
 .Va n
@@ -616,6 +628,16 @@ Move cursor backwards
 .Va n
 paragraphs.
 Paragraphs are delimited by <NL><NL> or <NL><TAB> or <NL><SPACE>.
+.It Ic backward-sentence
+Move cursor back to the start of the sentence, or of the one before
+when already there,
+.Va n
+times.
+A sentence ends with a period, question mark or exclamation mark,
+and any closing quotes or brackets, followed by the end of the line
+or two spaces; see
+.Ic sentence-end-double-space .
+The end of a paragraph ends one too.
 .It Ic backward-word
 Move cursor backwards by the specified number of words.
 .It Ic balance-windows
@@ -937,6 +959,13 @@ Move forward
 .Va n
 paragraphs.
 Paragraphs are delimited by <NL><NL> or <NL><TAB> or <NL><SPACE>.
+.It Ic forward-sentence
+Move cursor forward to the end of the sentence,
+.Va n
+times.
+See
+.Ic backward-sentence
+for where sentences end.
 .It Ic forward-word
 Move the cursor forward by the specified number of words.
 .It Ic git-commit-mode
@@ -1062,6 +1091,10 @@ Delete
 paragraphs starting with the current one.
 .It Ic kill-region
 Kill the currently defined region.
+.It Ic kill-sentence
+Kill to the end of the sentence,
+.Va n
+times.
 .It Ic kill-word
 Delete forward
 .Va n
@@ -1378,8 +1411,11 @@ Insert a character.
 .It Ic sentence-end-double-space
 Toggle double or single spaces for end of sentences.
 Double is the default.
-Currently only affects
-.Ic fill-paragraph .
+Affects
+.Ic fill-paragraph
+and where the sentence commands, like
+.Ic forward-sentence ,
+find the end of a sentence.
 .It Ic set-auto-revert-interval
 Set the number of seconds between the checks made by
 .Ic auto-revert-mode ,
