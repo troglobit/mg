@@ -220,6 +220,7 @@ fillpara(int f, int n)
 	int	 newlength;	/* tentative new line length		*/
 	int	 eolflag;	/* was at end of line			*/
 	int	 retval;	/* return value				*/
+	int	 bon;		/* undo boundaries were on?		*/
 	int	 preflen;	/* fill prefix length			*/
 	int	 quoted;	/* prefix is a block quote?		*/
 	int	 skipquote;	/* dropping a quote prefix?		*/
@@ -231,7 +232,7 @@ fillpara(int f, int n)
 	if (n == 0)
 		return (TRUE);
 
-	undo_boundary_enable(FFRAND, 0);
+	bon = undo_boundary_enable(FFRAND, 0);
 
 	/* record the pointer to the line just past the EOP */
 	startlp = curwp->w_dotp;
@@ -362,8 +363,51 @@ fillpara(int f, int n)
 	(void)backchar(FFRAND, 1);
 	retval = TRUE;
 cleanup:
-	undo_boundary_enable(FFRAND, 1);
+	undo_boundary_enable(FFRAND, bon);
 	return (retval);
+}
+
+/*
+ * Fill each paragraph in the lines of the region.
+ */
+int
+fillregion(int f, int n)
+{
+	struct region	 r;
+	struct line	*dotp;
+	int	 bon, doto, dotline, end, lines, s = TRUE;
+
+	if (curwp->w_markp == NULL)
+		return (dobeep_msg("No mark set in this window"));
+	dotp = curwp->w_dotp;
+	doto = curwp->w_doto;
+	dotline = curwp->w_dotline;
+	n = linesregion(&r);
+	end = r.r_lineno + n - 1;
+	curwp->w_dotp = r.r_linep;
+	curwp->w_dotline = r.r_lineno;
+
+	bon = undo_boundary_enable(FFRAND, 0);
+	while (s == TRUE && findpara() == TRUE && curwp->w_dotline <= end) {
+		lines = curbp->b_lines;
+		s = fillpara(FFRAND, 1);
+		end += curbp->b_lines - lines;
+		dotp = curwp->w_dotp;
+		doto = curwp->w_doto;
+		dotline = curwp->w_dotline;
+		if (lforw(curwp->w_dotp) == curbp->b_headp)
+			break;
+		curwp->w_dotp = lforw(curwp->w_dotp);
+		curwp->w_dotline++;
+	}
+	undo_boundary_enable(FFRAND, bon);
+
+	/* at the end of the last paragraph filled */
+	curwp->w_dotp = dotp;
+	curwp->w_doto = doto;
+	curwp->w_dotline = dotline;
+	curwp->w_rflag |= WFMOVE;
+	return (s);
 }
 
 /*

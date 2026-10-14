@@ -537,7 +537,7 @@ spanof(struct line *lp, int lineno, int n, struct region *r)
  * the end of the last, where a last line the region only touches in
  * column zero is left out.  Returns the number of lines.
  */
-static int
+int
 linesregion(struct region *r)
 {
 	struct line	*lp, *last;

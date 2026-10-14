@@ -32,6 +32,7 @@ All relevant changes to the project are documented in this file.
 - New `delete-trailing-whitespace`, for the whole buffer, or the region
   when active.  `delete-trailing-space` still cleans only the current
   line
+- New `fill-region` fills each paragraph in the region
 
 ### Fixes
 
