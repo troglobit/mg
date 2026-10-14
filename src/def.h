@@ -837,6 +837,8 @@ int		 regionlines(int (*)(int, int));
 int		 sortlines(int, int);
 int		 reverseregion(int, int);
 int		 deldupelines(int, int);
+int		 tabify(int, int);
+int		 untabify(int, int);
 int		 transposelines(int, int);
 int		 killregion(int, int);
 int		 delselmode(int, int);

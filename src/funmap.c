@@ -270,6 +270,7 @@ static struct funmap functnames[] = {
 	{spawncli, "suspend", 0, NULL},
 	{usebuffer, "switch-to-buffer", 1, NULL},
 	{poptobuffer, "switch-to-buffer-other-window", 1, NULL},
+	{tabify, "tabify", 0, NULL},
 #ifdef TOGGLENL
 	{togglenewlineprompt, "toggle-newline-prompt", 0, NULL},
 #endif /* TOGGLENL */
@@ -289,6 +290,7 @@ static struct funmap functnames[] = {
 	{undo_enable, "undo-enable", 0, NULL},
 	{undo_dump, "undo-list", 0, NULL},
 	{universal_argument, "universal-argument", 1, NULL},
+	{untabify, "untabify", 0, NULL},
 	{upperregion, "upcase-region", 0, NULL},
 	{upperword, "upcase-word", 1, NULL},
 	{useshortanswers, "use-short-answers", 0, NULL},

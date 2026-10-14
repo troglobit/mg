@@ -1496,6 +1496,11 @@ and switch back to alternate screen, if in use.
 Prompt and switch to a new buffer in the current window.
 .It Ic switch-to-buffer-other-window
 Switch to buffer in another window.
+.It Ic tabify
+Turn runs of spaces in the lines of the region into tabs, where a run
+of a space and at least one more blank crosses a tab stop.
+The text stays in the same columns.
+The region grows to whole lines.
 .It Ic text-mode
 Toggle text mode, for prose rather than code.
 Enabling it turns on
@@ -1568,6 +1573,10 @@ Repeat the next command 4 times.
 Usually bound to C-u.
 This command may be stacked; e.g.\&
 C-u C-u C-f moves the cursor forward 16 characters.
+.It Ic untabify
+Turn the tabs in the lines of the region into the spaces that reach
+the same column.
+The region grows to whole lines.
 .It Ic upcase-region
 Upper case region.
 Change all of the lower case characters in the region to

@@ -27,6 +27,8 @@ All relevant changes to the project are documented in this file.
   not only the current one
 - The `display-time-mode` clock is kept current while waiting for a
   key, instead of only on the next redraw
+- New `tabify` and `untabify` turn the spaces in the lines of the
+  region into tabs and back, keeping the text in its columns
 
 ### Fixes
 

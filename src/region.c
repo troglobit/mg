@@ -591,11 +591,14 @@ regionlines(int (*fn)(int, int))
 
 /*
  * The lines of the region as text, for the commands that rearrange
- * them: each is the text of a line while the line lasts.
+ * or rewrite them: each is the text of line lp while the line lasts,
+ * or text of its own in buf.
  */
 struct textline {
-	const char	*s;
-	int		 len;
+	const char		*s;
+	int			 len;
+	const struct line	*lp;
+	char			*buf;
 };
 
 static int
@@ -702,7 +705,9 @@ putlines(struct region *r, struct textline *tl, int m, int n)
 	char	*out;
 	int	 k, len, off, x, s = TRUE;
 
-	if ((out = malloc(r->r_size + 1)) == NULL)
+	for (len = 0, k = 0; k < m; k++)
+		len += tl[k].len + 1;
+	if ((out = malloc(len + 1)) == NULL)
 		return (dobeep_msg("Out of memory"));
 	for (len = 0, k = 0; k < m; k++) {
 		if (k > 0)
@@ -752,13 +757,17 @@ getlines(struct region *r, int n)
 	for (k = 0, lp = r->r_linep; k < n; k++, lp = lforw(lp)) {
 		tl[k].s = ltext(lp);
 		tl[k].len = llength(lp);
+		tl[k].lp = lp;
+		tl[k].buf = NULL;
 	}
 	return (tl);
 }
 
 /*
  * Rewrite the lines of the region as fn leaves them, as one undo
- * step; not at all when it leaves them as they were.
+ * step; not at all when it leaves them as they were.  fn returns how
+ * many lines are left, or -1 when it fails, and moves no line that has
+ * text of its own.
  */
 static int
 rewritelines(int (*fn)(struct textline *, int))
@@ -776,17 +785,23 @@ rewritelines(int (*fn)(struct textline *, int))
 	n = linesregion(&r);
 	if ((tl = getlines(&r, n)) == NULL)
 		return (FALSE);
-	m = fn(tl, n);
-	for (k = 0, lp = r.r_linep; k < m && k < n; k++, lp = lforw(lp))
-		if (tl[k].s != ltext(lp))
-			break;
-	if (m != n || k != n) {
-		savepos(&pos);
-		undo_boundary_enable(FFRAND, 0);
-		s = putlines(&r, tl, m, n);
-		undo_boundary_enable(FFRAND, 1);
-		restorepos(&pos);
+	if ((m = fn(tl, n)) < 0)
+		s = FALSE;
+	else {
+		for (k = 0, lp = r.r_linep; k < m && k < n;
+		    k++, lp = lforw(lp))
+			if (tl[k].s != ltext(lp))
+				break;
+		if (m != n || k != n) {
+			savepos(&pos);
+			undo_boundary_enable(FFRAND, 0);
+			s = putlines(&r, tl, m, n);
+			undo_boundary_enable(FFRAND, 1);
+			restorepos(&pos);
+		}
 	}
+	for (k = 0; k < n; k++)
+		free(tl[k].buf);
 	free(tl);
 	return (s);
 }
@@ -888,6 +903,112 @@ int
 deldupelines(int f, int n)
 {
 	return (rewritelines(uniqlines));
+}
+
+/*
+ * Give t text of its own, the first len bytes of its old text.
+ */
+static int
+owntext(struct textline *t, int size, int len)
+{
+	if ((t->buf = malloc(size)) == NULL)
+		return (dobeep_msg("Out of memory"));
+	memcpy(t->buf, t->s, len);
+	return (TRUE);
+}
+
+/*
+ * Expand the tabs of each line to the spaces that reach the same
+ * column.
+ */
+static int
+untablines(struct textline *tl, int n)
+{
+	struct textline	*t;
+	int	 col, i, k, len, o, tabs, w, tabw = curbp->b_tabw;
+
+	for (k = 0, t = tl; k < n; k++, t++) {
+		for (tabs = i = 0; i < t->len; i++)
+			tabs += t->s[i] == '\t';
+		if (tabs == 0)
+			continue;
+		if (owntext(t, t->len + tabs * (tabw - 1), 0) != TRUE)
+			return (-1);
+		for (col = i = o = 0; i < t->len; i += len, col += w) {
+			w = charcols(t->lp, i, col, tabw, &len);
+			if (t->s[i] == '\t') {
+				memset(t->buf + o, ' ', w);
+				o += w;
+			} else {
+				memcpy(t->buf + o, t->s + i, len);
+				o += len;
+			}
+		}
+		t->s = t->buf;
+		t->len = o;
+	}
+	return (n);
+}
+
+/*
+ * Turn each run of a space and more blanks that crosses a tab stop
+ * into the tabs and spaces that reach the same column.
+ */
+static int
+tablines(struct textline *tl, int n)
+{
+	struct textline	*t;
+	int	 beg, col, i, j, k, len, o, run, w, tabw = curbp->b_tabw;
+
+	for (k = 0, t = tl; k < n; k++, t++) {
+		for (col = i = o = 0; i < t->len; i = j) {
+			beg = col;
+			run = t->s[i] == ' ' && i + 1 < t->len &&
+			    (t->s[i + 1] == ' ' || t->s[i + 1] == '\t');
+			j = i;
+			do {
+				col += charcols(t->lp, j, col, tabw, &len);
+				j += len;
+			} while (run && j < t->len &&
+			    (t->s[j] == ' ' || t->s[j] == '\t'));
+			if (run && beg / tabw != col / tabw) {
+				if (t->buf == NULL &&
+				    owntext(t, t->len, o) != TRUE)
+					return (-1);
+				for (w = col / tabw - beg / tabw; w > 0; w--)
+					t->buf[o++] = '\t';
+				for (w = col % tabw; w > 0; w--)
+					t->buf[o++] = ' ';
+			} else {
+				if (t->buf != NULL)
+					memcpy(t->buf + o, t->s + i, j - i);
+				o += j - i;
+			}
+		}
+		if (t->buf != NULL) {
+			t->s = t->buf;
+			t->len = o;
+		}
+	}
+	return (n);
+}
+
+/*
+ * Turn the tabs in the lines of the region into spaces.
+ */
+int
+untabify(int f, int n)
+{
+	return (rewritelines(untablines));
+}
+
+/*
+ * Turn runs of spaces in the lines of the region into tabs.
+ */
+int
+tabify(int f, int n)
+{
+	return (rewritelines(tablines));
 }
 
 /*

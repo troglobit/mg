@@ -259,8 +259,9 @@ New features include, but are not limited to:
 * Ido mode: the `M-x`, buffer and file prompts match what you type as a
   substring and show the matches on the echo line, the arrow keys step
   through them, and file prompts walk directories
-* `sort-lines`, `transpose-lines`, `whitespace-cleanup`, `rename-buffer`,
-  and the names GNU Emacs uses today, like `kill-ring-save`, in `M-x`
+* `sort-lines`, `transpose-lines`, `tabify`, `whitespace-cleanup`,
+  `rename-buffer`, and the names GNU Emacs uses today, like
+  `kill-ring-save`, in `M-x`
 * `text-mode` for prose, which turns on `auto-fill-mode` for *.txt,
   README, and the files a source tree keeps without a suffix
 * `git-commit-mode` for COMMIT_EDITMSG and its siblings, with `C-c C-c`
