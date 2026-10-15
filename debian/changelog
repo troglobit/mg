@@ -1,3 +1,21 @@
+mg2a (4.4) unstable; urgency=medium
+
+  * New auto-revert-mode reloads a file changed on disk, enabled by
+    default, and auto-revert-tail-mode follows a log file like tail -f
+  * IBM CUA cut, copy and paste: S-Delete, C-Insert and S-Insert
+  * New tabify, untabify, delete-trailing-whitespace and fill-region
+  * Sentence commands on M-a, M-e, M-k and C-x DEL
+  * C-l cycles the line between the middle, top and bottom of the
+    window, and M-r moves the cursor the same way.  search-backward
+    is no longer on M-r
+  * New where-is on C-h w and describe-key on C-h k.  The *help*
+    buffer gets the cursor and q closes it
+  * New build options --disable-help and --disable-autorevert
+  * Fix the shifted and control arrow and editing keys in rxvt and urxvt
+  * Fix a long line in ~/.mg silently ending the load
+
+ -- Joachim Wiberg <troglobit@gmail.com>  Thu, 15 Oct 2026 19:19:29 +0200
+
 mg2a (4.3) unstable; urgency=medium
 
   * New ido-mode: the M-x, buffer and file prompts

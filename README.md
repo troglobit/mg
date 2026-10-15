@@ -225,6 +225,7 @@ goes something like this:
 * Sep  7, 2026: Mg v4.1, Unicode 17 support and lots of new modes
 * Oct  7, 2026: Mg v4.2, minibuffer editing and history, secure mode
 * Oct 12, 2026: Mg v4.3, ido-mode and delete-selection-mode
+* Oct 15, 2026: Mg v4.4, auto-revert and tail mode, sentence commands
 
 See the source distribution for the list of [AUTHORS][].
 

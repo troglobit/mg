@@ -3,8 +3,8 @@ Change Log
 
 All relevant changes to the project are documented in this file.
 
-[UNRELEASED][]
---------------
+[v4.4][] - 2026-10-15
+---------------------
 
 ### Changes
 
@@ -668,7 +668,7 @@ set as Mg3a.
 	functions.  Some simply marked as "don't care"
   - Fix missing initialization of stack variables
 
-[UNRELEASED]: https://github.com/troglobit/mg/compare/v4.3...HEAD
+[v4.4]:       https://github.com/troglobit/mg/compare/v4.3...v4.4
 [v4.3]:       https://github.com/troglobit/mg/compare/v4.2...v4.3
 [v4.2]:       https://github.com/troglobit/mg/compare/v4.1...v4.2
 [v4.1]:       https://github.com/troglobit/mg/compare/v4.0...v4.1
