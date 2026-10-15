@@ -22,7 +22,6 @@
 const char *hlp = "C-h q  quick help | C-h t  tutorial | C-h b  key bindings | C = Ctrl | M = Alt";
 
 static int	showall(struct buffer *, KEYMAP *, char *);
-static int	findbind(KEYMAP *, PF, char *, size_t);
 
 /*
  * Read a key from the keyboard, and look it up in the keymap.
@@ -96,6 +95,127 @@ found:
 	else
 		ewprintf("%k is bound to an unnamed function");
 	return (TRUE);
+}
+
+/*
+ * Show the keys a command is on.
+ */
+int
+whereiscmd(int f, int n)
+{
+	PF	 funct;
+	char	 fname[NXNAME], keys[256], *bufp;
+
+	if ((bufp = eread("Where is command: ", fname, sizeof(fname),
+	    EFNEW | EFFUNC)) == NULL)
+		return (ABORT);
+	if (bufp[0] == '\0')
+		return (FALSE);
+	if ((funct = name_function(bufp)) == NULL)
+		return (dobeep_msgs("No such command:", bufp));
+	whereis(funct, keys, sizeof(keys));
+	if (keys[0] == '\0')
+		ewprintf("%s is not on any key", function_name(funct));
+	else
+		ewprintf("%s is on %s", function_name(funct), keys);
+	return (TRUE);
+}
+
+/*
+ * The function the n keys in keys run in the current buffer, the way
+ * the command loop finds it: the top mode can bind a prefix of them,
+ * the modes below only the whole sequence, and an unbound upper case
+ * key falls back to its lower case one.  NULL when the keys are a
+ * prefix, rescan when they are unbound.  *mode is set to the mode
+ * that binds them.
+ */
+static PF
+keyfunc(const KCHAR *keys, int n, int *mode)
+{
+	KEYMAP	*map, *pre;
+	PF	 fp = NULL;
+	int	 i;
+
+	for (*mode = curbp->b_nmodes; *mode >= 0; --*mode) {
+		map = curbp->b_modes[*mode]->p_map;
+		for (i = 0; i < n; i++) {
+			pre = map;
+			if ((fp = doscan(map, keys[i], &map)) != NULL)
+				break;
+		}
+		if (fp == rescan && i == n - 1 && ISUPPER(keys[i]))
+			fp = doscan(pre, TOLOWER(keys[i]), &map);
+		if (fp == NULL)
+			return (NULL);
+		if (fp != rescan && (i == n - 1 || *mode == curbp->b_nmodes))
+			return (fp);
+	}
+	return (rescan);
+}
+
+#define NWHERE	32		/* key sequences where-is keeps */
+
+struct where {
+	PF	 fun;
+	int	 mode;		/* the mode whose map is searched */
+	KCHAR	 keys[MAXKEY];
+	int	 n;
+	struct {
+		KCHAR	 keys[MAXKEY];
+		int	 len;
+	} found[NWHERE];
+};
+
+/*
+ * Collect the sequences in map, after the depth keys in w->keys, that
+ * run w->fun in the current buffer.
+ */
+static void
+wherekeys(KEYMAP *map, int depth, struct where *w)
+{
+	KEYMAP	*next;
+	PF	 fp;
+	int	 c, mode;
+
+	for (c = 0; c < 256 && w->n < NWHERE; c++) {
+		w->keys[depth] = c;
+		if ((fp = doscan(map, c, &next)) == NULL) {
+			if (depth + 1 < MAXKEY)
+				wherekeys(next, depth + 1, w);
+		} else if (fp == w->fun &&
+		    keyfunc(w->keys, depth + 1, &mode) == fp &&
+		    mode == w->mode) {
+			memcpy(w->found[w->n].keys, w->keys, sizeof(w->keys));
+			w->found[w->n++].len = depth + 1;
+		}
+	}
+}
+
+/*
+ * Put the keys fun is on in the current buffer in buf, shortest first
+ * and as many as fit.
+ */
+void
+whereis(PF fun, char *buf, size_t len)
+{
+	struct where	 w = { .fun = fun };
+	char		 kname[MAXKEY * KEYNAMESZ + 1];
+	int		 i, n;
+
+	buf[0] = '\0';
+	for (w.mode = curbp->b_nmodes; w.mode >= 0; w.mode--)
+		wherekeys(curbp->b_modes[w.mode]->p_map, 0, &w);
+	for (n = 1; n <= MAXKEY; n++)
+		for (i = 0; i < w.n; i++) {
+			if (w.found[i].len != n)
+				continue;
+			keyname(kname, sizeof(kname), w.found[i].keys, n);
+			if (strlen(buf) + strlen(kname) + 3 > len)
+				return;
+			if (buf[0])
+				(void)strlcat(buf, ", ", len);
+			(void)strlcat(buf, kname, len);
+		}
 }
 
 /*
@@ -192,14 +312,12 @@ apropos_command(int f, int n)
 
 	fnames = complete_function_list("");
 	for (el = fnames; el != NULL; el = el->l_next) {
-		char buf[32];
+		char buf[48];
 
 		if (strstr(el->l_name, string) == NULL)
 			continue;
 
-		buf[0] = '\0';
-		findbind(fundamental_map, name_function(el->l_name),
-		    buf, sizeof(buf));
+		whereis(name_function(el->l_name), buf, sizeof(buf));
 
 		if (addlinef(bp, "%-32s%s", el->l_name,  buf) == FALSE) {
 			free_file_list(fnames);
@@ -401,30 +519,4 @@ tutorial(int f, int n)
 	curwp->w_rflag |= WFFULL;
 
 	return (TRUE);
-}
-
-static int
-findbind(KEYMAP *map, PF fun, char *buf, size_t len)
-{
-	KEYMAP	*newmap;
-	PF	 nfun;
-	char	 buf2[16], keybuf[16];
-	int	 c;
-
-	/* XXX - 256 ? */
-	for (c = 0; c < 256; c++) {
-		nfun = doscan(map, c, &newmap);
-		if (nfun == fun) {
-			getkeyname(buf, len, c);
-			return (TRUE);
-		}
-		if (nfun == NULL) {
-			if (findbind(newmap, fun, buf2, sizeof(buf2)) == TRUE) {
-				getkeyname(keybuf, sizeof(keybuf), c);
-				(void)snprintf(buf, len, "%s %s", keybuf, buf2);
-				return (TRUE);
-			}
-		}
-	}
-	return (FALSE);
 }

@@ -667,6 +667,7 @@ void		 panic(char *);
 
 /* cinfo.c */
 char		*getkeyname(char  *, size_t, int);
+void		 keyname(char *, size_t, const KCHAR *, int);
 
 /* syntax.c */
 #define SYN_NONE	0
@@ -809,6 +810,8 @@ char		*skipwhite(char *);
 /* help.c X */
 extern const char	*hlp;
 int		 desckey(int, int);
+int		 whereiscmd(int, int);
+void		 whereis(PF, char *, size_t);
 int		 wallchart(int, int);
 int		 help_help(int, int);
 int		 apropos_command(int, int);

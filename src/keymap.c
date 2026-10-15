@@ -54,6 +54,9 @@ static PF cHa[] = {
 	rescan,			/* r */
 	rescan,			/* s */
 	tutorial,		/* t */
+	rescan,			/* u */
+	rescan,			/* v */
+	whereiscmd,		/* w */
 };
 
 struct KEYMAPE (2) helpmap = {
@@ -65,7 +68,7 @@ struct KEYMAPE (2) helpmap = {
 			CCHR('G'), CCHR('Q'), cHcQ, NULL
 		},
 		{
-			'a', 't', cHa, NULL
+			'a', 'w', cHa, NULL
 		}
 	}
 };

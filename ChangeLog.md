@@ -42,6 +42,7 @@ All relevant changes to the project are documented in this file.
 - `M-r` runs the new `move-to-window-line-top-bottom`, which moves the
   cursor to the middle row of the window, then the top and the bottom.
   `search-backward` is no longer bound to `M-r`
+- New `where-is` on `C-h w` shows the keys a command is on
 
 ### Fixes
 

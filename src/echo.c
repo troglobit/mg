@@ -1388,7 +1388,7 @@ ewprintf(const char *fmt, ...)
 static void
 eformat(const char *fp, va_list ap)
 {
-	char	kname[NKNAME], tmp[100], *cp;
+	char	kname[NKNAME], tmp[100];
 	int	c;
 
 	while ((c = *fp++) != '\0') {
@@ -1404,12 +1404,8 @@ eformat(const char *fp, va_list ap)
 				break;
 
 			case 'k':
-				for (cp = kname, c = 0; c < key.k_count; c++) {
-					if (c)
-						*cp++ = ' ';
-					cp = getkeyname(cp, sizeof(kname) -
-					    (cp - kname) - 1, key.k_chars[c]);
-				}
+				keyname(kname, sizeof(kname), key.k_chars,
+				    key.k_count);
 				eputs(kname);
 				break;
 

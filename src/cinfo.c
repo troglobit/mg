@@ -155,3 +155,20 @@ getkeyname(char *cp, size_t len, int k)
 		copied = len - 1;
 	return (cp + copied);
 }
+
+/*
+ * The names of the n keys in keys, space separated.
+ */
+void
+keyname(char *buf, size_t len, const KCHAR *keys, int n)
+{
+	char	*cp = buf;
+	int	 i;
+
+	*cp = '\0';
+	for (i = 0; i < n; i++) {
+		if (i)
+			*cp++ = ' ';
+		cp = getkeyname(cp, len - (cp - buf) - 1, keys[i]);
+	}
+}
