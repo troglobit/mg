@@ -898,8 +898,8 @@ popbuf(struct buffer *bp, int flags)
 		 * Pick a window for a pop-up: one above or below in
 		 * the same columns, so side by side windows are left
 		 * alone; otherwise split the current window, and the
-		 * pop-up appears beside it.  Flag a new window as
-		 * ephemeral.
+		 * pop-up appears beside it.  Only a new window is
+		 * flagged ephemeral.
 		 */
 		for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
 			if (wp != curwp &&
@@ -923,8 +923,10 @@ popbuf(struct buffer *bp, int flags)
 				wp = wheadp;
 				while (wp != NULL && wp == curwp)
 					wp = wp->w_wndp;
+				wp->w_flag &= ~WEPHEM;
 			}
-		}
+		} else
+			wp->w_flag &= ~WEPHEM;
 	} else {
 		for (wp = wheadp; wp != NULL; wp = wp->w_wndp) {
 			if (wp->w_bufp == bp) {

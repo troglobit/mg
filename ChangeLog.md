@@ -45,6 +45,8 @@ All relevant changes to the project are documented in this file.
 - New `where-is` on `C-h w` shows the keys a command is on
 - New `describe-key` on `C-h k` shows the command a key runs, and
   every key that command is on, in the `*help*` buffer
+- The `*help*` buffer from `C-h a`, `C-h b` and `C-h k` gets the cursor,
+  and `q` closes it, as in the quick help
 
 ### Fixes
 

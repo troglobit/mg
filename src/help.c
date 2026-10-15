@@ -23,6 +23,8 @@ const char *hlp = "C-h q  quick help | C-h t  tutorial | C-h b  key bindings | C
 
 static int	showall(struct buffer *, KEYMAP *, char *);
 static PF	keyfunc(const KCHAR *, int, int *);
+static struct buffer *popbuffer(const char *, const char *);
+static int	helpshow(struct buffer *);
 
 /*
  * Read a key from the keyboard, and look it up in the keymap.
@@ -104,10 +106,8 @@ describekey(int f, int n)
 	}
 	keyname(kname, sizeof(kname), key.k_chars, key.k_count);
 
-	bp = bfind("*help*", TRUE);
-	if (bclear(bp) != TRUE)
+	if ((bp = popbuffer("*help*", "view")) == NULL)
 		return (FALSE);
-	bp->b_flag |= BFREADONLY;
 	if (addlinef(bp, "%s runs the command %s.", kname, name) == FALSE ||
 	    addline(bp, "") == FALSE)
 		return (FALSE);
@@ -121,7 +121,7 @@ describekey(int f, int n)
 	if (addline(bp, "See the mg(1) manual for what it does.") == FALSE)
 		return (FALSE);
 	eerase();
-	return (popbuftop(bp, WNONE));
+	return (helpshow(bp));
 }
 
 /*
@@ -256,11 +256,8 @@ wallchart(int f, int n)
 	int		 m;
 	struct buffer		*bp;
 
-	bp = bfind("*help*", TRUE);
-	if (bclear(bp) != TRUE)
-		/* clear it out */
+	if ((bp = popbuffer("*help*", "view")) == NULL)
 		return (FALSE);
-	bp->b_flag |= BFREADONLY;
 	for (m = curbp->b_nmodes; m > 0; m--) {
 		if ((addlinef(bp, "Local keybindings for mode %s:",
 				curbp->b_modes[m]->p_name) == FALSE) ||
@@ -271,7 +268,7 @@ wallchart(int f, int n)
 	if ((addline(bp, "Global bindings:") == FALSE) ||
 	    (showall(bp, fundamental_map, "") == FALSE))
 		return (FALSE);
-	return (popbuftop(bp, WNONE));
+	return (helpshow(bp));
 }
 
 static int
@@ -333,8 +330,7 @@ apropos_command(int f, int n)
 	if (eread("apropos: ", string, sizeof(string), EFNUL | EFNEW) == NULL)
 		return (ABORT);
 	/* FALSE means we got a 0 character string, which is fine */
-	bp = bfind("*help*", TRUE);
-	if (bclear(bp) == FALSE)
+	if ((bp = popbuffer("*help*", "view")) == NULL)
 		return (FALSE);
 
 	fnames = complete_function_list("");
@@ -352,56 +348,158 @@ apropos_command(int f, int n)
 		}
 	}
 	free_file_list(fnames);
-	return (popbuftop(bp, WNONE));
+	return (helpshow(bp));
 }
 
 /*
- * Show quick help to get started with Mg
+ * The *quick* and *help* pop-ups: q closes them.
  */
-static int	 quickdismiss(int, int);
+static int	 popquit(int, int);
 
-static PF quick_q[] = {
-	quickdismiss		/* q */
+static PF pop_q[] = {
+	popquit			/* q */
 };
 
-static struct KEYMAPE (1) quickmap = {
+static struct KEYMAPE (1) popmap = {
 	1,
 	1,
 	rescan,
 	{
 		{
-			'q', 'q', quick_q, NULL
+			'q', 'q', pop_q, NULL
 		}
 	}
 };
 
-static int	 quick_split;	/* the pop-up window is our own */
+static struct mgwin	*popfrom;	/* the window *help* was asked from */
 
+/*
+ * The mode a pop-up buffer gets, with q to close it.
+ */
+static struct maps_s *
+popmode(const char *name)
+{
+	static int	 initialized = 0;
+
+	if (!initialized) {
+		maps_add((KEYMAP *)&popmap, "quick");
+		maps_add((KEYMAP *)&popmap, "view");
+		initialized = 1;
+	}
+	return (name_mode(name));
+}
+
+/*
+ * The window showing bp, if any.
+ */
+static struct mgwin *
+bufwind(struct buffer *bp)
+{
+	struct mgwin	*wp;
+
+	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
+		if (wp->w_bufp == bp)
+			break;
+	return (wp);
+}
+
+/*
+ * Show bp in a pop-up window.  A window split off for it is flagged
+ * ephemeral, for popclose() to delete again.
+ */
+static struct mgwin *
+popshow(struct buffer *bp)
+{
+	if (popbuftop(bp, WEPHEM) != TRUE)
+		return (NULL);
+	return (bufwind(bp));
+}
+
+/*
+ * Close a pop-up: delete its window if it was split off for it,
+ * keeping the rest of the layout, and drop the buffer.  Dot goes back
+ * to the window *help* was asked from.
+ */
+static int
+popclose(struct buffer *bp)
+{
+	struct mgwin	*wp, *owp;
+
+	wp = bufwind(bp);
+	owp = curwp == wp ? popfrom : curwp;
+	popfrom = NULL;
+	if (wp != NULL && (wp->w_flag & WEPHEM) && wheadp->w_wndp != NULL) {
+		curwp = wp;
+		curbp = wp->w_bufp;
+		(void)delwind(FFRAND, 1);
+	}
+	/* a reused window gets another buffer from killbuffer */
+	if (killbuffer(bp) != TRUE)
+		return (FALSE);
+	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
+		if (wp == owp) {
+			curwp = wp;
+			curbp = wp->w_bufp;
+		}
+	return (TRUE);
+}
+
+static int
+popquit(int f, int n)
+{
+	return (popclose(curbp));
+}
+
+/*
+ * The read-only pop-up buffer name, emptied for new text, in mode.
+ */
+static struct buffer *
+popbuffer(const char *name, const char *mode)
+{
+	struct buffer	*bp;
+
+	bp = bfind(name, TRUE);
+	if (bclear(bp) != TRUE)
+		return (NULL);
+	bp->b_flag |= BFREADONLY;
+	bp->b_modes[0] = name_mode("fundamental");
+	bp->b_modes[1] = popmode(mode);
+	bp->b_nmodes = 1;
+	return (bp);
+}
+
+/*
+ * Pop up the *help* buffer and select its window.
+ */
+static int
+helpshow(struct buffer *bp)
+{
+	struct mgwin	*wp;
+
+	if (curwp->w_bufp != bp)
+		popfrom = curwp;
+	if ((wp = popshow(bp)) == NULL)
+		return (FALSE);
+	curwp = wp;
+	curbp = bp;
+	return (TRUE);
+}
+
+/*
+ * Show quick help to get started with Mg
+ */
 int
 quickhelp(int f, int n)
 {
-	static int	 initialized = 0;
 	struct buffer	*bp;
-	struct mgwin	*wp;
-	int	 nwind;
 
 	/* If already displayed, toggle off */
-	if (bfind("*quick*", FALSE) != NULL)
-		return (quickdismiss(f, n));
-
-	if (!initialized) {
-		maps_add((KEYMAP *)&quickmap, "quick");
-		initialized = 1;
-	}
+	if ((bp = bfind("*quick*", FALSE)) != NULL)
+		return (popclose(bp));
 
 	/* Create new */
-	bp = bfind("*quick*", TRUE);
-	if (bclear(bp) != TRUE)
+	if ((bp = popbuffer("*quick*", "quick")) == NULL)
 		return (FALSE);
-	bp->b_flag |= BFREADONLY;
-	bp->b_modes[0] = name_mode("fundamental");
-	bp->b_modes[1] = name_mode("quick");
-	bp->b_nmodes = 1;
 
 	addline(bp, "FILE             BUFFER          WINDOW           MARK/KILL       MISC");
 	addline(bp, "C-x C-c exit     C-x b   switch  C-x 2/3 split    C-SPC mark      C-_ undo");
@@ -415,15 +513,8 @@ quickhelp(int f, int n)
 		addline(bp, "C-x i   insert   C-x g   goto-ln M-S-arrows size  C-x C-x swap    M-q reformat");
 	}
 
-	nwind = 0;
-	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
-		nwind++;
-	if (popbuftop(bp, WNONE) != TRUE)
+	if (popshow(bp) == NULL)
 		return (FALSE);
-	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
-		nwind--;
-	quick_split = nwind < 0;
-
 	quickresize();
 	return (TRUE);
 }
@@ -443,45 +534,12 @@ quickresize(void)
 
 	if ((bp = bfind("*quick*", FALSE)) == NULL)
 		return;
-	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
-		if (wp->w_bufp == bp)
-			break;
-	if (wp == NULL || (delta = wp->w_ntrows - 6) <= 0)
+	if ((wp = bufwind(bp)) == NULL || (delta = wp->w_ntrows - 6) <= 0)
 		return;
 	if (!moveseam(wp->w_toprow - 1, delta, FALSE))
 		(void)moveseam(wp->w_toprow + wp->w_ntrows, -delta, FALSE);
 	wp->w_linep = lforw(bp->b_headp);
 }
-
-/*
- * Close the quick help: delete its window, keeping the rest of
- * the layout, and drop the buffer.  Bound to q in the pop-up.
- */
-static int
-quickdismiss(int f, int n)
-{
-	struct buffer	*bp;
-	struct mgwin	*wp, *owp;
-
-	if ((bp = bfind("*quick*", FALSE)) == NULL)
-		return (TRUE);
-	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
-		if (wp->w_bufp == bp)
-			break;
-	if (wp != NULL && quick_split && wheadp->w_wndp != NULL) {
-		owp = curwp == wp ? NULL : curwp;
-		curwp = wp;
-		curbp = wp->w_bufp;
-		(void)delwind(FFRAND, 1);
-		if (owp != NULL) {
-			curwp = owp;
-			curbp = owp->w_bufp;
-		}
-	}
-	/* a reused window gets another buffer from killbuffer */
-	return (killbuffer(bp));
-}
-
 
 /*
  * This function tries to locate the 'tutorial' file, opens a buffer

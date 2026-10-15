@@ -827,6 +827,11 @@ the *help* buffer.
 .It Ic describe-key
 Read a key and show the command it runs, and every key that command is
 on, in the *help* buffer.
+The cursor moves to the *help* window, as after
+.Ic apropos
+and
+.Ic describe-bindings ,
+and q there closes it.
 .It Ic describe-key-briefly
 Read a key from the keyboard, and look it up in the keymap.
 Display the name of the function currently bound to the key.
