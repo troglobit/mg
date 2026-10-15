@@ -114,6 +114,7 @@ static struct funmap functnames[] = {
 	{deltrailws, "delete-trailing-whitespace", 0, NULL},
 	{delwind, "delete-window", 0, NULL},
 	{wallchart, "describe-bindings", 0, NULL},
+	{describekey, "describe-key", 1, NULL},
 	{desckey, "describe-key-briefly", 1, NULL},
 	{diffbuffer, "diff-buffer-with-file", 0, NULL},
 	{digit_argument, "digit-argument", 1, NULL},

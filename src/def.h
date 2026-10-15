@@ -810,6 +810,7 @@ char		*skipwhite(char *);
 /* help.c X */
 extern const char	*hlp;
 int		 desckey(int, int);
+int		 describekey(int, int);
 int		 whereiscmd(int, int);
 void		 whereis(PF, char *, size_t);
 int		 wallchart(int, int);

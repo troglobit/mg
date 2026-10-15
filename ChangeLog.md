@@ -43,6 +43,8 @@ All relevant changes to the project are documented in this file.
   cursor to the middle row of the window, then the top and the bottom.
   `search-backward` is no longer bound to `M-r`
 - New `where-is` on `C-h w` shows the keys a command is on
+- New `describe-key` on `C-h k` shows the command a key runs, and
+  every key that command is on, in the `*help*` buffer
 
 ### Fixes
 

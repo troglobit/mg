@@ -251,6 +251,8 @@ apropos
 describe-bindings
 .It C-h c
 describe-key-briefly
+.It C-h k
+describe-key
 .It C-h t
 tutorial
 .It C-h w
@@ -822,6 +824,9 @@ Delete current window.
 .It Ic describe-bindings
 List all global and local keybindings, putting the result in
 the *help* buffer.
+.It Ic describe-key
+Read a key and show the command it runs, and every key that command is
+on, in the *help* buffer.
 .It Ic describe-key-briefly
 Read a key from the keyboard, and look it up in the keymap.
 Display the name of the function currently bound to the key.

@@ -44,7 +44,7 @@ static PF cHa[] = {
 	rescan,			/* h */
 	rescan,			/* i */
 	rescan,			/* j */
-	rescan,			/* k */
+	describekey,		/* k */
 	rescan,			/* l */
 	rescan,			/* m */
 	rescan,			/* n */

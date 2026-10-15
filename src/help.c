@@ -22,79 +22,106 @@
 const char *hlp = "C-h q  quick help | C-h t  tutorial | C-h b  key bindings | C = Ctrl | M = Alt";
 
 static int	showall(struct buffer *, KEYMAP *, char *);
+static PF	keyfunc(const KCHAR *, int, int *);
 
 /*
  * Read a key from the keyboard, and look it up in the keymap.
- * Display the name of the function currently bound to the key.
+ * Returns the function bound to it, rescan when there is none.
  */
-int
-desckey(int f, int n)
+static PF
+readkey(const char *prompt)
 {
-	KEYMAP	*curmap;
 	size_t	 num;
 	PF	 funct;
-	int	 c, m, i;
+	int	 m;
 	char	*pep;
 	char	 dprompt[80];
 
-	if (inmacro)
-		return (TRUE);	/* ignore inside keyboard macro */
-
-	num = strlcpy(dprompt, "Describe key briefly: ", sizeof(dprompt));
+	num = strlcpy(dprompt, prompt, sizeof(dprompt));
 	if (num >= sizeof(dprompt))
 		num = sizeof(dprompt) - 1;
 	pep = dprompt + num;
 	key.k_count = 0;
-	m = curbp->b_nmodes;
-	curmap = curbp->b_modes[m]->p_map;
 	for (;;) {
-		for (;;) {
-			ewprintf("%s", dprompt);
-			pep[-1] = ' ';
-			pep = getkeyname(pep, sizeof(dprompt) - (pep - dprompt),
-			    key.k_chars[key.k_count++] = c = getkey(FALSE));
-			if ((funct = doscan(curmap, c, &curmap)) != NULL)
-				break;
-			*pep++ = '-';
-			*pep = '\0';
-		}
-		if (funct != rescan)
-			break;
-		if (ISUPPER(key.k_chars[key.k_count - 1])) {
-			funct = doscan(curmap,
-			    TOLOWER(key.k_chars[key.k_count - 1]), &curmap);
-			if (funct == NULL) {
-				*pep++ = '-';
-				*pep = '\0';
-				continue;
-			}
-			if (funct != rescan)
-				break;
-		}
-nextmode:
-		if (--m < 0)
-			break;
-		curmap = curbp->b_modes[m]->p_map;
-		for (i = 0; i < key.k_count; i++) {
-			funct = doscan(curmap, key.k_chars[i], &curmap);
-			if (funct != NULL) {
-				if (i == key.k_count - 1 && funct != rescan)
-					goto found;
-				funct = rescan;
-				goto nextmode;
-			}
-		}
+		ewprintf("%s", dprompt);
+		pep[-1] = ' ';
+		pep = getkeyname(pep, sizeof(dprompt) - (pep - dprompt),
+		    key.k_chars[key.k_count++] = getkey(FALSE));
+		if ((funct = keyfunc(key.k_chars, key.k_count, &m)) != NULL)
+			return (funct);
+		if (key.k_count == MAXKEY)
+			return (rescan);
 		*pep++ = '-';
 		*pep = '\0';
 	}
-found:
+}
+
+/*
+ * Display the name of the function bound to a key.
+ */
+int
+desckey(int f, int n)
+{
+	PF		 funct;
+	const char	*name;
+
+	if (inmacro)
+		return (TRUE);	/* ignore inside keyboard macro */
+
+	funct = readkey("Describe key briefly: ");
 	if (funct == rescan || funct == selfinsert)
 		ewprintf("%k is not bound to any function");
-	else if ((pep = (char *)function_name(funct)) != NULL)
-		ewprintf("%k runs the command %s", pep);
+	else if ((name = function_name(funct)) != NULL)
+		ewprintf("%k runs the command %s", name);
 	else
 		ewprintf("%k is bound to an unnamed function");
 	return (TRUE);
+}
+
+/*
+ * Show the command bound to a key, and every key it is on, in the
+ * *help* buffer.
+ */
+int
+describekey(int f, int n)
+{
+	struct buffer	*bp;
+	PF		 funct;
+	const char	*name;
+	char		 kname[MAXKEY * KEYNAMESZ + 1];
+	char		 keys[256];
+
+	if (inmacro)
+		return (TRUE);
+
+	if ((funct = readkey("Describe key: ")) == rescan) {
+		ewprintf("%k is undefined");
+		return (TRUE);
+	}
+	if ((name = function_name(funct)) == NULL) {
+		ewprintf("%k is bound to an unnamed function");
+		return (TRUE);
+	}
+	keyname(kname, sizeof(kname), key.k_chars, key.k_count);
+
+	bp = bfind("*help*", TRUE);
+	if (bclear(bp) != TRUE)
+		return (FALSE);
+	bp->b_flag |= BFREADONLY;
+	if (addlinef(bp, "%s runs the command %s.", kname, name) == FALSE ||
+	    addline(bp, "") == FALSE)
+		return (FALSE);
+	if (funct == selfinsert)
+		(void)strlcpy(keys, "many ordinary text characters", sizeof(keys));
+	else
+		whereis(funct, keys, sizeof(keys));
+	if (keys[0] && (addlinef(bp, "It is bound to %s.", keys) == FALSE ||
+	    addline(bp, "") == FALSE))
+		return (FALSE);
+	if (addline(bp, "See the mg(1) manual for what it does.") == FALSE)
+		return (FALSE);
+	eerase();
+	return (popbuftop(bp, WNONE));
 }
 
 /*
