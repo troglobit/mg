@@ -21,10 +21,53 @@
 
 const char *hlp = "C-h q  quick help | C-h t  tutorial | C-h b  key bindings | C = Ctrl | M = Alt";
 
+int		 helpsh = TRUE;		/* help-text in echo buffer */
+static int	 helpset = FALSE;	/* user set it, keep hands off */
+
 static int	showall(struct buffer *, KEYMAP *, char *);
 static PF	keyfunc(const KCHAR *, int, int *);
 static struct buffer *popbuffer(const char *, const char *);
 static int	helpshow(struct buffer *);
+
+/*
+ * Toggle permanent display of short help text in echo buffer
+ */
+int
+helptoggle(int f, int n)
+{
+	if (f & FFARG)
+		helpsh = n > 0;
+	else
+		helpsh = !helpsh;
+	helpset = TRUE;
+
+	sgarbf = TRUE;
+
+	return (TRUE);
+}
+
+/*
+ * The startup help is a courtesy to beginners: dismiss it on the
+ * first key press, or after ten seconds, unless the user asked to
+ * keep it with display-help-mode.  Anything already in the echo line
+ * outranks it.
+ */
+void
+helpstartup(void)
+{
+	if (epresf != FALSE) {
+		if (helpset == FALSE)
+			helpsh = FALSE;
+	} else if (helpsh == TRUE) {
+		ewprintf(" %s", hlp);
+		update(CMODE);	/* park the cursor in the buffer */
+		if (helpset == FALSE) {
+			(void)ttwait(10000);
+			helpsh = FALSE;
+			eerase();
+		}
+	}
+}
 
 /*
  * Read a key from the keyboard, and look it up in the keymap.

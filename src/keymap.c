@@ -19,6 +19,7 @@
  * initial keymap declarations, deepest first
  */
 
+#ifdef ENABLE_HELP
 static PF cHcQ[] = {
 	ctrlg,			/* ^G */
 	help_help,		/* ^H */
@@ -72,6 +73,7 @@ struct KEYMAPE (2) helpmap = {
 		}
 	}
 };
+#endif /* ENABLE_HELP */
 
 #ifdef CSCOPE
 static PF cCsc[] = {
@@ -440,7 +442,7 @@ static PF fund_at[] = {
 };
 
 static PF fund_h[] = {
-	NULL,			/* ^H */
+	HELP_KEY,		/* ^H */
 };
 
 
@@ -496,7 +498,7 @@ static struct KEYMAPE (8) fundmap = {
 		},
 #endif
 		{
-			CCHR('H'), CCHR('H'), fund_h, (KEYMAP *) & helpmap
+			CCHR('H'), CCHR('H'), fund_h, HELP_PREFIX
 		},
 		{
 			CCHR('J'), CCHR('Z'), fund_CJ, (KEYMAP *) & cXmap
@@ -639,7 +641,9 @@ static struct maps_s map_table[] = {
 	{ .p_map = (KEYMAP *)&metamap, .p_name = "esc prefix" },
 	{ .p_map = (KEYMAP *)&cXmap, .p_name = "c-x prefix" },
 	{ .p_map = (KEYMAP *)&cX4map, .p_name = "c-x 4 prefix" },
+#ifdef ENABLE_HELP
 	{ .p_map = (KEYMAP *)&helpmap, .p_name = "help" },
+#endif
 	{ NULL }
 };
 

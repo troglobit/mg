@@ -47,6 +47,9 @@ All relevant changes to the project are documented in this file.
   every key that command is on, in the `*help*` buffer
 - The `*help*` buffer from `C-h a`, `C-h b` and `C-h k` gets the cursor,
   and `q` closes it, as in the quick help
+- New `--disable-help` configure option for small builds.  It leaves
+  out the `C-h` commands, the quick help, the tutorial and the startup
+  hint, and is part of `--disable-all`
 
 ### Fixes
 

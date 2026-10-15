@@ -609,7 +609,6 @@ int		 fontlock(int, int);
 struct line	*winrowline(struct mgwin *, int);
 
 /* echo.c X */
-int		 helptoggle(int, int);
 void		 eerase(void);
 int		 eyorn(const char *);
 int		 eynorr(const char *);
@@ -808,7 +807,11 @@ int		 excline(char *, int, int);
 char		*skipwhite(char *);
 
 /* help.c X */
+#ifdef ENABLE_HELP
 extern const char	*hlp;
+extern int		 helpsh;
+int		 helptoggle(int, int);
+void		 helpstartup(void);
 int		 desckey(int, int);
 int		 describekey(int, int);
 int		 whereiscmd(int, int);
@@ -819,6 +822,10 @@ int		 apropos_command(int, int);
 int		 quickhelp(int, int);
 void		 quickresize(void);
 int		 tutorial(int, int);
+#else
+#define helpstartup()		do {} while (0)
+#define quickresize()		do {} while (0)
+#endif
 
 /* paragraph.c X */
 int		 gotobop(int, int);
@@ -1037,8 +1044,6 @@ extern int		 dovisiblebell;
 extern int		 dblspace;
 extern int		 allbro;
 extern int		 utf8_mode;
-extern int		 helpsh;
-extern int		 helpset;
 extern int		 batch;
 extern int		 secure;
 extern int		 singlefile;

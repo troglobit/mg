@@ -244,8 +244,10 @@ ttykeymapinit(void)
 		dobindkey(fundamental_map, "yank", key_sic);
 
 	/* Bind function keys */
+#ifdef ENABLE_HELP
 	if (key_f1)
 		dobindkey(fundamental_map, "quick-help", key_f1);
+#endif
 	if (key_f2)
 		dobindkey(fundamental_map, "save-buffer", key_f2);
 	if (key_f3)

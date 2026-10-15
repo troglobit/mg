@@ -127,6 +127,7 @@ with the official Mg.  By default, all below features are enabled:
     --disable-cscope     Disable Cscope support
     --disable-ctags      Disable ctags(1) support, required by Cscope
     --disable-dired      Disable directory editor
+    --disable-help       Disable C-h help, quick help and tutorial
     --disable-ido        Disable ido-mode, substring matching at prompts
     --disable-regexp     Disable full regexp search
     --disable-syntax     Disable syntax highlighting and comment-dwim

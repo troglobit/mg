@@ -7,7 +7,7 @@ endif
 bin_PROGRAMS     = mg
 mg_SOURCES       = basic.c bell.c buffer.c cinfo.c dir.c		\
 		   display.c echo.c						\
-		   extend.c file.c fileio.c funmap.c help.c interpreter.c	\
+		   extend.c file.c fileio.c funmap.c interpreter.c		\
 		   kbd.c keymap.c line.c macro.c main.c match.c		\
 		   modes.c							\
 		   paragraph.c region.c search.c spawn.c			\
@@ -51,6 +51,9 @@ mg_SOURCES     += tags.c
 endif
 if DIRED
 mg_SOURCES     += dired.c
+endif
+if HELP
+mg_SOURCES     += help.c
 endif
 if IDO
 mg_SOURCES     += ido.c

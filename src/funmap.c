@@ -41,7 +41,9 @@ static struct funmap *funs;
  * have '0' in the 3rd column below.
  */
 static struct funmap functnames[] = {
+#ifdef ENABLE_HELP
 	{apropos_command, "apropos", 1, NULL},
+#endif
 	{toggleaudiblebell, "audible-bell", 0, NULL},
 #ifdef ENABLE_AUTOEXEC
 	{auto_execute, "auto-execute", 2, NULL},
@@ -113,15 +115,19 @@ static struct funmap functnames[] = {
 	{deltrailwhite, "delete-trailing-space", 0, NULL},
 	{deltrailws, "delete-trailing-whitespace", 0, NULL},
 	{delwind, "delete-window", 0, NULL},
+#ifdef ENABLE_HELP
 	{wallchart, "describe-bindings", 0, NULL},
 	{describekey, "describe-key", 1, NULL},
 	{desckey, "describe-key-briefly", 1, NULL},
+#endif
 	{diffbuffer, "diff-buffer-with-file", 0, NULL},
 	{digit_argument, "digit-argument", 1, NULL},
 #ifdef ENABLE_DIRED
 	{dired_jump, "dired-jump", 1, NULL},
 #endif
+#ifdef ENABLE_HELP
 	{helptoggle, "display-help-mode", 0, NULL},
+#endif
 	{linummode, "display-line-numbers-mode", 0, NULL},
 	{timetoggle, "display-time-mode", 0, NULL},
 	{lowerregion, "downcase-region", 0, NULL},
@@ -161,7 +167,9 @@ static struct funmap functnames[] = {
 	{globalwdtoggle, "global-wd-mode", 0, NULL},
 #endif
 	{gotoline, "goto-line", 1, NULL},
+#ifdef ENABLE_HELP
 	{help_help, "help-help", 0, NULL},
+#endif
 	{indent, "indent-current-line", 0, NULL},
 #ifdef ENABLE_IDO
 	{idomode, "ido-mode", 0, NULL},
@@ -222,7 +230,9 @@ static struct funmap functnames[] = {
 #ifdef REGEX
 	{re_queryrepl, "query-replace-regexp", -1, NULL},
 #endif /* REGEX */
+#ifdef ENABLE_HELP
 	{quickhelp, "quick-help", 0, NULL},
+#endif
 	{quote, "quoted-insert", 1, NULL},
 #ifdef REGEX
 	{re_searchagain, "re-search-again", 0, NULL},
@@ -290,7 +300,9 @@ static struct funmap functnames[] = {
 	{transposelines, "transpose-lines", 0, NULL},
 	{transposepara, "transpose-paragraphs", 0, NULL},
 	{transposeword, "transpose-words", 0, NULL},
+#ifdef ENABLE_HELP
 	{tutorial, "tutorial", 0, NULL},
+#endif
 #ifdef ENABLE_SYNTAX
 	{uncommentregion, "uncomment-region", 0, NULL},
 #endif
@@ -310,7 +322,9 @@ static struct funmap functnames[] = {
 	{tagsvisit, "visit-tags-table", 0, NULL},
 #endif
 	{showcpos, "what-cursor-position", 0, NULL},
+#ifdef ENABLE_HELP
 	{whereiscmd, "where-is", 1, NULL},
+#endif
 	{wscleanup, "whitespace-cleanup", 0, NULL},
 	{resizewinddown, "resize-window-down", 0, NULL},
 	{resizewindleft, "resize-window-left", 0, NULL},

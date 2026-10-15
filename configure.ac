@@ -51,6 +51,7 @@ AC_ARG_ENABLE(compile,  AS_HELP_STRING([--disable-compile],  [Disable C compile 
 AC_ARG_ENABLE(cscope,   AS_HELP_STRING([--disable-cscope],   [Disable Cscope support]))
 AC_ARG_ENABLE(ctags,    AS_HELP_STRING([--disable-ctags],    [Disable ctags(1) support, required by Cscope]))
 AC_ARG_ENABLE(dired,    AS_HELP_STRING([--disable-dired],    [Disable directory editor]))
+AC_ARG_ENABLE(help,     AS_HELP_STRING([--disable-help],     [Disable C-h help, quick help and tutorial]))
 AC_ARG_ENABLE(ido,      AS_HELP_STRING([--disable-ido],      [Disable ido-mode, substring matching at prompts]))
 AC_ARG_ENABLE(regexp,   AS_HELP_STRING([--disable-regexp],   [Disable full regexp search]))
 AC_ARG_ENABLE(syntax,   AS_HELP_STRING([--disable-syntax],   [Disable syntax highlighting and comment-dwim]))
@@ -119,6 +120,7 @@ AS_IF([test "x$enable_all" = "xno"],
 	enable_cscope="no"
 	enable_ctags="no"
 	enable_dired="no"
+	enable_help="no"
 	enable_ido="no"
 	enable_regexp="no"
 	enable_togglenl="no"
@@ -157,6 +159,10 @@ AS_IF([test "x$enable_ctags" != "xno"], enable_ctags="yes"
 
 AS_IF([test "x$enable_dired" != "xno"], enable_dired="yes"
 	AC_DEFINE(ENABLE_DIRED, 1, [Enable dired, the directory editor]))
+
+AS_IF([test "x$enable_help" != "xno"], enable_help="yes"
+	AC_DEFINE(ENABLE_HELP, 1, [Enable the C-h help commands]),
+	with_tutorial="no")
 
 AS_IF([test "x$enable_regexp" != "xno"], enable_regexp="yes"
 	AC_DEFINE(REGEX, 1, [Enable regexp search support]))
@@ -203,6 +209,7 @@ AM_CONDITIONAL(COMPILE,  [test "x$enable_compile"  = "xyes"])
 AM_CONDITIONAL(CSCOPE,   [test "x$enable_cscope"   = "xyes"])
 AM_CONDITIONAL(CTAGS,    [test "x$enable_ctags"    = "xyes"])
 AM_CONDITIONAL(DIRED,    [test "x$enable_dired"    = "xyes"])
+AM_CONDITIONAL(HELP,     [test "x$enable_help"     = "xyes"])
 AM_CONDITIONAL(IDO,      [test "x$enable_ido"      = "xyes"])
 AM_CONDITIONAL(TINY,     [test "x$enable_tiny"     = "xyes"])
 AM_CONDITIONAL(MGLOG,    [test "x$with_mglog"     != "xno"])
@@ -246,6 +253,7 @@ cat <<EOF
   cscope.........: $enable_cscope
   ctags..........: $enable_ctags
   dired..........: $enable_dired
+  help...........: $enable_help
   ido-mode.......: $enable_ido
   regexp.........: $enable_regexp
   syntax.........: $enable_syntax

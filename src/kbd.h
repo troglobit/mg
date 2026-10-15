@@ -47,6 +47,15 @@ extern struct maps_s	*maps;
 extern struct maps_s	fundamental_mode;
 #define		fundamental_map (fundamental_mode.p_map)
 
+/* C-h: the prefix of the help map, or unbound without it */
+#ifdef ENABLE_HELP
+#define HELP_KEY	NULL
+#define HELP_PREFIX	((KEYMAP *)&helpmap)
+#else
+#define HELP_KEY	rescan
+#define HELP_PREFIX	NULL
+#endif
+
 int		 dobindkey(KEYMAP *, const char *, const char *);
 KEYMAP		*name_map(const char *);
 struct maps_s	*name_mode(const char *);

@@ -338,24 +338,7 @@ notnum:
 	/* The files just read report their line counts over it, issue #41 */
 	loadreport();
 
-	/*
-	 * The startup help is a courtesy to beginners: dismiss it on
-	 * the first key press, or after ten seconds, unless the user
-	 * asked to keep it with display-help-mode.  Anything already in
-	 * the echo line outranks it.
-	 */
-	if (epresf != FALSE) {
-		if (helpset == FALSE)
-			helpsh = FALSE;
-	} else if (helpsh == TRUE) {
-		ewprintf(" %s", hlp);
-		update(CMODE);	/* park the cursor in the buffer */
-		if (helpset == FALSE) {
-			(void)ttwait(10000);
-			helpsh = FALSE;
-			eerase();
-		}
-	}
+	helpstartup();
 
 	/* fake last flags */
 	thisflag = 0;

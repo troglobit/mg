@@ -59,7 +59,9 @@ static int	 createlist(struct buffer *);
 static void	 redelete(struct buffer *);
 static char 	 *findfname(struct line *, char *);
 
+#ifdef ENABLE_HELP
 extern struct KEYMAPE (2) helpmap;
+#endif
 extern struct KEYMAPE (7) cXmap;
 extern struct KEYMAPE (8) metamap;
 
@@ -84,7 +86,7 @@ static PF dirednul[] = {
 	gotoeol,		/* ^E */
 	forwchar,		/* ^F */
 	ctrlg,			/* ^G */
-	NULL,			/* ^H */
+	HELP_KEY,		/* ^H */
 };
 
 static PF diredcl[] = {
@@ -184,7 +186,7 @@ static struct KEYMAPE (8) diredmap = {
 	rescan,
 	{
 		{
-			CCHR('@'), CCHR('H'), dirednul, (KEYMAP *) & helpmap
+			CCHR('@'), CCHR('H'), dirednul, HELP_PREFIX
 		},
 		{
 			CCHR('L'), CCHR('X'), diredcl, (KEYMAP *) & cXmap
