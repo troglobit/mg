@@ -154,6 +154,7 @@ typedef int	(*PF)(int, int);	/* generally useful type */
 #define CFBUFCYC 0x0040		/* Last command cycled buffers	 */
 #define CFSETMARK 0x0080	/* Last command was set-mark	 */
 #define CFRECENTER 0x0100	/* Last command was recenter-top-bottom */
+#define CFWINLINE 0x0200	/* Last command was move-to-window-line-top-bottom */
 
 /*
  * File I/O.
@@ -529,6 +530,8 @@ int		 yank(int, int);
 struct mgwin	*new_window(struct buffer *);
 int		 reposition(int, int);
 int		 recentertb(int, int);
+int		 movetowinline(int, int);
+int		 movetowinlinetb(int, int);
 int		 redraw(int, int);
 int		 do_redraw(int, int, int);
 int		 nextwind(int, int);
@@ -603,6 +606,7 @@ int		 timetoggle(int, int);
 int		 timeupdate(void);
 int		 visualmark(int, int);
 int		 fontlock(int, int);
+struct line	*winrowline(struct mgwin *, int);
 
 /* echo.c X */
 int		 helptoggle(int, int);

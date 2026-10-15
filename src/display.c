@@ -308,6 +308,22 @@ linerows(struct line *lp, struct mgwin *wp)
 }
 
 /*
+ * The line drawn on row of wp, counted from 0 at the top, or the last
+ * line in the window when the text ends above that row.
+ */
+struct line *
+winrowline(struct mgwin *wp, int row)
+{
+	struct line	*lp;
+
+	lp = wp->w_linep;
+	while (lforw(lp) != wp->w_bufp->b_headp &&
+	    (row -= linerows(lp, wp)) >= 0)
+		lp = lforw(lp);
+	return (lp);
+}
+
+/*
  * The column between side by side windows, drawn by the one on its
  * left whenever it finishes a row.
  */

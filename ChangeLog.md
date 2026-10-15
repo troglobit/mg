@@ -39,6 +39,9 @@ All relevant changes to the project are documented in this file.
   ends a sentence
 - `C-l` runs the new `recenter-top-bottom`: pressed again it puts the
   line at the top of the window, a third time at the bottom
+- `M-r` runs the new `move-to-window-line-top-bottom`, which moves the
+  cursor to the middle row of the window, then the top and the bottom.
+  `search-backward` is no longer bound to `M-r`
 
 ### Fixes
 

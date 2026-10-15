@@ -290,6 +290,48 @@ recentertb(int f, int n)
 }
 
 /*
+ * Move dot to the start of the line on window row n, counted from 0
+ * at the top, or from -1 at the bottom.  With no argument, the middle
+ * row.
+ */
+int
+movetowinline(int f, int n)
+{
+	struct line	*lp, *fw, *bw, *hp = curbp->b_headp;
+	int	 d;
+
+	if (!(f & FFARG))
+		n = curwp->w_ntrows / 2;
+	else if (n < 0 && (n += curwp->w_ntrows) < 0)
+		n = 0;
+	lp = winrowline(curwp, n);
+
+	/* walk both ways from dot to keep the line number */
+	fw = bw = curwp->w_dotp;
+	for (d = 0; fw != lp && bw != lp; d++) {
+		if (fw != hp)
+			fw = lforw(fw);
+		if (bw != hp)
+			bw = lback(bw);
+	}
+	curwp->w_dotline += fw == lp ? d : -d;
+	curwp->w_dotp = lp;
+	curwp->w_doto = 0;
+	curwp->w_rflag |= WFMOVE;
+	return (TRUE);
+}
+
+/*
+ * Move dot to the middle row, and when repeated to the top row, then
+ * the bottom one.
+ */
+int
+movetowinlinetb(int f, int n)
+{
+	return (topbottom(movetowinline, CFWINLINE, f, n));
+}
+
+/*
  * Refresh the display.  A call is made to the "ttresize" entry in the
  * terminal handler, which tries to reset "nrow" and "ncol".  They will,
  * however, never be set outside of the NROW or NCOL range.  If the display

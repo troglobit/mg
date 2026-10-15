@@ -443,7 +443,7 @@ back-to-indentation
 .It M-q
 fill-paragraph
 .It M-r
-search-backward
+move-to-window-line-top-bottom
 .It M-s
 search-forward
 .It M-t
@@ -1186,6 +1186,18 @@ key.
 Disabled by default so that 8-bit characters can be typed.
 Terminals that send Meta as an escape prefix are unaffected by this
 setting.
+.It Ic move-to-window-line
+Move dot to the start of the line on window row
+.Va n ,
+counted from 0 at the top, or from -1 at the bottom when
+.Va n
+is negative.
+Without an argument, the middle row.
+.It Ic move-to-window-line-top-bottom
+Move dot to the middle row of the window, and when repeated to the top
+row, then the bottom one.
+An argument is passed to
+.Ic move-to-window-line .
 .It Ic negative-argument
 Process a negative argument for keyboard-invoked functions.
 .It Ic newline

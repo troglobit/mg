@@ -359,7 +359,7 @@ static PF metal[] = {
 	rescan,			/* o */
 	prevhist,		/* p */
 	fillpara,		/* q */
-	backsearch,		/* r */
+	movetowinlinetb,	/* r */
 	forwsearch,		/* s */
 	transposeword,		/* t */
 	upperword,		/* u */

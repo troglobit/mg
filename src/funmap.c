@@ -194,6 +194,8 @@ static struct funmap functnames[] = {
 	{markpara, "mark-paragraph", 1, NULL},
 	{markbuffer, "mark-whole-buffer", 0, NULL},
 	{do_meta, "meta-key-mode", 0, NULL},	/* better name, anyone? */
+	{movetowinline, "move-to-window-line", 1, NULL},
+	{movetowinlinetb, "move-to-window-line-top-bottom", 1, NULL},
 	{negative_argument, "negative-argument", 1, NULL},
 	{enewline, "newline", 1, NULL},
 	{lfindent, "newline-and-indent", 1, NULL},
