@@ -50,6 +50,9 @@ All relevant changes to the project are documented in this file.
 - New `--disable-help` configure option for small builds.  It leaves
   out the `C-h` commands, the quick help, the tutorial and the startup
   hint, and is part of `--disable-all`
+- New `--disable-autorevert` configure option leaves out
+  `auto-revert-mode` and `auto-revert-tail-mode`, also part of
+  `--disable-all`
 
 ### Fixes
 

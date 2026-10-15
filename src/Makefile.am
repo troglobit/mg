@@ -37,6 +37,9 @@ mg_LDADD         = $(LIBS) $(LIBOBJS)
 if AUTOEXEC
 mg_SOURCES     += autoexec.c
 endif
+if AUTOREVERT
+mg_SOURCES     += autorevert.c
+endif
 if CMODE
 mg_SOURCES     += cmode.c
 endif

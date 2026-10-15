@@ -586,11 +586,6 @@ int		 getbufcwd(char *, size_t);
 int		 checkdirty(struct buffer *);
 int		 revertbuffer(int, int);
 int		 revertbp(struct buffer *);
-extern int	 autorevert, autorevert_interval;
-int		 autorevertmode(int, int);
-int		 setautorevertint(int, int);
-int		 autorevert_check(void);
-int		 autorevert_on(void);
 int		 diffbuffer(int, int);
 struct buffer	*findbuffer(char *);
 
@@ -637,7 +632,6 @@ struct list	*make_file_list(char *);
 int		 fisdir(const char *);
 #endif
 int		 fchecktime(struct buffer *);
-int		 ftail(struct buffer *);
 int		 fupdstat(struct buffer *);
 int		 backuptohomedir(int, int);
 int		 toggleleavetmp(int, int);
@@ -715,7 +709,6 @@ void		 bytesback(int);
 void		 bytesforw(int);
 int		 gotobob(int, int);
 int		 gotoeob(int, int);
-void		 bufeob(struct buffer *);
 void		 wineob(struct mgwin *);
 int		 forwline(int, int);
 int		 backline(int, int);
@@ -942,12 +935,24 @@ int		 buf_hasmode(struct buffer *, const char *);
 int		 fillmode(int, int);
 int		 wrapmode(int, int);
 int		 linummode(int, int);
-int		 tailmode(int, int);
+int		 changemode(int, int, char *);
 struct maps_s	*buf_major(struct buffer *);
 void		 modetabw(int);
 int		 notabmode(int, int);
 int		 overwrite_mode(int, int);
 int		 set_default_mode(int,int);
+
+/* autorevert.c X */
+#ifdef ENABLE_AUTOREVERT
+int		 autorevertmode(int, int);
+int		 setautorevertint(int, int);
+int		 tailmode(int, int);
+int		 autorevert_wait(void);
+int		 autorevert_check(void);
+#else
+#define autorevert_wait()	0
+#define autorevert_check()	FALSE
+#endif
 
 #ifdef REGEX
 /* re_search.c X */

@@ -122,6 +122,7 @@ with the official Mg.  By default, all below features are enabled:
     ./configure --help
     [..]
     --disable-autoexec   Disable auto-execute support
+    --disable-autorevert Disable auto-revert-mode and tail mode
     --disable-cmode      Disable C-mode support
     --disable-compile    Disable C compile & grep mode, used by C-mode
     --disable-cscope     Disable Cscope support

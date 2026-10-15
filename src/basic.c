@@ -174,17 +174,6 @@ gotobob(int f, int n)
 }
 
 /*
- * Put the dot bp keeps for when it is shown again at its end.
- */
-void
-bufeob(struct buffer *bp)
-{
-	bp->b_dotp = blastlp(bp);
-	bp->b_doto = llength(bp->b_dotp);
-	bp->b_dotline = bp->b_lines;
-}
-
-/*
  * Put dot at the end of the buffer in wp.
  */
 void

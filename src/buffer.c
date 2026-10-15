@@ -6,7 +6,6 @@
  *		Buffer handling.
  */
 
-#include <sys/stat.h>
 
 #include <errno.h>
 #include <limits.h>
@@ -1209,117 +1208,6 @@ revertbp(struct buffer *bp)
 	free(lines);
 
 	return (s);
-}
-
-/*
- * auto-revert-mode: while waiting for a key, reload the file buffers
- * whose file changed on disk, unless they have unsaved edits.
- */
-int	autorevert = TRUE;
-int	autorevert_interval = 5;	/* seconds */
-
-int
-autorevertmode(int f, int n)
-{
-	if (f & FFARG)
-		autorevert = n > 0;
-	else
-		autorevert = !autorevert;
-	ewprintf("Auto revert mode %sabled", autorevert ? "en" : "dis");
-
-	return (TRUE);
-}
-
-int
-setautorevertint(int f, int n)
-{
-	char buf[32], *rep;
-	const char *es;
-
-	if (f & FFARG) {
-		if (n < 1)
-			return (FALSE);
-	} else {
-		if ((rep = eread("Set auto-revert-interval: ", buf, sizeof(buf),
-		    EFNEW | EFCR)) == NULL)
-			return (ABORT);
-		if (rep[0] == '\0')
-			return (FALSE);
-		n = strtonum(rep, 1, INT_MAX, &es);
-		if (es != NULL)
-			return (dobeep_msgs("Auto revert interval", es));
-	}
-	autorevert_interval = n;
-	ewprintf("Auto revert interval set to %d seconds", n);
-
-	return (TRUE);
-}
-
-/*
- * Reload the file buffers whose file changed on disk, leaving those
- * with unsaved edits, or told to ignore the disk, alone.  A buffer in
- * tail mode gets what was added to its file instead, and is reloaded
- * only when the file shrank or was replaced, to be shown from the end.
- * Tail mode works without auto-revert-mode.  Returns TRUE if any
- * buffer changed.
- */
-int
-autorevert_check(void)
-{
-	struct buffer	*bp;
-	struct mgwin	*wp;
-	struct stat	 sb;
-	int		 tail, changed = FALSE;
-
-	for (bp = bheadp; bp != NULL; bp = bp->b_bufp) {
-		if (bp->b_fname[0] == '\0' ||
-		    (bp->b_flag & (BFCHG | BFIGNDIRTY)) != 0)
-			continue;
-		tail = buf_hasmode(bp, "tail");
-		if (!autorevert && !tail)
-			continue;
-		if (stat(bp->b_fname, &sb) == -1 ||
-		    (sb.st_size == bp->b_fi.fi_size &&
-		    sb.st_mtim.tv_sec == bp->b_fi.fi_mtime.tv_sec &&
-		    sb.st_mtim.tv_nsec == bp->b_fi.fi_mtime.tv_nsec) ||
-		    access(bp->b_fname, R_OK) != 0)
-			continue;
-		if (tail && sb.st_dev == bp->b_fi.fi_dev &&
-		    sb.st_ino == bp->b_fi.fi_ino &&
-		    sb.st_size >= bp->b_fi.fi_size) {
-			if (ftail(bp) == TRUE)
-				changed = TRUE;
-			continue;
-		}
-		if (revertbp(bp) != TRUE)
-			continue;
-		if (tail) {
-			for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
-				if (wp->w_bufp == bp)
-					wineob(wp);
-			bufeob(bp);
-		}
-		ewprintf("Reverting buffer %s", bp->b_bname);
-		changed = TRUE;
-	}
-
-	return (changed);
-}
-
-/*
- * TRUE when autorevert_check has a buffer to look at.
- */
-int
-autorevert_on(void)
-{
-	struct buffer *bp;
-
-	if (autorevert)
-		return (TRUE);
-	for (bp = bheadp; bp != NULL; bp = bp->b_bufp)
-		if (buf_hasmode(bp, "tail"))
-			return (TRUE);
-	return (FALSE);
 }
 
 /*

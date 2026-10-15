@@ -46,6 +46,7 @@ AC_ARG_ENABLE(size-optimizations,
 	AS_HELP_STRING([--enable-size-optimizations], [Optimize for size, try real hard]))
 
 AC_ARG_ENABLE(autoexec, AS_HELP_STRING([--disable-autoexec], [Disable auto-execute support]))
+AC_ARG_ENABLE(autorevert, AS_HELP_STRING([--disable-autorevert], [Disable auto-revert-mode and tail mode]))
 AC_ARG_ENABLE(cmode,    AS_HELP_STRING([--disable-cmode],    [Disable C-mode support]))
 AC_ARG_ENABLE(compile,  AS_HELP_STRING([--disable-compile],  [Disable C compile & grep mode, used by C-mode]))
 AC_ARG_ENABLE(cscope,   AS_HELP_STRING([--disable-cscope],   [Disable Cscope support]))
@@ -115,6 +116,7 @@ AS_IF([test "x$with_curses" != "xno"], [
 # If all features are to be disabled, do that here
 AS_IF([test "x$enable_all" = "xno"],
 	enable_autoexec="no"
+	enable_autorevert="no"
 	enable_cmode="no"
 	enable_compile="no"
 	enable_cscope="no"
@@ -138,6 +140,9 @@ AS_IF([test "x$enable_size_optimizations" = "xyes"],
 
 AS_IF([test "x$enable_autoexec" != "xno"], enable_autoexec="yes"
 	AC_DEFINE(ENABLE_AUTOEXEC, 1, [Enable auto-exec support]))
+
+AS_IF([test "x$enable_autorevert" != "xno"], enable_autorevert="yes"
+	AC_DEFINE(ENABLE_AUTOREVERT, 1, [Enable auto-revert-mode and tail mode]))
 
 AS_IF([test "x$enable_cmode" != "xno"], enable_cmode="yes"
 	AC_DEFINE(ENABLE_CMODE, 1, [Enable C programming mode, OpenBSD KNF]))
@@ -204,6 +209,7 @@ AS_IF([test "x$with_mglog" != "xno"],
 AM_CONDITIONAL(REGEX,    [test "x$enable_regexp"   = "xyes"])
 AM_CONDITIONAL(SYNTAX,   [test "x$enable_syntax"   = "xyes"])
 AM_CONDITIONAL(AUTOEXEC, [test "x$enable_autoexec" = "xyes"])
+AM_CONDITIONAL(AUTOREVERT, [test "x$enable_autorevert" = "xyes"])
 AM_CONDITIONAL(CMODE,    [test "x$enable_cmode"    = "xyes"])
 AM_CONDITIONAL(COMPILE,  [test "x$enable_compile"  = "xyes"])
 AM_CONDITIONAL(CSCOPE,   [test "x$enable_cscope"   = "xyes"])
@@ -248,6 +254,7 @@ cat <<EOF
   doc/ & man/....: $with_docs
   tutorial.gz....: $with_tutorial
   autoexec.......: $enable_autoexec
+  autorevert.....: $enable_autorevert
   cmode..........: $enable_cmode
   compile mode...: $enable_compile
   cscope.........: $enable_cscope

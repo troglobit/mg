@@ -84,7 +84,7 @@ idle(void)
 	int ms, clock, reverted;
 
 	for (;;) {
-		ms = autorevert_on() ? autorevert_interval * 1000 : 0;
+		ms = autorevert_wait();
 		clock = timesh ? (60 - time(NULL) % 60) * 1000 : 0;
 		if (clock != 0 && (ms == 0 || clock < ms))
 			ms = clock;

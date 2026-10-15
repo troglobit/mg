@@ -15,8 +15,6 @@
 #include "def.h"
 #include "kbd.h"
 
-int	changemode(int, int, char *);
-
 int	 defb_nmodes = 0;
 struct maps_s	*defb_modes[PBMODES] = { &fundamental_mode };
 int	 defb_flag = 0;
@@ -199,22 +197,6 @@ int
 linummode(int f, int n)
 {
 	return (reframemode(f, n, "linum"));
-}
-
-/*
- * Follow a file that grows, like tail -f, see autorevert_check().
- * Turning it on moves to the end, to follow from there.
- */
-int
-tailmode(int f, int n)
-{
-	int	 was = buf_hasmode(curbp, "tail");
-
-	if (changemode(f, n, "tail") != TRUE)
-		return (FALSE);
-	if (!inrc && !was && buf_hasmode(curbp, "tail"))
-		wineob(curwp);
-	return (TRUE);
 }
 
 int

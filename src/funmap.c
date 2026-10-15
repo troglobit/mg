@@ -51,8 +51,10 @@ static struct funmap functnames[] = {
 	{fillmode, "auto-fill-mode", 0, NULL},
 	{wrapmode, "line-wrap-mode", 0, NULL},
 	{indentmode, "auto-indent-mode", 0, NULL},
+#ifdef ENABLE_AUTOREVERT
 	{autorevertmode, "auto-revert-mode", 0, NULL},
 	{tailmode, "auto-revert-tail-mode", 0, NULL},
+#endif
 	{backtoindent, "back-to-indentation", 0, NULL},
 	{backuptohomedir, "backup-to-home-directory", 0, NULL},
 	{backchar, "backward-char", 1, NULL},
@@ -265,7 +267,9 @@ static struct funmap functnames[] = {
 	{selfinsert, "self-insert-command", 1, NULL},		/* startup only */
 	{sentencespace, "sentence-end-double-space", 0, NULL},
 	{settabw, "set-tab-width", 1, NULL},
+#ifdef ENABLE_AUTOREVERT
 	{setautorevertint, "set-auto-revert-interval", 1, NULL},
+#endif
 #ifdef REGEX
 	{setcasefold, "set-case-fold-search", 0, NULL},
 #endif /* REGEX */
