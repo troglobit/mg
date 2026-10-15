@@ -262,6 +262,34 @@ reposition(int f, int n)
 }
 
 /*
+ * Run fn on the middle row of the window, then the top and the bottom
+ * when repeated, as told by flag in the last command.  An argument
+ * goes to fn as it is.
+ */
+static int
+topbottom(PF fn, int flag, int f, int n)
+{
+	static const int row[] = { 0, 0, -1 };
+	static int	 pos;
+
+	if (f & FFARG)
+		return (fn(f, n));
+	pos = (lastflag & flag) ? (pos + 1) % 3 : 0;
+	thisflag |= flag;
+	return (fn(pos ? FFARG : 0, row[pos]));
+}
+
+/*
+ * Center the window on dot, and when repeated put dot's line at the
+ * top, then the bottom.
+ */
+int
+recentertb(int f, int n)
+{
+	return (topbottom(reposition, CFRECENTER, f, n));
+}
+
+/*
  * Refresh the display.  A call is made to the "ttresize" entry in the
  * terminal handler, which tries to reset "nrow" and "ncol".  They will,
  * however, never be set outside of the NROW or NCOL range.  If the display

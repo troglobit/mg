@@ -88,7 +88,7 @@ static PF dirednul[] = {
 };
 
 static PF diredcl[] = {
-	reposition,		/* ^L */
+	recentertb,		/* ^L */
 	d_findfile,		/* ^M */
 	d_forwline,		/* ^N */
 	rescan,			/* ^O */

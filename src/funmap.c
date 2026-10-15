@@ -227,6 +227,7 @@ static struct funmap functnames[] = {
 	{re_forwsearch, "re-search-forward", 0, NULL},
 #endif /* REGEX */
 	{reposition, "recenter", 0, NULL},
+	{recentertb, "recenter-top-bottom", 0, NULL},
 	{redraw, "redraw-display", 0, NULL},
 	{renamebuf, "rename-buffer", 1, NULL},
 #ifdef REGEX

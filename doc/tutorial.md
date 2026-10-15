@@ -58,6 +58,8 @@ same effect can be achieved manually.
 > lowercase L).
 
 Note that C-l refreshes the screen and centers it on the line you typed it on.
+Type C-l again and that line moves to the top of the screen, a third time and
+it goes to the bottom.
 
 To move to the beginning or end of a line, you can use the Home and End keys,
 or you can use C-a and C-e to move to the beginning and end.

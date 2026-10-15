@@ -260,7 +260,7 @@ newline-and-indent
 .It C-k
 kill-line
 .It C-l
-recenter
+recenter-top-bottom
 .It RET
 newline
 .It C-n, Down
@@ -1329,6 +1329,11 @@ n.
 If
 .Va n
 is negative, it is that line from the bottom.
+.It Ic recenter-top-bottom
+Center the window on dot, and when repeated put dot's line at the top,
+then the bottom.
+An argument is passed to
+.Ic recenter .
 .It Ic redraw-display
 Refresh the display.
 Recomputes all window sizes in case something has changed.

@@ -153,6 +153,7 @@ typedef int	(*PF)(int, int);	/* generally useful type */
 #define CFMARK	0x0020		/* Last command activated the mark */
 #define CFBUFCYC 0x0040		/* Last command cycled buffers	 */
 #define CFSETMARK 0x0080	/* Last command was set-mark	 */
+#define CFRECENTER 0x0100	/* Last command was recenter-top-bottom */
 
 /*
  * File I/O.
@@ -527,6 +528,7 @@ int		 yank(int, int);
 /* window.c X */
 struct mgwin	*new_window(struct buffer *);
 int		 reposition(int, int);
+int		 recentertb(int, int);
 int		 redraw(int, int);
 int		 do_redraw(int, int, int);
 int		 nextwind(int, int);

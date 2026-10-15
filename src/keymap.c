@@ -445,7 +445,7 @@ static PF fund_h[] = {
 static PF fund_CJ[] = {
 	lfindent,		/* ^J */
 	killline,		/* ^K */
-	reposition,		/* ^L */
+	recentertb,		/* ^L */
 	enewline,		/* ^M */
 	forwline,		/* ^N */
 	openline,		/* ^O */

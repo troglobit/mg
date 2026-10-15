@@ -37,6 +37,8 @@ All relevant changes to the project are documented in this file.
   `M-k` kill-sentence and `C-x DEL` backward-kill-sentence.
   `sentence-end-double-space` decides whether one space after a period
   ends a sentence
+- `C-l` runs the new `recenter-top-bottom`: pressed again it puts the
+  line at the top of the window, a third time at the bottom
 
 ### Fixes
 
