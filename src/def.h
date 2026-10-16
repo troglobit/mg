@@ -660,7 +660,7 @@ void		 panic(char *);
 
 /* cinfo.c */
 char		*getkeyname(char  *, size_t, int);
-void		 keyname(char *, size_t, const KCHAR *, int);
+void		 keyseqname(char *, size_t, const KCHAR *, int);
 
 /* syntax.c */
 #define SYN_NONE	0

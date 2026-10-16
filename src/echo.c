@@ -1387,7 +1387,7 @@ eformat(const char *fp, va_list ap)
 				break;
 
 			case 'k':
-				keyname(kname, sizeof(kname), key.k_chars,
+				keyseqname(kname, sizeof(kname), key.k_chars,
 				    key.k_count);
 				eputs(kname);
 				break;

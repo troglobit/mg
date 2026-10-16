@@ -147,7 +147,7 @@ describekey(int f, int n)
 		ewprintf("%k is bound to an unnamed function");
 		return (TRUE);
 	}
-	keyname(kname, sizeof(kname), key.k_chars, key.k_count);
+	keyseqname(kname, sizeof(kname), key.k_chars, key.k_count);
 
 	if ((bp = popbuffer("*help*", "view")) == NULL)
 		return (FALSE);
@@ -279,7 +279,7 @@ whereis(PF fun, char *buf, size_t len)
 		for (i = 0; i < w.n; i++) {
 			if (w.found[i].len != n)
 				continue;
-			keyname(kname, sizeof(kname), w.found[i].keys, n);
+			keyseqname(kname, sizeof(kname), w.found[i].keys, n);
 			if (strlen(buf) + strlen(kname) + 3 > len)
 				return;
 			if (buf[0])

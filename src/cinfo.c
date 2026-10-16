@@ -160,7 +160,7 @@ getkeyname(char *cp, size_t len, int k)
  * The names of the n keys in keys, space separated.
  */
 void
-keyname(char *buf, size_t len, const KCHAR *keys, int n)
+keyseqname(char *buf, size_t len, const KCHAR *keys, int n)
 {
 	char	*cp = buf;
 	int	 i;
