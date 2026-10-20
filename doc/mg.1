@@ -1013,6 +1013,9 @@ Add a Tested-by trailer.
 A trailer goes below the message and above the comments, joining the
 trailer block already there or opening one under the body.
 Dot does not move.
+The fill column is set to 72, since
+.Nm git Cm log
+indents the message by four columns.
 Files named COMMIT_EDITMSG, MERGE_MSG, NOTES_EDITMSG, TAG_EDITMSG and
 git-rebase-todo get the mode automatically.
 .It Ic global-set-key

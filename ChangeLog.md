@@ -11,6 +11,7 @@ All relevant changes to the project are documented in this file.
 - The fill column is now per buffer, like the tab width.  `set-fill-column`
   sets it for the current buffer, and from `~/.mg` the default for new
   buffers, so a mode can fill at a width of its own
+- git-commit-mode fills the message at 72 columns
 
 ### Fixes
 

@@ -253,6 +253,8 @@ gitmode(int f, int n)
 
 	/* the diff git appends quotes its source at the canonical stop */
 	modetabw(8);
+	/* git log indents the message by four, so 72 fits an 80 column terminal */
+	modefillcol(72);
 	return (TRUE);
 }
 
