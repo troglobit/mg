@@ -11,6 +11,13 @@ All relevant changes to the project are documented in this file.
 - Fix #47: build failure with ncurses' `curses.h`, as on RHEL 9 and
   CentOS Stream 9.  A new `keyname()` helper clashed with the one in
   ncurses
+- Fix build with a C library that has no `wctype.h`, such as uClibc-ng
+  built without wide-character support, as in Buildroot toolchains
+  without `BR2_USE_WCHAR`.  Since v4.2 mg uses `iswalnum()` from
+  `wctype.h` to tell word characters in UTF-8 text.  Without the header,
+  mg falls back to its own character table.  Such a C library has no
+  locale support either, so mg never enters UTF-8 mode there and the
+  fallback changes nothing for the user
 
 [v4.4][] - 2026-10-15
 ---------------------

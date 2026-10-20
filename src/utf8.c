@@ -20,9 +20,12 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <wctype.h>
 
 #include "def.h"
+
+#ifdef HAVE_WCTYPE_H
+#include <wctype.h>
+#endif
 
 int	 utf8_mode = FALSE;
 
@@ -53,11 +56,13 @@ utf8_init(void)
 int
 utf8_isword(const char *s, int avail)
 {
+#ifdef HAVE_WCTYPE_H
 	int	 cp, len;
 
 	if (utf8_mode && (unsigned char)*s >= 0x80 &&
 	    (cp = utf8_decode(s, avail, &len)) != -1)
 		return (iswalnum(cp));
+#endif
 	return (ISWORD(*s));
 }
 

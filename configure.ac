@@ -12,7 +12,7 @@ AC_CONFIG_FILES([Makefile doc/Makefile src/Makefile])
 AC_PROG_CC
 AC_PROG_INSTALL
 
-AC_CHECK_HEADERS([pty.h utmp.h])
+AC_CHECK_HEADERS([pty.h utmp.h wctype.h])
 AC_CANONICAL_HOST
 
 # Check build host, DragonFly BSD uses priv
