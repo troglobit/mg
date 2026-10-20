@@ -143,41 +143,50 @@ static struct KEYMAPE (1) cXrEmap = {
 		}
 	}
 };
+static PF cXrspc[] = {
+	pointtoreg		/* SPC */
+};
 static PF cXrc[] = {
 	clearrect,		/* c */
 	delrect			/* d */
 };
-static PF cXrk[] = {
+static PF cXri[] = {
+	insertreg,		/* i */
+	jumptoreg,		/* j */
 	killrect		/* k */
 };
 static PF cXro[] = {
 	openrect		/* o */
 };
-static PF cXrt[] = {
+static PF cXrs[] = {
+	copytoreg,		/* s */
 	stringrect		/* t */
 };
 static PF cXry[] = {
 	yankrect		/* y */
 };
-static struct KEYMAPE (6) cXrmap = {
-	6,
-	6,
+static struct KEYMAPE (7) cXrmap = {
+	7,
+	7,
 	rescan,
 	{
 		{
 			CCHR('['), CCHR('['), cXrE, (KEYMAP *) & cXrEmap
 		},
 		{
+			' ', ' ', cXrspc, NULL
+		},
+		{
 			'c', 'd', cXrc, NULL
 		},
 		{
-			'k', 'k', cXrk, NULL
+			'i', 'k', cXri, NULL
 		},
 		{
 			'o', 'o', cXro, NULL
 		},
 		{
-			't', 't', cXrt, NULL
+			's', 't', cXrs, NULL
 		},
 		{
 			'y', 'y', cXry, NULL

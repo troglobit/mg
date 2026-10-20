@@ -379,16 +379,24 @@ other-window
 other-window
 .It C-x p
 previous-window
+.It C-x r SPC
+point-to-register
 .It C-x r c
 clear-rectangle
 .It C-x r d
 delete-rectangle
+.It C-x r i
+insert-register
+.It C-x r j
+jump-to-register
 .It C-x r k
 kill-rectangle
 .It C-x r M-w
 copy-rectangle-as-kill
 .It C-x r o
 open-rectangle
+.It C-x r s
+copy-to-register
 .It C-x r t
 string-rectangle
 .It C-x r y
@@ -758,6 +766,12 @@ This is a bit like a
 .Ic kill-region
 followed by a
 .Ic yank .
+.It Ic copy-to-register
+Save the text of the region in a register, named by the next key
+typed, for
+.Ic insert-register .
+A register holds a place or a piece of text, whichever was saved
+last.
 .It Ic count-matches
 Count the number of lines matching the supplied regular expression.
 .It Ic count-non-matches
@@ -1143,6 +1157,10 @@ Insert a string, mainly for use from macros.
 Insert the contents of another buffer at dot.
 .It Ic insert-file
 Insert a file into the current buffer at dot.
+.It Ic insert-register
+Insert the text saved in a register, named by the next key typed,
+at dot, which stays before the text with the mark after it, or the
+other way round with a prefix argument.
 .It Ic insert-with-wrap
 Insert the bound character with word wrap.
 Check to see if we're past the fill column, and if so,
@@ -1161,6 +1179,11 @@ search-forward is invoked instead.
 Join the current line to the previous.
 If called with an argument,
 join the next line to the current one.
+.It Ic jump-to-register
+Go to the place saved in a register, named by the next key typed:
+its buffer in the current window, then its line, or the line of the
+same number if that one is gone, at the same column, or the end of
+the line if that is shorter now.
 .It Ic just-one-space
 Delete any whitespace around dot, then insert a space.
 .It Ic keyboard-quit
@@ -1380,6 +1403,12 @@ This command makes the previous (up the screen) window the
 current window.
 There are no errors, although the command does not do
 a lot if there is only 1 window.
+.It Ic point-to-register
+Save where dot is, buffer and all, in a register named by the next
+key typed, for
+.Ic jump-to-register .
+A register holds a place or a piece of text, whichever was saved
+last.
 .It Ic pop-tag-mark
 Return to position where
 .Ic find-tag

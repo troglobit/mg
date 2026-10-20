@@ -191,20 +191,24 @@ lchange(int flag)
  * if all is well, and FALSE on errors.
  */
 /*
- * Insert a string at dot, in one piece: an undo record and a line
- * change for the whole of it.
+ * Insert n bytes, or a string, at dot in one piece: an undo record
+ * and a line change for the whole of it.
  */
 int
-insstr(const char *s)
+insbytes(const char *s, int n)
 {
-	int	 n = strlen(s);
-
 	if (n == 0)
 		return (TRUE);
 	if (linsert(n, ' ') != TRUE)
 		return (FALSE);
 	memcpy(ltext(curwp->w_dotp) + curwp->w_doto - n, s, n);
 	return (TRUE);
+}
+
+int
+insstr(const char *s)
+{
+	return (insbytes(s, strlen(s)));
 }
 
 int

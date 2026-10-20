@@ -84,6 +84,7 @@ static struct funmap functnames[] = {
 #endif
 	{copyrect, "copy-rectangle-as-kill", 0, NULL},
 	{copyregion, "copy-region-as-kill", 0, NULL},
+	{copytoreg, "copy-to-register", 0, NULL},
 #ifdef	REGEX
 	{cntmatchlines, "count-matches", 1, NULL},
 	{cntnonmatchlines, "count-non-matches", 1, NULL},
@@ -182,10 +183,12 @@ static struct funmap functnames[] = {
 	{insert, "insert", 1, NULL},
 	{bufferinsert, "insert-buffer", 1, NULL},
 	{fileinsert, "insert-file", 1, NULL},
+	{insertreg, "insert-register", 0, NULL},
 	{fillword, "insert-with-wrap", 1, NULL},
 	{backisearch, "isearch-backward", 1, NULL},
 	{forwisearch, "isearch-forward", 1, NULL},
 	{joinline, "join-line", 0, NULL},
+	{jumptoreg, "jump-to-register", 0, NULL},
 	{justone, "just-one-space", 0, NULL},
 	{ctrlg, "keyboard-quit", 0, NULL},
 	{killbuffer_cmd, "kill-buffer", 1, NULL},
@@ -223,6 +226,7 @@ static struct funmap functnames[] = {
 	{openrect, "open-rectangle", 0, NULL},
 	{nextwind, "other-window", 0, NULL},
 	{overwrite_mode, "overwrite-mode", 0, NULL},
+	{pointtoreg, "point-to-register", 0, NULL},
 #ifdef ENABLE_CTAGS
 	{poptag, "pop-tag-mark", 0, NULL},
 #endif

@@ -512,6 +512,7 @@ void		 lfree(struct line *);
 void		 lchange(int);
 int		 linsert(int, int);
 int		 insstr(const char *);
+int		 insbytes(const char *, int);
 int		 lnewline_at(struct line *, int);
 int		 lnewline(void);
 int		 ldelete(RSIZE, int);
@@ -699,6 +700,12 @@ int		 syn_verbatim(struct buffer *, struct line *, int *);
 /* what git format-patch --cover-letter leaves for the subject and blurb */
 #define MAIL_SUBJECT	"*** SUBJECT HERE ***"
 #define MAIL_BLURB	"*** BLURB HERE ***"
+
+/* register.c */
+int		 pointtoreg(int, int);
+int		 jumptoreg(int, int);
+int		 copytoreg(int, int);
+int		 insertreg(int, int);
 
 /* rect.c */
 int		 rectmode(int, int);
@@ -912,6 +919,7 @@ int		 prefixregion(int, int);
 int		 setprefix(int, int);
 int		 region_get_data(struct region *, char *, int);
 void		 region_put_data(const char *, int);
+char		*regiontext(int *);
 int		 markbuffer(int, int);
 int		 piperegion(int, int);
 int		 shellcommand(int, int);

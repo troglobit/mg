@@ -492,16 +492,46 @@ region_get_data(struct region *reg, char *buf, int len)
 	return (i);
 }
 
+/*
+ * The text of the region, malloced and its length in *lenp, or NULL
+ * with a message.
+ */
+char *
+regiontext(int *lenp)
+{
+	struct region	 region;
+	char	*text;
+
+	if (getregion(&region) != TRUE)
+		return (NULL);
+	if ((text = malloc(region.r_size + 1)) == NULL) {
+		dobeep();
+		ewprintf("Cannot allocate memory.");
+		return (NULL);
+	}
+	*lenp = region_get_data(&region, text, region.r_size);
+	return (text);
+}
+
+/*
+ * Insert text at dot, each line of it in one piece.
+ */
 void
 region_put_data(const char *buf, int len)
 {
-	int i;
+	int	 i, j;
 
-	for (i = 0; buf[i] != '\0' && i < len; i++) {
-		if (buf[i] == *curbp->b_nlchr)
-			lnewline();
-		else
-			linsert(1, buf[i]);
+	for (i = 0; i < len && buf[i] != '\0'; i = j) {
+		for (j = i; j < len && buf[j] != '\0' &&
+		    buf[j] != *curbp->b_nlchr; j++)
+			;
+		if (insbytes(buf + i, j - i) != TRUE)
+			return;
+		if (j < len && buf[j] == *curbp->b_nlchr) {
+			if (lnewline() != TRUE)
+				return;
+			j++;
+		}
 	}
 }
 
@@ -1141,7 +1171,6 @@ markbuffer(int f, int n)
 int
 piperegion(int f, int n)
 {
-	struct region region;
 	struct buffer *bp = NULL;
 	int len;
 	char *cmd, cmdbuf[NFILEN], *text;
@@ -1156,18 +1185,8 @@ piperegion(int f, int n)
 	    EFNEW | EFCR)) == NULL || (cmd[0] == '\0'))
 		return (ABORT);
 
-	if (getregion(&region) != TRUE)
+	if ((text = regiontext(&len)) == NULL)
 		return (FALSE);
-
-	len = region.r_size;
-
-	if ((text = malloc(len + 1)) == NULL) {
-		dobeep();
-		ewprintf("Cannot allocate memory.");
-		return (FALSE);
-	}
-
-	region_get_data(&region, text, len);
 
 	if (n > 1) {
 		bp = curbp;

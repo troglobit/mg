@@ -40,6 +40,9 @@ All relevant changes to the project are documented in this file.
   `copy-rectangle-as-kill`, `yank-rectangle`, `open-rectangle`,
   `clear-rectangle` and `string-rectangle` act on the rectangle between
   mark and dot without the mode
+- Registers, as in GNU Emacs: `C-x r SPC` saves where dot is in a
+  register named by the next key, `C-x r j` goes back there, in its
+  buffer; `C-x r s` saves the region in one and `C-x r i` inserts it
 
 ### Fixes
 
