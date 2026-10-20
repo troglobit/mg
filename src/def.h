@@ -692,7 +692,7 @@ int		 syn_verbatim(struct buffer *, struct line *, int *);
 /* without the engine, no buffer has syntax rules */
 #define syntax_lookup(bp)		NULL
 #define syn_multiline(bp)		0
-#define syn_verbatim(bp, lp, st)	0
+#define syn_verbatim(bp, lp, st)	((void)(st), 0)
 #define syn_state(sy, bp, lp)		0
 #define syn_parse(sy, lp, st, attr)	0
 #endif
