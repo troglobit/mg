@@ -1,3 +1,26 @@
+mg2a (4.5) unstable; urgency=medium
+
+  * Rectangles: rectangle-mark-mode on C-x SPC, and kill-, delete-,
+    copy-, yank-, open-, clear- and string-rectangle on C-x r
+  * Registers: point-to-register, jump-to-register, copy-to-register
+    and insert-register on C-x r SPC, j, s and i
+  * git-commit-mode shows the staged changes next to the message,
+    to the right on a wide terminal, else below, and the whole diff
+    of the commit on an amend.  C-c C-d refreshes it.  The message
+    fills at 72 columns, and the echo line names the C-c keys
+  * The fill column is per buffer now, like the tab width
+  * diff-mode colors the mail header of a git format-patch file, and
+    a cover letter opens with its subject placeholder selected, C-c
+    C-n going to the next.  Filling leaves the diff alone
+  * New json-mode for *.json and *.jsonc
+  * conf-mode for ~/.ssh/config, ~/.Xresources and ~/.Xdefaults, and
+    auto-revert-tail-mode for files under /var/log
+  * Fix the build with ncurses' curses.h, as on RHEL 9 (#47)
+  * Fix the build with a C library that has no wctype.h, as uClibc-ng
+    without wide-character support
+
+ -- Joachim Wiberg <troglobit@gmail.com>  Wed, 21 Oct 2026 12:00:00 +0200
+
 mg2a (4.4) unstable; urgency=medium
 
   * New auto-revert-mode reloads a file changed on disk, enabled by
