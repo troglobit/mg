@@ -155,6 +155,9 @@ static int	 md_parse(const struct line *, int, char *);
 #ifdef MODE_YAML
 static int	 yaml_parse(const struct line *, int, char *);
 #endif
+#ifdef MODE_JSON
+static int	 json_parse(const struct line *, int, char *);
+#endif
 
 struct syntax {
 	const char	 *sy_mode;	/* buffer mode this applies to	*/
@@ -233,6 +236,9 @@ static const struct syntax syntab[] = {
 #endif
 #ifdef MODE_YAML
 	{ .sy_mode = "yaml", .sy_parse = yaml_parse, .sy_cstart = "#" },
+#endif
+#ifdef MODE_JSON
+	{ .sy_mode = "json", .sy_parse = json_parse, .sy_cstart = "//" },
 #endif
 	{ NULL }
 };
@@ -1251,6 +1257,87 @@ yaml_parse(const struct line *lp, int blkind, char *attr)
 		i = end + 1;
 	}
 	return (yaml_value(lp, i, indent, attr));
+}
+#endif
+
+#ifdef MODE_JSON
+/*
+ * JSON classifier, used through sy_parse: the key of a pair, told
+ * from a string by the colon after it, numbers, the words true,
+ * false and null, and the // and block comments of JSONC.  The
+ * generic rules would do but for the key, which sits anywhere on a
+ * line, where the lead hook cannot reach.  The cross-line state is
+ * an open block comment.
+ */
+static const char *json_words[] = {
+	"true", "false", "null",
+	NULL
+};
+
+static int
+json_parse(const struct line *lp, int incom, char *attr)
+{
+	const char	**w;
+	int	 c, cls, i, j, len, n;
+
+	len = llength(lp);
+	i = 0;
+	while (i < len) {
+		if (incom) {
+			for (j = i; j < len && !(lgetc(lp, j) == '*' &&
+			    j + 1 < len && lgetc(lp, j + 1) == '/'); j++)
+				;
+			if (j < len) {
+				j += 2;
+				incom = 0;
+			}
+			setattrs(attr, i, j - i, SYN_COMMENT);
+			i = j;
+			continue;
+		}
+		c = lgetc(lp, i);
+		if (c == '"') {
+			for (j = i + 1; j < len && lgetc(lp, j) != '"'; j++)
+				if (lgetc(lp, j) == '\\')
+					j++;
+			if (j < len)
+				j++;
+			if (attr != NULL) {
+				for (n = j; n < len && isblank(lgetc(lp, n)); n++)
+					;
+				cls = n < len && lgetc(lp, n) == ':' ?
+				    SYN_KEYWORD : SYN_STRING;
+				setattrs(attr, i, j - i, cls);
+			}
+			i = j;
+		} else if (c == '-' || isdigit(c)) {
+			for (j = i + 1; j < len &&
+			    strchr("0123456789.eE+-", lgetc(lp, j)) != NULL; j++)
+				;
+			setattrs(attr, i, j - i, SYN_NUMBER);
+			i = j;
+		} else if (isalpha(c)) {
+			for (j = i; j < len && isalpha(lgetc(lp, j)); j++)
+				;
+			n = j - i;
+			if (attr != NULL)
+				for (w = json_words; *w != NULL; w++)
+					if (matchat(lp, i, *w) == n) {
+						setattrs(attr, i, n, SYN_TYPE);
+						break;
+					}
+			i = j;
+		} else if (c == '/' && i + 1 < len && lgetc(lp, i + 1) == '/') {
+			setattrs(attr, i, len - i, SYN_COMMENT);
+			break;
+		} else if (c == '/' && i + 1 < len && lgetc(lp, i + 1) == '*') {
+			setattrs(attr, i, 2, SYN_COMMENT);
+			i += 2;
+			incom = 1;
+		} else
+			i++;
+	}
+	return (incom);
 }
 #endif
 

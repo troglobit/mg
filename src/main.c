@@ -162,6 +162,7 @@ main(int argc, char **argv)
 		extern void gitmode_init(void);
 		extern void textmode_init(void);
 		extern void yamlmode_init(void);
+		extern void jsonmode_init(void);
 		extern void shmode_init(void);
 		extern void mdmode_init(void);
 		extern void m4mode_init(void);
@@ -196,6 +197,9 @@ main(int argc, char **argv)
 #endif
 #ifdef MODE_YAML
 		yamlmode_init();
+#endif
+#ifdef MODE_JSON
+		jsonmode_init();
 #endif
 #ifdef MODE_SH
 		shmode_init();

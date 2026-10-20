@@ -1179,6 +1179,21 @@ search-forward is invoked instead.
 Join the current line to the previous.
 If called with an argument,
 join the next line to the current one.
+.It Ic json-mode
+Toggle json mode, which selects the json rules for syntax
+highlighting: the key of a pair, told from a string by the colon
+after it, strings, numbers, the words true, false and null, and the
+.Ql //
+and
+.Ql /* */
+comments of JSONC, the JSON with comments of many a settings file.
+Those are also what
+.Ic comment-region
+writes, which strict JSON does not allow.
+Enabling it also sets a two column indent step in spaces, the
+common convention, and turns on
+.Ic auto-indent-mode .
+Files named *.json and *.jsonc get the mode automatically.
 .It Ic jump-to-register
 Go to the place saved in a register, named by the next key typed:
 its buffer in the current window, then its line, or the line of the

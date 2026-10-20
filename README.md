@@ -151,6 +151,7 @@ files listed, and can be turned on by hand with its `M-x` command:
 | `conf`     | `conf-mode`         | `*.conf`, `*.ini`, `*.toml`, systemd units, `fstab`, `ssh_config`, `.gitconfig`, ... |
 | `diff`     | `diff-mode`         | `*.diff`, `*.patch`, `*.rej`                 |
 | `git`      | `git-commit-mode`   | `COMMIT_EDITMSG`, `MERGE_MSG`, `TAG_EDITMSG`, `git-rebase-todo`, ... |
+| `json`     | `json-mode`         | `*.json`, `*.jsonc`                          |
 | `m4`       | `m4-mode`           | `configure.ac`, `configure.in`, `*.m4`       |
 | `make`     | `makefile-mode`     | `Makefile`, `Makefile.am`, `Makefile.in`, `*.mk`, ... |
 | `markdown` | `markdown-mode`     | `*.md`, `*.markdown`                         |

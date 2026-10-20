@@ -43,6 +43,10 @@ All relevant changes to the project are documented in this file.
 - Registers, as in GNU Emacs: `C-x r SPC` saves where dot is in a
   register named by the next key, `C-x r j` goes back there, in its
   buffer; `C-x r s` saves the region in one and `C-x r i` inserts it
+- New `json-mode` with syntax highlighting for *.json and *.jsonc: the
+  key of a pair, strings, numbers, `true`, `false` and `null`, and the
+  `//` and `/* */` comments of settings files.  Indents two columns in
+  spaces
 
 ### Fixes
 

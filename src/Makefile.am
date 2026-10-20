@@ -86,6 +86,9 @@ endif
 if MODE_GIT
 mg_SOURCES     += gitmode.c
 endif
+if MODE_JSON
+mg_SOURCES     += jsonmode.c
+endif
 if MODE_M4
 mg_SOURCES     += m4mode.c
 endif
