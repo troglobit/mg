@@ -22,6 +22,9 @@ All relevant changes to the project are documented in this file.
 - conf-mode is detected for `~/.ssh/config`, `~/.Xresources` and
   `~/.Xdefaults` too, with the `!` comments of X resources colored
 - Files under `/var/log` get `auto-revert-tail-mode` automatically
+- A cover letter from `git format-patch` opens with its `*** SUBJECT HERE
+  ***` selected, so that typing replaces it, and `C-c C-n` in diff-mode
+  selects the next placeholder, new `diff-next-placeholder`
 
 ### Fixes
 

@@ -857,7 +857,22 @@ Neither
 nor
 .Ic auto-fill-mode
 wraps a line of the diff, only the message.
+A cover letter opens with its
+.Ql *** SUBJECT HERE ***
+selected, so that typing replaces it, and
+.Ic C-c C-n
+runs
+.Ic diff-next-placeholder .
 Files named *.diff, *.patch and *.rej get the mode automatically.
+.It Ic diff-next-placeholder
+Select the next placeholder of a cover letter from
+.Nm git Cm format-patch ,
+the
+.Ql *** SUBJECT HERE ***
+or
+.Ql *** BLURB HERE ***
+at or after dot, with the mark at its start and dot at its end, so
+that typing replaces it.
 .It Ic digit-argument
 Process a numerical argument for keyboard-invoked functions.
 .It Ic dired-jump

@@ -694,6 +694,10 @@ int		 syn_verbatim(struct buffer *, struct line *, int *);
 #define syn_parse(sy, lp, st, attr)	0
 #endif
 
+/* what git format-patch --cover-letter leaves for the subject and blurb */
+#define MAIL_SUBJECT	"*** SUBJECT HERE ***"
+#define MAIL_BLURB	"*** BLURB HERE ***"
+
 /* utf8.c */
 void		 utf8_init(void);
 int		 utf8_iscont(int);

@@ -650,10 +650,6 @@ static const char *diff_headers[] = {
 	NULL
 };
 
-/* what git format-patch --cover-letter leaves for the subject and blurb */
-#define MAIL_SUBJECT	"*** SUBJECT HERE ***"
-#define MAIL_BLURB	"*** BLURB HERE ***"
-
 /*
  * The mbox From line git format-patch opens a mail with: the commit
  * hash and a date that is always the same.
