@@ -87,6 +87,15 @@ modetabw(int n)
 		curbp->b_tabw = n;
 }
 
+void
+modefillcol(int n)
+{
+	if (inrc)
+		defb_fillcol = n;
+	else
+		curbp->b_fillcol = n;
+}
+
 /*
  * A mode named in the startup file is meant for the files opened
  * afterwards, not for *scratch*, which is the only buffer there is

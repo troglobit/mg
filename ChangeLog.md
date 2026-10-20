@@ -6,6 +6,12 @@ All relevant changes to the project are documented in this file.
 [UNRELEASED][]
 --------------
 
+### Changes
+
+- The fill column is now per buffer, like the tab width.  `set-fill-column`
+  sets it for the current buffer, and from `~/.mg` the default for new
+  buffers, so a mode can fill at a width of its own
+
 ### Fixes
 
 - Fix #47: build failure with ncurses' `curses.h`, as on RHEL 9 and

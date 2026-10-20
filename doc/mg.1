@@ -1466,9 +1466,12 @@ Append the supplied mode to the list of default modes
 used by subsequent buffer creation.
 Built in modes include: fill, indent, notab, and overwrite.
 .It Ic set-fill-column
-Prompt the user for a fill column.
-Used by
-.Ic auto-fill-mode .
+Set the fill column of the current buffer, which
+.Ic auto-fill-mode
+and
+.Ic fill-paragraph
+wrap at, to the prefix argument, or prompt for it.
+From the startup file it sets the default for new buffers.
 .It Ic set-mark-command
 Sets the mark in the current window to the current dot location.
 Typed twice in a row, the mark is set but not activated, so the

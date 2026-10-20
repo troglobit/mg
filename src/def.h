@@ -395,6 +395,7 @@ struct buffer {
 	char		*b_nlseq;	/* Newline sequence of chars	 */
 	char		*b_nlchr;	/* 1st newline character	 */
 	int		 b_tabw;	/* Width of a tab character	 */
+	int		 b_fillcol;	/* Column auto-fill wraps at	 */
 	struct fileinfo	 b_fi;		/* File attributes		 */
 	struct undoq	 b_undo;	/* Undo actions list		 */
 	struct undo_rec *b_undoptr;
@@ -938,6 +939,7 @@ int		 linummode(int, int);
 int		 changemode(int, int, char *);
 struct maps_s	*buf_major(struct buffer *);
 void		 modetabw(int);
+void		 modefillcol(int);
 int		 notabmode(int, int);
 int		 overwrite_mode(int, int);
 int		 set_default_mode(int,int);
@@ -1044,6 +1046,7 @@ extern int		 tthue;
 extern int		 defb_nmodes;
 extern int		 defb_flag;
 extern int		 defb_tabw;
+extern int		 defb_fillcol;
 extern int		 doaudiblebell;
 extern int		 dovisiblebell;
 extern int		 dblspace;

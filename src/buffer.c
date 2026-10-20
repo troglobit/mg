@@ -28,8 +28,9 @@ static int usebufname(const char *);
 
 static void	 bfront(struct buffer *);
 
-/* Default tab width */
+/* Default tab width and fill column */
 int	 defb_tabw = 8;
+int	 defb_fillcol = 70;
 
 /*
  * Set the tab width for the current buffer, or the default for new
@@ -726,6 +727,7 @@ bnew(const char *bname)
 	bp->b_nlseq = "\n";		/* use unix default */
 	bp->b_nlchr = bp->b_nlseq;
 	bp->b_tabw = defb_tabw;
+	bp->b_fillcol = defb_fillcol;
 	if ((bp->b_bname = strdup(bname)) == NULL) {
 		dobeep();
 		ewprintf("Can't get %d bytes", strlen(bname) + 1);

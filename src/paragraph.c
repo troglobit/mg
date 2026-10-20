@@ -16,8 +16,6 @@
 
 #include "def.h"
 
-static int	fillcol = 70;
-
 #define MAXWORD 256
 
 static int	findpara(void);
@@ -324,7 +322,7 @@ fillpara(int f, int n)
 				wbuf[wordlen++] = ' ';
 
 			/* at a word break with a word waiting */
-			if (newlength <= fillcol) {
+			if (newlength <= curbp->b_fillcol) {
 				/* add word to current line */
 				if (!firstflag) {
 					(void)linsert(1, ' ');
@@ -567,7 +565,7 @@ fillword(int f, int n)
 	char	c;
 	int	col, i, nce;
 
-	for (i = col = 0; col <= fillcol; ++i, ++col) {
+	for (i = col = 0; col <= curbp->b_fillcol; ++i, ++col) {
 		if (i == curwp->w_doto)
 			return selfinsert(f, n);
 		c = lgetc(curwp->w_dotp, i);
@@ -606,32 +604,28 @@ fillword(int f, int n)
 }
 
 /*
- * Set fill column to n for justify.
+ * Set the fill column of the current buffer, or the default for new
+ * buffers from the startup file, to the prefix argument or the number
+ * read from the minibuffer.
  */
 int
 setfillcol(int f, int n)
 {
 	char buf[32], *rep;
 	const char *es;
-	int nfill;
 
-	if ((f & FFARG) != 0) {
-		fillcol = n;
-	} else {
+	if ((f & FFARG) == 0) {
 		if ((rep = eread("Set fill-column: ", buf, sizeof(buf),
 		    EFNEW | EFCR)) == NULL)
 			return (ABORT);
-		else if (rep[0] == '\0')
+		if (rep[0] == '\0')
 			return (FALSE);
-		nfill = strtonum(rep, 0, INT_MAX, &es);
-		if (es != NULL) {
-			dobeep();
-			ewprintf("Invalid fill column: %s", rep);
-			return (FALSE);
-		}
-		fillcol = nfill;
-		ewprintf("Fill column set to %d", fillcol);
+		n = strtonum(rep, 0, INT_MAX, &es);
+		if (es != NULL)
+			return (dobeep_msgs("Invalid fill column:", rep));
+		ewprintf("Fill column set to %d", n);
 	}
+	modefillcol(n);
 	return (TRUE);
 }
 

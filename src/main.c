@@ -252,6 +252,7 @@ main(int argc, char **argv)
 	for (bp = bheadp; bp != NULL; bp = bp->b_bufp) {
 		bp->b_flag = defb_flag;
 		bp->b_tabw = defb_tabw;
+		bp->b_fillcol = defb_fillcol;
 		bp->b_nmodes = defb_nmodes;
 		for (i = 0; i <= defb_nmodes; i++) {
                 	bp->b_modes[i] = defb_modes[i];
