@@ -843,6 +843,14 @@ highlighting: the lines that head a file, hunk headers, and the
 removed and added lines within a hunk.
 Lines outside a hunk are left alone, so the message of a mailed
 patch keeps its own dashes.
+In a patch from
+.Nm git Cm format-patch
+the mail header is colored as well, and the
+.Ql *** SUBJECT HERE ***
+and
+.Ql *** BLURB HERE ***
+a cover letter is created with are shown in red, so that they do not
+go out.
 Enabling it also sets the tab width to eight, which is what a diff
 quotes its source at.
 Files named *.diff, *.patch and *.rej get the mode automatically.

@@ -589,6 +589,21 @@ conf_lead(const struct line *lp, char *attr)
 }
 #endif
 
+#if defined(MODE_DIFF) || defined(MODE_GIT) || defined(MODE_MARKDOWN) || \
+    defined(MODE_YAML)
+/*
+ * The index of the next occurrence of c at or after i, or the
+ * line length when not found.
+ */
+static int
+scanto(const struct line *lp, int i, int c)
+{
+	while (i < llength(lp) && lgetc(lp, i) != c)
+		i++;
+	return (i);
+}
+#endif
+
 #if defined(MODE_DIFF) || defined(MODE_GIT)
 /*
  * Lines that head a file in a diff.
@@ -603,24 +618,62 @@ static const char *diff_headers[] = {
 };
 
 #define DIFF_HUNK	1	/* inside a hunk, where +/- are edits */
+#define DIFF_MAIL	2	/* inside the mail header of a format-patch */
+
+/* what git format-patch --cover-letter leaves for the subject and blurb */
+#define MAIL_SUBJECT	"*** SUBJECT HERE ***"
+#define MAIL_BLURB	"*** BLURB HERE ***"
+
+/*
+ * The mbox From line git format-patch opens a mail with: the commit
+ * hash and a date that is always the same.
+ */
+static int
+mail_from(const struct line *lp)
+{
+	int	 i;
+
+	if (matchat(lp, 0, "From ") == 0)
+		return (0);
+	for (i = 5; i < llength(lp) && isxdigit(lgetc(lp, i)); i++)
+		;
+	return (i > 5 && matchat(lp, i, " Mon Sep 17 00:00:00 2001") != 0);
+}
 
 /*
  * Diff line classifier, used through sy_parse.  Every line takes one
  * color, picked from what it starts with.  The cross-line state says
  * whether a hunk is open, so that the - bullets in the message of a
- * mailed patch stay plain.
+ * mailed patch stay plain, or whether the mail header of such a patch
+ * is, where the field names are colored up to the blank line that
+ * ends it.  The placeholders a cover letter is created with are shown
+ * in red: the subject at the end of its header line, the blurb on a
+ * line of its own.
  */
 static int
-diff_parse(const struct line *lp, int inhunk, char *attr)
+diff_parse(const struct line *lp, int state, char *attr)
 {
 	const char	**h;
-	int	 cls, len;
+	int	 cls, i, len;
 
 	len = llength(lp);
 	if (len == 0)
 		return (0);	/* a hunk carries no blank lines of its own */
 
-	if (inhunk) {
+	if (state == DIFF_MAIL) {
+		if (attr != NULL && !isspace(lgetc(lp, 0)))
+			setattrs(attr, 0, scanto(lp, 0, ':'), SYN_KEYWORD);
+		i = len - (int)strlen(MAIL_SUBJECT);
+		if (i >= 0 && matchat(lp, i, MAIL_SUBJECT) != 0)
+			setattrs(attr, i, len - i, SYN_NUMBER);
+		return (DIFF_MAIL);
+	}
+	if (state == 0 && mail_from(lp)) {
+		setattrs(attr, 0, len, SYN_HEADING);
+		return (DIFF_MAIL);
+	}
+
+	if (state == DIFF_HUNK) {
 		/* the signature of a mailed patch, not a removed line */
 		if (len == 3 && matchat(lp, 0, "-- ") != 0)
 			return (0);
@@ -652,8 +705,10 @@ diff_parse(const struct line *lp, int inhunk, char *attr)
 	for (h = diff_headers; *h != NULL; h++)
 		if (matchat(lp, 0, *h) != 0) {
 			setattrs(attr, 0, len, SYN_HEADING);
-			break;
+			return (0);
 		}
+	if (matchat(lp, 0, MAIL_BLURB) == len)
+		setattrs(attr, 0, len, SYN_NUMBER);
 	return (0);
 }
 #endif
@@ -670,7 +725,7 @@ static const char *commit_trailers[] = {
 	NULL
 };
 
-#define COMMIT_DIFF	2	/* below the message, on the diff rules */
+#define COMMIT_DIFF	(DIFF_MAIL << 1)	/* below the message, on the diff rules */
 
 /*
  * Git commit message classifier, used through sy_parse.  The message
@@ -699,20 +754,6 @@ commit_parse(const struct line *lp, int state, char *attr)
 			break;
 		}
 	return (0);
-}
-#endif
-
-#if defined(MODE_MARKDOWN) || defined(MODE_YAML)
-/*
- * The index of the next occurrence of c at or after i, or the
- * line length when not found.
- */
-static int
-scanto(const struct line *lp, int i, int c)
-{
-	while (i < llength(lp) && lgetc(lp, i) != c)
-		i++;
-	return (i);
 }
 #endif
 
