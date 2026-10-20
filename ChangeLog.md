@@ -19,6 +19,9 @@ All relevant changes to the project are documented in this file.
   is: the mail header and diffstat of a patch, the lines that head a file,
   and the hunks, in diff-mode and below a `git commit -v` message.  The
   message fills as before, also right above the `---` of a patch
+- conf-mode is detected for `~/.ssh/config`, `~/.Xresources` and
+  `~/.Xdefaults` too, with the `!` comments of X resources colored
+- Files under `/var/log` get `auto-revert-tail-mode` automatically
 
 ### Fixes
 

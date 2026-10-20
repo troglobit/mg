@@ -599,14 +599,12 @@ again and shown from the end.
 Tail mode works without
 .Ic auto-revert-mode ,
 on read-only buffers too, and checks as often.
-To follow every log file, and everything under
-.Pa /var/log ,
-where a
-.Ql *
-also matches subdirectories:
+Everything under
+.Pa /var/log
+gets the mode automatically.
+To follow every log file as well:
 .Bd -literal -offset indent
 auto-execute *.log auto-revert-tail-mode
-auto-execute /var/log/* auto-revert-tail-mode
 .Ed
 .It Ic back-to-indentation
 Move the dot to the first non-whitespace character on the current line.
@@ -715,16 +713,17 @@ does.
 Comment out every line of code in the region, at its indentation.
 .It Ic conf-mode
 Toggle configuration file mode, which selects the conf rules for
-syntax highlighting: comments started by # or ;, [section] headers,
-the key of a key = value pair, quoted strings, numbers, and words
-like yes, no and off.
+syntax highlighting: comments started by # or ;, or by the ! of X
+resources, [section] headers, the key of a key = value pair, quoted
+strings, numbers, and words like yes, no and off.
 Enabling it also sets the tab width to eight, which is what
 .Pa /etc
 is written for.
 Files named *.conf, *.cfg, *.ini and *.toml get the mode
 automatically, as do systemd units, .desktop entries, fstab,
-ssh_config, sshd_config, ~/.gitconfig, ~/.editorconfig, and the
-\&.config and *defconfig files written by kconfig.
+ssh_config, sshd_config, ~/.ssh/config, ~/.gitconfig, ~/.editorconfig,
+~/.Xresources, ~/.Xdefaults, and the \&.config and *defconfig files
+written by kconfig.
 .It Ic copy-region-as-kill
 Copy all of the characters in the region to the kill buffer,
 clearing the mark afterwards.

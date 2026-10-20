@@ -602,8 +602,8 @@ conf_lead(const struct line *lp, char *attr)
 		return (i);
 	c = lgetc(lp, i);
 
-	/* ; opens a comment like #, but only at the start of a line */
-	if (c == ';') {
+	/* ; and the ! of X resources open a comment, at the start of a line */
+	if (c == ';' || c == '!') {
 		setattrs(attr, i, len - i, SYN_COMMENT);
 		return (len);
 	}

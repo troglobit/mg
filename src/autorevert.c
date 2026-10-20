@@ -23,6 +23,14 @@ static void	bufeob(struct buffer *);
 static int	autorevert = TRUE;
 static int	autorevert_interval = 5;	/* seconds */
 
+void
+autorevert_init(void)
+{
+#ifdef ENABLE_AUTOEXEC
+	(void)add_autoexec("/var/log/*", "auto-revert-tail-mode");
+#endif
+}
+
 int
 autorevertmode(int f, int n)
 {

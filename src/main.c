@@ -168,7 +168,11 @@ main(int argc, char **argv)
 		extern void cmakemode_init(void);
 		extern void mkmode_init(void);
 		extern void pymode_init(void);
+		extern void autorevert_init(void);
 
+#ifdef ENABLE_AUTOREVERT
+		autorevert_init();
+#endif
 #ifdef ENABLE_DIRED
 		dired_init();
 #endif

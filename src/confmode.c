@@ -66,6 +66,9 @@ confmode_init(void)
 	(void)add_autoexec("fstab", "conf-mode");
 	(void)add_autoexec("ssh_config", "conf-mode");
 	(void)add_autoexec("sshd_config", "conf-mode");
+	(void)add_autoexec("*/.ssh/config", "conf-mode");
+	(void)add_autoexec(".Xresources", "conf-mode");
+	(void)add_autoexec(".Xdefaults", "conf-mode");
 	/* kconfig output, as used by the kernel and buildroot */
 	(void)add_autoexec(".config", "conf-mode");
 	(void)add_autoexec("*defconfig", "conf-mode");
