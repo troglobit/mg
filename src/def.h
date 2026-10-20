@@ -684,10 +684,12 @@ int		 syn_parse(const struct syntax *, const struct line *,
 		     int, char *);
 int		 syn_state(const struct syntax *, struct buffer *,
 		     struct line *);
+int		 syn_verbatim(struct buffer *, struct line *, int *);
 #else
 /* without the engine, no buffer has syntax rules */
 #define syntax_lookup(bp)		NULL
 #define syn_multiline(bp)		0
+#define syn_verbatim(bp, lp, st)	0
 #define syn_state(sy, bp, lp)		0
 #define syn_parse(sy, lp, st, attr)	0
 #endif

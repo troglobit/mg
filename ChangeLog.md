@@ -15,6 +15,10 @@ All relevant changes to the project are documented in this file.
 - diff-mode colors the mail header of a `git format-patch` file, and shows
   the `*** SUBJECT HERE ***` and `*** BLURB HERE ***` of a cover letter
   in red, so that they do not go out
+- `fill-paragraph`, `fill-region` and `auto-fill-mode` leave a diff as it
+  is: the mail header and diffstat of a patch, the lines that head a file,
+  and the hunks, in diff-mode and below a `git commit -v` message.  The
+  message fills as before, also right above the `---` of a patch
 
 ### Fixes
 

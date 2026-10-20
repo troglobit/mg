@@ -853,6 +853,11 @@ a cover letter is created with are shown in red, so that they do not
 go out.
 Enabling it also sets the tab width to eight, which is what a diff
 quotes its source at.
+Neither
+.Ic fill-paragraph
+nor
+.Ic auto-fill-mode
+wraps a line of the diff, only the message.
 Files named *.diff, *.patch and *.rej get the mode automatically.
 .It Ic digit-argument
 Process a numerical argument for keyboard-invoked functions.
@@ -937,6 +942,16 @@ Print an error if there is anything wrong.
 Justify a paragraph, wrapping text at the current fill column.
 A list item is filled by itself with the continuation lines aligned
 under its text, and a block quote keeps its > prefix on every line.
+In
+.Ic diff-mode
+and
+.Ic git-commit-mode
+the diff is left as it is, since a fill would break it: the mail
+header and the diffstat of a patch, the lines that head a file, and
+the hunks.
+A paragraph ends where they begin, so the message right above the
+.Ql ---
+of a patch fills as any other.
 .It Ic fill-region
 Fill each paragraph in the region, as
 .Ic fill-paragraph

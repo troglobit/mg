@@ -142,6 +142,12 @@ static int	 commit_parse(const struct line *, int, char *);
 #endif
 #if defined(MODE_DIFF) || defined(MODE_GIT)
 static int	 diff_parse(const struct line *, int, char *);
+
+#define DIFF_HUNK	1	/* inside a hunk, where +/- are edits */
+#define DIFF_MAIL	2	/* inside the mail header of a format-patch */
+#define DIFF_FILE	4	/* a line that heads a file */
+#define DIFF_STAT	8	/* the diffstat below the --- of a format-patch */
+#define COMMIT_DIFF	(DIFF_STAT << 1)	/* below the message, on the diff rules */
 #endif
 #ifdef MODE_MARKDOWN
 static int	 md_parse(const struct line *, int, char *);
@@ -173,6 +179,9 @@ struct syntax {
 	int		(*sy_lead)(const struct line *, char *);
 	/* the keyword machinery does not fit all languages */
 	int		(*sy_parse)(const struct line *, int, char *);
+	int		  sy_verbatim;	/* the parse states of text quoted
+					 * byte for byte, which filling
+					 * would break			*/
 };
 
 static const struct syntax syntab[] = {
@@ -211,10 +220,12 @@ static const struct syntax syntab[] = {
 	    .sy_lead = conf_lead, .sy_cstart = "#" },
 #endif
 #ifdef MODE_DIFF
-	{ .sy_mode = "diff", .sy_parse = diff_parse },
+	{ .sy_mode = "diff", .sy_parse = diff_parse,
+	    .sy_verbatim = DIFF_HUNK | DIFF_MAIL | DIFF_FILE | DIFF_STAT },
 #endif
 #ifdef MODE_GIT
-	{ .sy_mode = "git-commit", .sy_parse = commit_parse, .sy_cstart = "#" },
+	{ .sy_mode = "git-commit", .sy_parse = commit_parse, .sy_cstart = "#",
+	    .sy_verbatim = COMMIT_DIFF },
 #endif
 #ifdef MODE_MARKDOWN
 	{ .sy_mode = "markdown", .sy_parse = md_parse,
@@ -270,6 +281,28 @@ syn_multiline(struct buffer *bp)
 	sy = syntax_lookup(bp);
 	return (sy != NULL && (sy->sy_mcs != NULL || sy->sy_mstr[0] != NULL ||
 	    sy->sy_parse != NULL));
+}
+
+/*
+ * True when lp is text bp's mode quotes byte for byte, such as a diff
+ * hunk, which filling would break.  A caller walking down the buffer
+ * passes the same *state to each call, -1 to begin with, and is
+ * spared the scan from the top for every line but the first.
+ */
+int
+syn_verbatim(struct buffer *bp, struct line *lp, int *state)
+{
+	const struct syntax	*sy;
+	int	 st;
+
+	sy = syntax_lookup(bp);
+	if (sy == NULL || sy->sy_verbatim == 0)
+		return (FALSE);
+	st = state != NULL && *state >= 0 ? *state : syn_state(sy, bp, lp);
+	st = syn_parse(sy, lp, st, NULL);
+	if (state != NULL)
+		*state = st;
+	return ((st & sy->sy_verbatim) != 0);
 }
 
 /*
@@ -617,9 +650,6 @@ static const char *diff_headers[] = {
 	NULL
 };
 
-#define DIFF_HUNK	1	/* inside a hunk, where +/- are edits */
-#define DIFF_MAIL	2	/* inside the mail header of a format-patch */
-
 /* what git format-patch --cover-letter leaves for the subject and blurb */
 #define MAIL_SUBJECT	"*** SUBJECT HERE ***"
 #define MAIL_BLURB	"*** BLURB HERE ***"
@@ -641,6 +671,30 @@ mail_from(const struct line *lp)
 }
 
 /*
+ * A line of the diffstat git puts under the --- of a mailed patch,
+ * " path | 12 ++--" or " 2 files changed, ...", also when the notes
+ * written under the --- for a v2 have pushed it down from there.
+ */
+static int
+diff_statline(const struct line *lp)
+{
+	int	 i, len;
+
+	len = llength(lp);
+	if (len < 2 || lgetc(lp, 0) != ' ')
+		return (0);
+	for (i = 1; i < len && isdigit(lgetc(lp, i)); i++)
+		;
+	if (i > 1 && (matchat(lp, i, " file changed") != 0 ||
+	    matchat(lp, i, " files changed") != 0))
+		return (1);
+	for (i = 1; i < len; i++)
+		if (matchat(lp, i, " | ") != 0)
+			return (1);
+	return (0);
+}
+
+/*
  * Diff line classifier, used through sy_parse.  Every line takes one
  * color, picked from what it starts with.  The cross-line state says
  * whether a hunk is open, so that the - bullets in the message of a
@@ -648,7 +702,9 @@ mail_from(const struct line *lp)
  * is, where the field names are colored up to the blank line that
  * ends it.  The placeholders a cover letter is created with are shown
  * in red: the subject at the end of its header line, the blurb on a
- * line of its own.
+ * line of its own.  The lines that head a file, and the diffstat
+ * under the --- that ends the message of a mailed patch, have states
+ * of their own so that a fill can tell them from the message.
  */
 static int
 diff_parse(const struct line *lp, int state, char *attr)
@@ -672,6 +728,9 @@ diff_parse(const struct line *lp, int state, char *attr)
 		setattrs(attr, 0, len, SYN_HEADING);
 		return (DIFF_MAIL);
 	}
+	if (state == DIFF_STAT ? lgetc(lp, 0) == ' ' :
+	    state == 0 && diff_statline(lp))
+		return (DIFF_STAT);
 
 	if (state == DIFF_HUNK) {
 		/* the signature of a mailed patch, not a removed line */
@@ -705,7 +764,7 @@ diff_parse(const struct line *lp, int state, char *attr)
 	for (h = diff_headers; *h != NULL; h++)
 		if (matchat(lp, 0, *h) != 0) {
 			setattrs(attr, 0, len, SYN_HEADING);
-			return (0);
+			return (len == 3 ? DIFF_STAT : DIFF_FILE);
 		}
 	if (matchat(lp, 0, MAIL_BLURB) == len)
 		setattrs(attr, 0, len, SYN_NUMBER);
@@ -724,8 +783,6 @@ static const char *commit_trailers[] = {
 	"Fixes: ", "Closes: ", "Link: ", "Cc: ",
 	NULL
 };
-
-#define COMMIT_DIFF	(DIFF_MAIL << 1)	/* below the message, on the diff rules */
 
 /*
  * Git commit message classifier, used through sy_parse.  The message

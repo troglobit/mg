@@ -19,6 +19,8 @@
 #define MAXWORD 256
 
 static int	findpara(void);
+static int	blankline(const struct line *);
+static struct line *verbatimnear(struct line *, int, int *);
 static int 	do_gotoeop(int, int, int *);
 static int	listitem(const struct line *);
 static int	fillprefix(const struct line *, char *, int);
@@ -222,34 +224,53 @@ fillpara(int f, int n)
 	int	 preflen;	/* fill prefix length			*/
 	int	 quoted;	/* prefix is a block quote?		*/
 	int	 skipquote;	/* dropping a quote prefix?		*/
+	int	 startline;	/* its line number			*/
+	int	 nverb;		/* lines to the verbatim bound		*/
 	struct line	*startlp;	/* line dot started on		*/
 	struct line	*eopline;	/* pointer to line just past EOP	*/
+	struct line	*verblp;	/* verbatim line bounding the paragraph */
 	char	 wbuf[MAXWORD];	/* buffer for current word		*/
 	char	 pref[MAXWORD];	/* prefix for continuation lines	*/
 
 	if (n == 0)
 		return (TRUE);
+	startlp = curwp->w_dotp;
+	startline = curwp->w_dotline;
+	if (syn_verbatim(curbp, startlp, NULL))
+		return (dobeep_msg("Cannot fill a diff"));
 
 	bon = undo_boundary_enable(FFRAND, 0);
 
 	/* record the pointer to the line just past the EOP */
-	startlp = curwp->w_dotp;
-	(void)gotoeop(FFRAND, 1);
-	if (curwp->w_doto != 0 ||
-	    (curwp->w_dotp == startlp && llength(startlp) > 0)) {
-		/* paragraph ends at end of buffer */
-		(void)gotoeol(FFRAND, 1);
-		(void)lnewline();
-		eopline = lforw(curwp->w_dotp);
+	if ((eopline = verbatimnear(startlp, 1, &nverb)) != NULL) {
+		curwp->w_dotp = eopline;
+		curwp->w_dotline += nverb;
+		curwp->w_doto = 0;
 	} else {
-		eopline = curwp->w_dotp;
-		/* a following item: back into the paragraph we fill */
-		if (listitem(curwp->w_dotp))
-			(void)backchar(FFRAND, 1);
+		(void)gotoeop(FFRAND, 1);
+		if (curwp->w_doto != 0 ||
+		    (curwp->w_dotp == startlp && llength(startlp) > 0)) {
+			/* paragraph ends at end of buffer */
+			(void)gotoeol(FFRAND, 1);
+			(void)lnewline();
+			eopline = lforw(curwp->w_dotp);
+		} else {
+			eopline = curwp->w_dotp;
+			/* a following item: back into the paragraph we fill */
+			if (listitem(curwp->w_dotp))
+				(void)backchar(FFRAND, 1);
+		}
 	}
 
 	/* and back top the beginning of the paragraph */
 	(void)gotobop(FFRAND, 1);
+	if ((verblp = verbatimnear(startlp, -1, &nverb)) != NULL &&
+	    curwp->w_dotline < startline - nverb) {
+		/* the verbatim line stands in for the blank line above */
+		curwp->w_dotp = verblp;
+		curwp->w_dotline = startline - nverb;
+		curwp->w_doto = llength(verblp);
+	}
 
 	/* initialize various info */
 	while (inword() == 0 && forwchar(FFRAND, 1));
@@ -366,6 +387,41 @@ cleanup:
 }
 
 /*
+ * Text the mode quotes byte for byte, such as a diff hunk, bounds a
+ * paragraph the way a blank line does.  The nearest such line below
+ * lp, or above it for a negative dir, before the blank line that ends
+ * the block, or NULL, with *n the number of lines to it.  The
+ * paragraph commands cannot be asked, since a removed line of a diff
+ * looks like a list item to them.
+ */
+static struct line *
+verbatimnear(struct line *lp, int dir, int *n)
+{
+	struct line	*p, *found = NULL;
+	int	 i, state = -1;
+
+	if (dir > 0) {
+		for (*n = 1; (p = lforw(lp)) != curbp->b_headp &&
+		    !blankline(p); (*n)++) {
+			lp = p;
+			if (syn_verbatim(curbp, lp, &state))
+				return (lp);
+		}
+		return (NULL);
+	}
+	/* the state only runs down, so the block above is read from its top */
+	for (i = 0, p = lp; lback(p) != curbp->b_headp &&
+	    !blankline(lback(p)); p = lback(p))
+		i++;
+	for (; i > 0; i--, p = lforw(p))
+		if (syn_verbatim(curbp, p, &state)) {
+			found = p;
+			*n = i;
+		}
+	return (found);
+}
+
+/*
  * Fill each paragraph in the lines of the region.
  */
 int
@@ -373,7 +429,7 @@ fillregion(int f, int n)
 {
 	struct region	 r;
 	struct line	*dotp;
-	int	 bon, doto, dotline, end, lines, s = TRUE;
+	int	 bon, doto, dotline, end, lines, s = TRUE, state;
 
 	if (curwp->w_markp == NULL)
 		return (dobeep_msg("No mark set in this window"));
@@ -388,7 +444,16 @@ fillregion(int f, int n)
 	bon = undo_boundary_enable(FFRAND, 0);
 	while (s == TRUE && findpara() == TRUE && curwp->w_dotline <= end) {
 		lines = curbp->b_lines;
-		s = fillpara(FFRAND, 1);
+		state = -1;
+		if (syn_verbatim(curbp, curwp->w_dotp, &state)) {
+			/* a diff is passed over, not refused */
+			while (lforw(curwp->w_dotp) != curbp->b_headp &&
+			    syn_verbatim(curbp, lforw(curwp->w_dotp), &state)) {
+				curwp->w_dotp = lforw(curwp->w_dotp);
+				curwp->w_dotline++;
+			}
+		} else
+			s = fillpara(FFRAND, 1);
 		end += curbp->b_lines - lines;
 		dotp = curwp->w_dotp;
 		doto = curwp->w_doto;
@@ -574,6 +639,8 @@ fillword(int f, int n)
 		else if (ISCTRL(c) != FALSE)
 			++col;
 	}
+	if (syn_verbatim(curbp, curwp->w_dotp, NULL))
+		return (selfinsert(f, n));
 	if (curwp->w_doto != llength(curwp->w_dotp)) {
 		(void)selfinsert(f, n);
 		nce = llength(curwp->w_dotp) - curwp->w_doto;
