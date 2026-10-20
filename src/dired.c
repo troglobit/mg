@@ -62,7 +62,7 @@ static char 	 *findfname(struct line *, char *);
 #ifdef ENABLE_HELP
 extern struct KEYMAPE (2) helpmap;
 #endif
-extern struct KEYMAPE (7) cXmap;
+extern struct KEYMAPE (8) cXmap;
 extern struct KEYMAPE (8) metamap;
 
 const char DDELCHAR = 'D';

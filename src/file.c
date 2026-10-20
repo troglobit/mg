@@ -224,6 +224,7 @@ readin(char *fname)
 			wp->w_markp = NULL;
 			wp->w_marko = 0;
 			wp->w_markact = FALSE;
+			wp->w_rect = FALSE;
 		}
 	}
 

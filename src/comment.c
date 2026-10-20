@@ -55,15 +55,6 @@ csyntax(void)
 	return (TRUE);
 }
 
-static int
-insstr(const char *s)
-{
-	for (; *s != '\0'; s++)
-		if (linsert(1, *s) != TRUE)
-			return (FALSE);
-	return (TRUE);
-}
-
 /*
  * The delimiters as written: cstart and a space at dot, and a space
  * and cend when the mode closes its comments.

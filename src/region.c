@@ -50,6 +50,21 @@ static struct delsel {
 };
 static	int	delsel_mode = TRUE;
 
+/*
+ * Commands that act on the rectangle instead while the region is one,
+ * in rectangle-mark-mode.
+ */
+static const struct {
+	PF	 fn, rectfn;
+} rectsels[] = {
+	{killregion, killrect},
+	{copyregion, copyrect},
+	{forwdel, delrect},
+	{backdel, delrect},
+	{openline, openrect},
+	{twiddle, stringrect},
+};
+
 static	int	delregion(struct region *, int);
 static	int	getregion(struct region *);
 static	int	iomux(int, char * const, int);
@@ -131,16 +146,23 @@ delsel_add(PF fn, int supersede)
  * Run a command.  With the mark active, a command in delsels[] first
  * deletes the region, like delete-selection-mode in GNU Emacs.  The
  * text is not killed, and the region undoes together with the
- * command's own edit.
+ * command's own edit.  With the region a rectangle, a command in
+ * rectsels[] gives way to its rectangle counterpart, and typing
+ * leaves the rectangle alone.
  */
 int
 delsel(PF fn, int f, int n)
 {
 	struct region	region;
 	struct delsel	*ds = NULL;
+	size_t	 i;
 	int	 s;
 
-	if (delsel_mode && curwp->w_markact && curwp->w_markp != NULL)
+	if (curwp->w_markact && curwp->w_markp != NULL && curwp->w_rect) {
+		for (i = 0; i < NELEMS(rectsels); i++)
+			if (rectsels[i].fn == fn)
+				return ((*rectsels[i].rectfn)(f, n));
+	} else if (delsel_mode && curwp->w_markact && curwp->w_markp != NULL)
 		ds = delsel_find(fn);
 	if (ds == NULL || getregion(&region) != TRUE || region.r_size == 0)
 		return ((*fn)(f, n));

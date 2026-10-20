@@ -101,13 +101,7 @@ showcpos(int f, int n)
 int
 getcolpos(struct mgwin *wp)
 {
-	int	col, i, len;
-
-	col = 0;
-	for (i = 0; i < wp->w_doto; i += len)
-		col += charcols(wp->w_dotp, i, col, wp->w_bufp->b_tabw, &len);
-
-	return (col);
+	return (bytecol(wp->w_dotp, wp->w_doto, wp->w_bufp->b_tabw));
 }
 
 /*
@@ -135,16 +129,48 @@ charcols(const struct line *lp, int o, int col, int tabw, int *len)
 }
 
 /*
+ * The column byte o of a line is shown at.
+ */
+int
+bytecol(const struct line *lp, int o, int tabw)
+{
+	int	 col, i, len;
+
+	col = 0;
+	for (i = 0; i < o && i < llength(lp); i += len)
+		col += charcols(lp, i, col, tabw, &len);
+	return (col);
+}
+
+/*
+ * The byte offset of the character shown at column col of a line,
+ * or spanning it; the line length when the line ends before it.
+ * The column that character starts at goes to *colp when asked.
+ */
+int
+colbyte(const struct line *lp, int col, int tabw, int *colp)
+{
+	int	 c, i, len, w;
+
+	for (i = c = 0; i < llength(lp); i += len, c += w) {
+		w = charcols(lp, i, c, tabw, &len);
+		if (c + w > col)
+			break;
+	}
+	if (colp != NULL)
+		*colp = c;
+	return (i);
+}
+
+/*
  * The width of a whole line in columns.
  */
 int
 linecols(const struct line *lp, int tabw)
 {
-	int	 col, i, len;
+	int	 col;
 
-	col = 0;
-	for (i = 0; i < llength(lp); i += len)
-		col += charcols(lp, i, col, tabw, &len);
+	col = bytecol(lp, llength(lp), tabw);
 
 	return (col);
 }

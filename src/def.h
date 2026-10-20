@@ -314,6 +314,7 @@ struct mgwin {
 	int		 w_dotline;	/* current line number of dot	*/
 	int		 w_markline;	/* current line number of mark	*/
 	int		 w_markact;	/* mark active, region is shown	*/
+	int		 w_rect;	/* the region is a rectangle	*/
 };
 #define w_wndp	w_list.l_p.l_wp
 #define w_name	w_list.l_name
@@ -510,6 +511,7 @@ int		 lsettext(struct line *, const char *, int);
 void		 lfree(struct line *);
 void		 lchange(int);
 int		 linsert(int, int);
+int		 insstr(const char *);
 int		 lnewline_at(struct line *, int);
 int		 lnewline(void);
 int		 ldelete(RSIZE, int);
@@ -698,6 +700,18 @@ int		 syn_verbatim(struct buffer *, struct line *, int *);
 #define MAIL_SUBJECT	"*** SUBJECT HERE ***"
 #define MAIL_BLURB	"*** BLURB HERE ***"
 
+/* rect.c */
+int		 rectmode(int, int);
+int		 killrect(int, int);
+int		 delrect(int, int);
+int		 copyrect(int, int);
+int		 yankrect(int, int);
+int		 openrect(int, int);
+int		 clearrect(int, int);
+int		 stringrect(int, int);
+int		 rect_yankpending(void);
+void		 rect_forget(void);
+
 /* utf8.c */
 void		 utf8_init(void);
 int		 utf8_iscont(int);
@@ -749,6 +763,8 @@ int		 showcpos(int, int);
 int		 getcolpos(struct mgwin *);
 int		 charcols(const struct line *, int, int, int, int *);
 int		 linecols(const struct line *, int);
+int		 bytecol(const struct line *, int, int);
+int		 colbyte(const struct line *, int, int, int *);
 int		 twiddle(int, int);
 int		 openline(int, int);
 int		 enewline(int, int);

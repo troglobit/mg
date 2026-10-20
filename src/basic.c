@@ -324,14 +324,7 @@ setgoal(void)
 int
 getgoal(struct line *dlp)
 {
-	int i, len, col = 0;
-
-	for (i = 0; i < llength(dlp); i += len) {
-		col += charcols(dlp, i, col, curbp->b_tabw, &len);
-		if (col > curgoal)
-			break;
-	}
-	return (i);
+	return (colbyte(dlp, curgoal, curbp->b_tabw, NULL));
 }
 
 /*
@@ -483,6 +476,7 @@ isetmark(void)
 	curwp->w_marko = curwp->w_doto;
 	curwp->w_markline = curwp->w_dotline;
 	curwp->w_markact = FALSE;
+	curwp->w_rect = FALSE;
 }
 
 /*
@@ -514,6 +508,7 @@ mark_deactivate(struct mgwin *wp)
 {
 	if (wp->w_markact) {
 		wp->w_markact = FALSE;
+		wp->w_rect = FALSE;
 		wp->w_rflag |= WFFULL;
 	}
 }

@@ -127,6 +127,68 @@ struct KEYMAPE (2) ccmap = {
 };
 #endif /* CSCOPE */
 
+static PF cXrEw[] = {
+	copyrect		/* w */
+};
+static PF cXrE[] = {
+	NULL			/* ESC, the prefix itself */
+};
+static struct KEYMAPE (1) cXrEmap = {
+	1,
+	1,
+	rescan,
+	{
+		{
+			'w', 'w', cXrEw, NULL
+		}
+	}
+};
+static PF cXrc[] = {
+	clearrect,		/* c */
+	delrect			/* d */
+};
+static PF cXrk[] = {
+	killrect		/* k */
+};
+static PF cXro[] = {
+	openrect		/* o */
+};
+static PF cXrt[] = {
+	stringrect		/* t */
+};
+static PF cXry[] = {
+	yankrect		/* y */
+};
+static struct KEYMAPE (6) cXrmap = {
+	6,
+	6,
+	rescan,
+	{
+		{
+			CCHR('['), CCHR('['), cXrE, (KEYMAP *) & cXrEmap
+		},
+		{
+			'c', 'd', cXrc, NULL
+		},
+		{
+			'k', 'k', cXrk, NULL
+		},
+		{
+			'o', 'o', cXro, NULL
+		},
+		{
+			't', 't', cXrt, NULL
+		},
+		{
+			'y', 'y', cXry, NULL
+		}
+	}
+};
+
+static PF cXspc[] = {
+	rectmode		/* SPC */
+};
+
 static PF cX4cF[] = {
 	poptofile,		/* ^f */
 	ctrlg			/* ^g */
@@ -235,7 +297,7 @@ static PF cXcar[] = {
 	nextwind,		/* o */
 	prevwind,		/* p */
 	rescan,			/* q */
-	rescan,			/* r */
+	NULL,			/* r, the C-x r prefix */
 	savebuffers,		/* s */
 	rescan,			/* t */
 	undo,			/* u */
@@ -251,9 +313,9 @@ static PF cXcar[] = {
 	backkillsentence	/* DEL */
 };
 
-struct KEYMAPE (7) cXmap = {
-	7,
-	7,
+struct KEYMAPE (8) cXmap = {
+	8,
+	8,
 	rescan,
 	{
 		{
@@ -261,6 +323,9 @@ struct KEYMAPE (7) cXmap = {
 		},
 		{
 			CCHR('J'), CCHR('X'), cXcJ, NULL
+		},
+		{
+			' ', ' ', cXspc, NULL
 		},
 		{
 			'(', '+', cXlp, NULL
@@ -275,7 +340,7 @@ struct KEYMAPE (7) cXmap = {
 			'=', '=', cXeq, NULL
 		},
 		{
-			'^', CCHR('?'), cXcar, NULL
+			'^', CCHR('?'), cXcar, (KEYMAP *) & cXrmap
 		}
 	}
 };
@@ -645,6 +710,7 @@ static struct maps_s map_table[] = {
 	{ .p_map = (KEYMAP *)&metamap, .p_name = "esc prefix" },
 	{ .p_map = (KEYMAP *)&cXmap, .p_name = "c-x prefix" },
 	{ .p_map = (KEYMAP *)&cX4map, .p_name = "c-x 4 prefix" },
+	{ .p_map = (KEYMAP *)&cXrmap, .p_name = "c-x r prefix" },
 #ifdef ENABLE_HELP
 	{ .p_map = (KEYMAP *)&helpmap, .p_name = "help" },
 #endif

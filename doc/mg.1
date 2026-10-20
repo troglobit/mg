@@ -339,6 +339,8 @@ delete-other-windows
 split-window-vertically
 .It C-x 3
 split-window-horizontally
+.It C-x SPC
+rectangle-mark-mode
 .It C-x 4 C-f
 find-file-other-window
 .It C-x 4 C-g
@@ -377,6 +379,20 @@ other-window
 other-window
 .It C-x p
 previous-window
+.It C-x r c
+clear-rectangle
+.It C-x r d
+delete-rectangle
+.It C-x r k
+kill-rectangle
+.It C-x r M-w
+copy-rectangle-as-kill
+.It C-x r o
+open-rectangle
+.It C-x r t
+string-rectangle
+.It C-x r y
+yank-rectangle
 .It C-x s
 save-some-buffers
 .It C-x u
@@ -724,6 +740,17 @@ automatically, as do systemd units, .desktop entries, fstab,
 ssh_config, sshd_config, ~/.ssh/config, ~/.gitconfig, ~/.editorconfig,
 ~/.Xresources, ~/.Xdefaults, and the \&.config and *defconfig files
 written by kconfig.
+.It Ic clear-rectangle
+Replace the rectangle with blanks, so the text to its right keeps
+its place.
+A line that ends inside the rectangle loses its tail instead.
+See
+.Ic rectangle-mark-mode
+for what the rectangle is.
+.It Ic copy-rectangle-as-kill
+Save the rectangle, as
+.Ic kill-rectangle
+does, without deleting it.
 .It Ic copy-region-as-kill
 Copy all of the characters in the region to the kill buffer,
 clearing the mark afterwards.
@@ -806,6 +833,8 @@ Delete all lines after dot that don't contain a string matching
 the supplied regular expression.
 .It Ic delete-other-windows
 Make the current window the only window visible on the screen.
+.It Ic delete-rectangle
+Delete the rectangle without saving it.
 .It Ic delete-selection-mode
 Toggle delete selection mode, enabled by default.
 When enabled, typing, yanking, or inserting a newline with the mark
@@ -1161,6 +1190,14 @@ abs(n) lines.
 Delete
 .Va n
 paragraphs starting with the current one.
+.It Ic kill-rectangle
+Delete the rectangle, saving its rows for
+.Ic yank-rectangle ,
+which
+.Ic yank
+runs as well until the next ordinary kill.
+A line that ends inside the rectangle gives a row padded with spaces,
+as does a tab or a wide character crossing an edge.
 .It Ic kill-region
 Kill the currently defined region.
 .It Ic kill-sentence
@@ -1306,6 +1343,8 @@ Open up some blank space.
 Essentially, insert
 .Va n
 newlines, then back up over them.
+.It Ic open-rectangle
+Push the text of the rectangle right by its width, in spaces.
 .It Ic other-window
 The command to make the next (down the screen) window the current
 window.
@@ -1418,6 +1457,32 @@ Center the window on dot, and when repeated put dot's line at the top,
 then the bottom.
 An argument is passed to
 .Ic recenter .
+.It Ic rectangle-mark-mode
+Toggle rectangle mark mode in the current window, as
+.Ic C-x SPC
+does in GNU Emacs.
+The region between mark and dot, set at dot if the mark is not
+active, is then the rectangle: the lines from the one to the other,
+the columns from the one to the other, drawn so and reshaped as dot
+moves.
+.Ic C-w
+and
+.Ic M-w
+kill and copy the rectangle,
+.Ic C-d
+and
+.Ic DEL
+delete it,
+.Ic C-o
+opens it,
+.Ic C-t
+replaces its rows with a string, and
+.Ic C-x C-x
+goes to the other corner.
+The
+.Ic C-x r
+commands act on the same rectangle whether the mode is on or not.
+Typing does not replace a rectangle.
 .It Ic redraw-display
 Refresh the display.
 Recomputes all window sizes in case something has changed.
@@ -1624,6 +1689,9 @@ A window smaller than 3 lines cannot be split.
 .It Ic start-kbd-macro
 Start defining a keyboard macro.
 Macro definition is ended by invoking end-kbd-macro.
+.It Ic string-rectangle
+Replace each row of the rectangle with a string read from the
+minibuffer, lines that end before it padded with spaces to reach it.
 .It Ic suspend-emacs
 Suspend
 .Nm
@@ -1806,6 +1874,11 @@ Unlike emacs, the
 kill buffer consists only
 of the most recent kill.
 It is not a ring.
+.It Ic yank-rectangle
+Insert the rectangle last killed or copied with its top left corner
+at dot, a row to a line, lines padded with spaces to reach the column
+and added at the end of the buffer as needed.
+The mark goes to the corner, dot after the last row.
 .It Ic zap-to-char
 Ask for a character and delete text from the current cursor position
 until the next instance of that character, including it.

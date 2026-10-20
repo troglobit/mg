@@ -190,6 +190,23 @@ lchange(int flag)
  * if it is greater than the place where you did the insert. Return TRUE
  * if all is well, and FALSE on errors.
  */
+/*
+ * Insert a string at dot, in one piece: an undo record and a line
+ * change for the whole of it.
+ */
+int
+insstr(const char *s)
+{
+	int	 n = strlen(s);
+
+	if (n == 0)
+		return (TRUE);
+	if (linsert(n, ' ') != TRUE)
+		return (FALSE);
+	memcpy(ltext(curwp->w_dotp) + curwp->w_doto - n, s, n);
+	return (TRUE);
+}
+
 int
 linsert(int n, int c)
 {

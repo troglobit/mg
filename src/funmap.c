@@ -75,12 +75,14 @@ static struct funmap functnames[] = {
 	{capword, "capitalize-word", 1, NULL},
 	{changedir, "cd", 0, NULL},
 	{clearmark, "clear-mark", 0, NULL},
+	{clearrect, "clear-rectangle", 0, NULL},
 	{colnotoggle, "column-number-mode", 0, NULL},
 #ifdef ENABLE_SYNTAX
 	{commentdwim, "comment-dwim", 0, NULL},
 	{commentline, "comment-line", 0, NULL},
 	{commentregion, "comment-region", 0, NULL},
 #endif
+	{copyrect, "copy-rectangle-as-kill", 0, NULL},
 	{copyregion, "copy-region-as-kill", 0, NULL},
 #ifdef	REGEX
 	{cntmatchlines, "count-matches", 1, NULL},
@@ -113,6 +115,7 @@ static struct funmap functnames[] = {
 	{delnonmatchlines, "delete-non-matching-lines", 1, NULL},
 #endif /* REGEX */
 	{onlywind, "delete-other-windows", 0, NULL},
+	{delrect, "delete-rectangle", 0, NULL},
 	{delselmode, "delete-selection-mode", 0, NULL},
 	{deltrailwhite, "delete-trailing-space", 0, NULL},
 	{deltrailws, "delete-trailing-whitespace", 0, NULL},
@@ -191,6 +194,7 @@ static struct funmap functnames[] = {
 	{killpara, "kill-paragraph", 1, NULL},
 	{zaptochar, "zap-to-char", 1, NULL},
 	{zapuptochar, "zap-up-to-char", 1, NULL},
+	{killrect, "kill-rectangle", 0, NULL},
 	{killregion, "kill-region", 0, NULL},
 	{killsentence, "kill-sentence", 1, NULL},
 	{delfword, "kill-word", 1, NULL},
@@ -216,6 +220,7 @@ static struct funmap functnames[] = {
 	{notabmode, "no-tab-mode", 0, NULL},
 	{notmodified, "not-modified", 0, NULL},
 	{openline, "open-line", 1, NULL},
+	{openrect, "open-rectangle", 0, NULL},
 	{nextwind, "other-window", 0, NULL},
 	{overwrite_mode, "overwrite-mode", 0, NULL},
 #ifdef ENABLE_CTAGS
@@ -243,6 +248,7 @@ static struct funmap functnames[] = {
 #endif /* REGEX */
 	{reposition, "recenter", 0, NULL},
 	{recentertb, "recenter-top-bottom", 0, NULL},
+	{rectmode, "rectangle-mark-mode", 0, NULL},
 	{redraw, "redraw-display", 0, NULL},
 	{renamebuf, "rename-buffer", 1, NULL},
 #ifdef REGEX
@@ -290,6 +296,7 @@ static struct funmap functnames[] = {
 	{splitwindh, "split-window-horizontally", 0, NULL},
 	{splitwind, "split-window-vertically", 0, NULL},
 	{definemacro, "start-kbd-macro", 0, NULL},
+	{stringrect, "string-rectangle", 0, NULL},
 	{spawncli, "suspend-emacs", 0, NULL},
 	{spawncli, "suspend", 0, NULL},
 	{usebuffer, "switch-to-buffer", 1, NULL},
@@ -340,6 +347,7 @@ static struct funmap functnames[] = {
 	{windmoveup, "windmove-up", 0, NULL},
 	{filewrite, "write-file", 1, NULL},
 	{yank, "yank", 1, NULL},
+	{yankrect, "yank-rectangle", 0, NULL},
 	{NULL, NULL, 0, NULL}
 };
 

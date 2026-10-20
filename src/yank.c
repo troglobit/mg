@@ -30,6 +30,7 @@ static int	 kgrow(int);
 void
 kdelete(void)
 {
+	rect_forget();
 	if (kbufp != NULL) {
 		free(kbufp);
 		kbufp = NULL;
@@ -228,6 +229,8 @@ yank(int f, int n)
 
 	if (n < 0)
 		return (FALSE);
+	if (rect_yankpending())
+		return (yankrect(f, n));
 
 	/* newline counting */
 	nline = 0;

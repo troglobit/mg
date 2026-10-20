@@ -33,6 +33,13 @@ All relevant changes to the project are documented in this file.
   commit.  A `git commit -v` message, which carries the diff already, is
   left as it is.  The echo line names the `C-c` keys when the mode comes
   on
+- Rectangles, as in GNU Emacs: `rectangle-mark-mode` on `C-x SPC` makes
+  the region a rectangle, drawn as such, that `C-w`, `M-w`, `C-d`, `DEL`,
+  `C-o` and `C-t` act on, and `C-y` yanks a killed rectangle back as a
+  block.  The `C-x r` commands `kill-rectangle`, `delete-rectangle`,
+  `copy-rectangle-as-kill`, `yank-rectangle`, `open-rectangle`,
+  `clear-rectangle` and `string-rectangle` act on the rectangle between
+  mark and dot without the mode
 
 ### Fixes
 

@@ -10,7 +10,7 @@ mg_SOURCES       = basic.c bell.c buffer.c cinfo.c dir.c		\
 		   extend.c file.c fileio.c funmap.c interpreter.c		\
 		   kbd.c keymap.c line.c macro.c main.c match.c		\
 		   modes.c							\
-		   paragraph.c region.c search.c spawn.c			\
+		   paragraph.c rect.c region.c search.c spawn.c		\
 		   tty.c ttyio.c ttykbd.c					\
 		   ttydef.h undo.c utf8.c util.c version.c window.c word.c	\
 		   yank.c							\

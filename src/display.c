@@ -368,13 +368,15 @@ static struct {
 
 /*
  * Region shown in the window being rendered, in line number and
- * byte offset pairs, start before end.  Set up by hlsetup() and
- * queried per line with hlrange().
+ * byte offset pairs, start before end, or as a rectangle between
+ * two columns on those lines.  Set up by hlsetup() and queried per
+ * line with hlrange().
  */
 static struct {
 	int	 active;
 	int	 sline, soff;
 	int	 eline, eoff;
+	int	 rect, c1, c2, tabw;
 } hl;
 
 /* Is macro recording enabled? */
@@ -511,20 +513,35 @@ hlsetup(struct mgwin *wp)
 		hl.eline = wp->w_markline;
 		hl.eoff = wp->w_marko;
 	}
+	hl.rect = wp->w_rect;
+	if (hl.rect) {
+		int	 cd, cm;
+
+		hl.tabw = wp->w_bufp->b_tabw;
+		cd = bytecol(wp->w_dotp, wp->w_doto, hl.tabw);
+		cm = bytecol(wp->w_markp, wp->w_marko, hl.tabw);
+		hl.c1 = cd < cm ? cd : cm;
+		hl.c2 = cd < cm ? cm : cd;
+	}
 }
 
 /*
- * Byte range [s, e) of the region on line number ln, of len bytes.
- * Empty unless the line is inside the region set up by hlsetup().
+ * Byte range [s, e) of the region on line lp, number ln.  Empty
+ * unless the line is inside the region set up by hlsetup().
  */
 static void
-hlrange(int ln, int len, int *s, int *e)
+hlrange(struct line *lp, int ln, int *s, int *e)
 {
 	*s = *e = 0;
 	if (!hl.active || ln < hl.sline || ln > hl.eline)
 		return;
+	if (hl.rect) {
+		*s = colbyte(lp, hl.c1, hl.tabw, NULL);
+		*e = colbyte(lp, hl.c2, hl.tabw, NULL);
+		return;
+	}
 	*s = (ln == hl.sline) ? hl.soff : 0;
-	*e = (ln == hl.eline) ? hl.eoff : len;
+	*e = (ln == hl.eline) ? hl.eoff : llength(lp);
 }
 
 int
@@ -1046,7 +1063,7 @@ update(int modelinecolor)
 				vtgutter(i, lp != wp->w_bufp->b_headp ? ln : 0);
 				vtmove(i, vtleft);
 				if (lp != wp->w_bufp->b_headp) {
-					hlrange(ln, llength(lp), &s, &e);
+					hlrange(lp, ln, &s, &e);
 					vtputl(lp, wp, s, e);
 					lp = lforw(lp);
 					ln++;
@@ -1103,7 +1120,7 @@ update(int modelinecolor)
 				if ((wp != curwp) || (lp != wp->w_dotp) ||
 				    (curcol < textcols(curwp) - 1)) {
 					vtmove(i, vtleft);
-					hlrange(ln, llength(lp), &s, &e);
+					hlrange(lp, ln, &s, &e);
 					vtputl(lp, wp, s, e);
 					vteeol();
 					/* this line no longer is extended */
@@ -1245,7 +1262,7 @@ updext(int currow, int curcol)
 	lp = curwp->w_dotp;			/* line to output */
 	hlsetup(curwp);
 	synsetup(curwp);
-	hlrange(curwp->w_dotline, llength(lp), &s, &e);
+	hlrange(lp, curwp->w_dotline, &s, &e);
 	vtputel(lp, curwp, s, e);		/* until the end-of-line */
 	vteeol();				/* truncate the virtual line */
 	vtmark(vtleft);
