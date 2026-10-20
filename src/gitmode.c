@@ -10,6 +10,7 @@
 #include <ctype.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "def.h"
@@ -19,10 +20,12 @@
 /* Pull in from modes.c */
 extern int changemode(int, int, char *);
 
+static FILE	*git_popen(const char *);
 static int	 git_ack(int, int);
 static int	 git_cancel(int, int);
 static int	 git_finish(int, int);
 static int	 git_review(int, int);
+static int	 git_showdiff(int, int);
 static int	 git_signoff(int, int);
 static int	 git_test(int, int);
 
@@ -30,7 +33,7 @@ static PF gitmode_cc[] = {
 	git_ack,		/* ^A */
 	rescan,			/* ^B */
 	git_finish,		/* ^C */
-	rescan,			/* ^D */
+	git_showdiff,		/* ^D */
 	rescan,			/* ^E */
 	rescan,			/* ^F */
 	rescan,			/* ^G */
@@ -87,7 +90,7 @@ git_ident(char *buf, size_t len)
 
 	if (secure)
 		return (FALSE);
-	fp = popen("git var GIT_COMMITTER_IDENT 2>/dev/null", "r");
+	fp = git_popen("git var GIT_COMMITTER_IDENT 2>/dev/null");
 	if (fp == NULL)
 		return (FALSE);
 	p = fgets(buf, len, fp);
@@ -241,10 +244,167 @@ git_cancel(int f, int n)
 	return (quit(FFRAND, 1));
 }
 
+/*
+ * Whether the buffer is the message of a commit or a merge, and holds
+ * no diff of its own, as a verbose commit appends one.
+ */
+static int
+git_wantsdiff(void)
+{
+	struct line	*lp;
+	const char	*base;
+
+	base = strrchr(curbp->b_fname, '/');
+	base = base != NULL ? base + 1 : curbp->b_fname;
+	if (strcmp(base, "COMMIT_EDITMSG") != 0 && strcmp(base, "MERGE_MSG") != 0)
+		return (FALSE);
+	for (lp = bfirstlp(curbp); lp != curbp->b_headp; lp = lforw(lp))
+		if (llength(lp) >= 11 && memcmp(ltext(lp), "diff --git ", 11) == 0)
+			return (FALSE);
+	return (TRUE);
+}
+
+/*
+ * Run a git command in the repository the message belongs to, its
+ * directory being the git dir, so that a message opened from
+ * elsewhere still reads its own.
+ */
+static FILE *
+git_popen(const char *cmd)
+{
+	FILE	*fp;
+	char	*old = NULL, dir[NFILEN], *p;
+
+	(void)strlcpy(dir, curbp->b_fname, sizeof(dir));
+	if ((p = strrchr(dir, '/')) == NULL)
+		return (popen(cmd, "r"));
+	*p = '\0';
+	if ((old = getenv("GIT_DIR")) != NULL)
+		old = strdup(old);
+	(void)setenv("GIT_DIR", dir, 1);
+	fp = popen(cmd, "r");
+	if (old != NULL) {
+		(void)setenv("GIT_DIR", old, 1);
+		free(old);
+	} else
+		(void)unsetenv("GIT_DIR");
+	return (fp);
+}
+
+/*
+ * Whether the message is the one of HEAD, which is what git commit
+ * --amend opens: the lines above the comments git added, line for
+ * line what git log -1 prints, its terminating blank line included.
+ */
+static int
+git_isamend(void)
+{
+	struct line	*lp;
+	FILE	*fp;
+	char	*line = NULL;
+	size_t	 cap = 0;
+	ssize_t	 len;
+	int	 same = TRUE;
+
+	/* a new message opens on a blank line or on the comments */
+	lp = bfirstlp(curbp);
+	if (llength(lp) == 0 || lgetc(lp, 0) == '#')
+		return (FALSE);
+	if ((fp = git_popen("git log -1 --format=%B 2>/dev/null")) == NULL)
+		return (FALSE);
+	while (same && (len = getline(&line, &cap, fp)) > 0) {
+		if (line[len - 1] == '\n')
+			line[--len] = '\0';
+		same = lp != curbp->b_headp && llength(lp) == len &&
+		    memcmp(ltext(lp), line, len) == 0;
+		lp = lforw(lp);
+	}
+	free(line);
+	(void)pclose(fp);
+	for (; same && lp != curbp->b_headp && llength(lp) == 0; lp = lforw(lp))
+		;
+	return (same && (lp == curbp->b_headp || lgetc(lp, 0) == '#'));
+}
+
+/* told when the mode came on, before the message was edited */
+static int	 git_amend;
+
+/*
+ * Show the staged changes, the diff the commit will make, in a window
+ * of their own next to the message: to the right when the terminal
+ * has room for both at 80 columns, else below.  An amend shows the
+ * whole of the amended commit, against the parent, or the empty tree
+ * under a root commit.  Run again after staging more.
+ */
+static int
+git_showdiff(int f, int n)
+{
+	struct buffer	*bp, *obp;
+	struct mgwin	*wp;
+	FILE	*fp;
+	char	*line = NULL;
+	size_t	 cap = 0;
+	ssize_t	 len;
+	int	 s;
+
+	if (secure)
+		return (secure_denied());
+	if (!(f & FFRAND) && !(curbp->b_flag & BFCHG))
+		git_amend = git_isamend();
+	/* the parent, or the empty tree under a root commit */
+	fp = git_popen(git_amend ?
+	    "git diff --cached --no-color $(git rev-parse -q --verify HEAD^ ||"
+	    " git hash-object -t tree /dev/null) 2>/dev/null" :
+	    "git diff --cached --no-color 2>/dev/null");
+	if (fp == NULL)
+		return (FALSE);
+	if ((len = getline(&line, &cap, fp)) <= 0) {
+		(void)pclose(fp);
+		free(line);
+		if (f & FFRAND)
+			return (FALSE);
+		return (dobeep_msg("Nothing staged"));
+	}
+	bp = bfind("*diff*", TRUE);
+	bp->b_flag |= BFREADONLY;
+	if (bclear(bp) != TRUE)
+		return (FALSE);
+	do {
+		if (line[len - 1] == '\n')
+			line[len - 1] = '\0';
+		addline(bp, line);
+	} while ((len = getline(&line, &cap, fp)) > 0);
+	free(line);
+	(void)pclose(fp);
+	bp->b_dotp = bfirstlp(bp);
+
+	obp = curbp;
+	curbp = bp;
+	(void)changemode(FFARG, 1, "diff");
+	modetabw(8);
+	curbp = obp;
+
+	if (bp->b_nwnd == 0) {
+		s = ncol >= 2 * 80 ? splitwindh(FFRAND, 1) : splitwind(FFRAND, 1);
+		if (s != TRUE)
+			return (FALSE);
+		(void)showbuffer(bp, curwp->w_wndp, WFFULL);
+	} else
+		/* the windows on it still point at the lines bclear() freed */
+		for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
+			if (wp->w_bufp == bp) {
+				wp->w_dotp = wp->w_linep = bfirstlp(bp);
+				wp->w_doto = 0;
+				wp->w_dotline = 1;
+				wp->w_rflag |= WFFULL;
+			}
+	return (TRUE);
+}
+
 static int
 gitmode(int f, int n)
 {
-	int	 s;
+	int	 s, was = buf_hasmode(curbp, "git-commit");
 
 	if ((s = changemode(f, n, "git-commit")) != TRUE)
 		return (s);
@@ -255,6 +415,15 @@ gitmode(int f, int n)
 	modetabw(8);
 	/* git log indents the message by four, so 72 fits an 80 column terminal */
 	modefillcol(72);
+	/* the mode just came on, as when git opens the message */
+	if (!inrc && !was) {
+		if (!secure && git_wantsdiff()) {
+			git_amend = git_isamend();
+			(void)git_showdiff(FFRAND, 1);
+		}
+		ewprintf("C-c C-c to commit, C-c C-s to sign off, "
+		    "C-c C-k to abort");
+	}
 	return (TRUE);
 }
 
@@ -266,6 +435,7 @@ gitmode_init(void)
 	funmap_add(git_cancel, "git-commit-cancel", 0);
 	funmap_add(git_finish, "git-commit-finish", 0);
 	funmap_add(git_review, "git-commit-review", 0);
+	funmap_add(git_showdiff, "git-commit-show-diff", 0);
 	funmap_add(git_signoff, "git-commit-signoff", 0);
 	funmap_add(git_test, "git-commit-test", 0);
 	maps_add((KEYMAP *)&gitmodemap, "git-commit");

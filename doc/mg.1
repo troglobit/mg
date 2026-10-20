@@ -1024,7 +1024,8 @@ message, the trailers at the end of it, and the diff that
 .Nm git Cm commit Fl v
 appends, on the same rules as
 .Ic diff-mode .
-It also binds the keys Magit's git-commit mode made standard:
+It also binds the keys Magit's git-commit mode made standard, named
+in the echo line when the mode comes on:
 .Pp
 .Bl -tag -width "C-c C-s" -compact
 .It Ic C-c C-c
@@ -1045,6 +1046,9 @@ Add an Acked-by trailer.
 Add a Reviewed-by trailer.
 .It Ic C-c C-t
 Add a Tested-by trailer.
+.It Ic C-c C-d
+Show the staged changes, running
+.Ic git-commit-show-diff .
 .El
 .Pp
 A trailer goes below the message and above the comments, joining the
@@ -1053,6 +1057,22 @@ Dot does not move.
 The fill column is set to 72, since
 .Nm git Cm log
 indents the message by four columns.
+When the mode comes on for a commit or merge message that carries no
+diff of its own, the staged changes, from
+.Nm git Cm diff Fl -cached
+in the repository of the message, are shown in a read-only *diff*
+window next to it: to the right when the terminal has room for both
+at 80 columns, else below.
+.Ic C-c C-d
+runs
+.Ic git-commit-show-diff
+again, after staging more from another terminal.
+The window is not opened in secure mode, nor when nothing is staged.
+A message that reads as the one of HEAD, which is what
+.Nm git Cm commit Fl -amend
+opens, shows the whole diff of the amended commit, what is staged on
+top of it included; a new commit given the very message of HEAD is
+taken for an amend as well.
 Files named COMMIT_EDITMSG, MERGE_MSG, NOTES_EDITMSG, TAG_EDITMSG and
 git-rebase-todo get the mode automatically.
 .It Ic global-set-key

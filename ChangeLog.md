@@ -25,6 +25,14 @@ All relevant changes to the project are documented in this file.
 - A cover letter from `git format-patch` opens with its `*** SUBJECT HERE
   ***` selected, so that typing replaces it, and `C-c C-n` in diff-mode
   selects the next placeholder, new `diff-next-placeholder`
+- git-commit-mode shows the staged changes in a `*diff*` window next to
+  the commit message, as GNU Emacs does: to the right when the terminal
+  is 160 columns or wider, else below.  New `git-commit-show-diff` on
+  `C-c C-d` refreshes it after staging more.  A message matching HEAD's,
+  as `git commit --amend` opens, shows the whole diff of the amended
+  commit.  A `git commit -v` message, which carries the diff already, is
+  left as it is.  The echo line names the `C-c` keys when the mode comes
+  on
 
 ### Fixes
 
