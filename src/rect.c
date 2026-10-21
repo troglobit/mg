@@ -1,11 +1,11 @@
 /* This file is in the public domain. */
 
 /*
- * Rectangle commands, after GNU Emacs: the region between mark and
- * dot read as the columns between them on each of their lines.  The
- * C-x r keys act on that rectangle as it is; rectangle-mark-mode on
- * C-x SPC draws it and has C-w, M-w, C-d, DEL, C-o and C-t act on
- * it, and C-y yank back what a rectangle kill took.
+ * Rectangle commands: the region between mark and dot read as the
+ * columns between them on each of their lines.  The C-x r keys act
+ * on that rectangle as it is; rectangle-mark-mode on C-x SPC draws it
+ * and has C-w, M-w, C-d, DEL, C-o and C-t act on it, and C-y yank
+ * back what a rectangle kill took.
  */
 
 #include <signal.h>

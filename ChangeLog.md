@@ -8,58 +8,26 @@ All relevant changes to the project are documented in this file.
 
 ### Changes
 
-- The fill column is now per buffer, like the tab width.  `set-fill-column`
-  sets it for the current buffer, and from `~/.mg` the default for new
-  buffers, so a mode can fill at a width of its own
-- git-commit-mode fills the message at 72 columns
-- diff-mode colors the mail header of a `git format-patch` file, and shows
-  the `*** SUBJECT HERE ***` and `*** BLURB HERE ***` of a cover letter
-  in red, so that they do not go out
-- `fill-paragraph`, `fill-region` and `auto-fill-mode` leave a diff as it
-  is: the mail header and diffstat of a patch, the lines that head a file,
-  and the hunks, in diff-mode and below a `git commit -v` message.  The
-  message fills as before, also right above the `---` of a patch
-- conf-mode is detected for `~/.ssh/config`, `~/.Xresources` and
-  `~/.Xdefaults` too, with the `!` comments of X resources colored
-- Files under `/var/log` get `auto-revert-tail-mode` automatically
-- A cover letter from `git format-patch` opens with its `*** SUBJECT HERE
-  ***` selected, so that typing replaces it, and `C-c C-n` in diff-mode
-  selects the next placeholder, new `diff-next-placeholder`
+- Rectangle editing: `rectangle-mark-mode` on `C-x SPC`, and the
+  rectangle commands on `C-x r`
+- Registers: `point-to-register`, `jump-to-register`, `copy-to-register`
+  and `insert-register` on `C-x r`
+- New `json-mode` with syntax highlighting, two space indentation
+- The fill column is now per buffer, like the tab width
 - git-commit-mode shows the staged changes in a `*diff*` window next to
-  the commit message, as GNU Emacs does: to the right when the terminal
-  is 160 columns or wider, else below.  New `git-commit-show-diff` on
-  `C-c C-d` refreshes it after staging more.  A message matching HEAD's,
-  as `git commit --amend` opens, shows the whole diff of the amended
-  commit.  A `git commit -v` message, which carries the diff already, is
-  left as it is.  The echo line names the `C-c` keys when the mode comes
-  on
-- Rectangles, as in GNU Emacs: `rectangle-mark-mode` on `C-x SPC` makes
-  the region a rectangle, drawn as such, that `C-w`, `M-w`, `C-d`, `DEL`,
-  `C-o` and `C-t` act on, and `C-y` yanks a killed rectangle back as a
-  block.  The `C-x r` commands `kill-rectangle`, `delete-rectangle`,
-  `copy-rectangle-as-kill`, `yank-rectangle`, `open-rectangle`,
-  `clear-rectangle` and `string-rectangle` act on the rectangle between
-  mark and dot without the mode
-- Registers, as in GNU Emacs: `C-x r SPC` saves where dot is in a
-  register named by the next key, `C-x r j` goes back there, in its
-  buffer; `C-x r s` saves the region in one and `C-x r i` inserts it
-- New `json-mode` with syntax highlighting for *.json and *.jsonc: the
-  key of a pair, strings, numbers, `true`, `false` and `null`, and the
-  `//` and `/* */` comments of settings files.  Indents two columns in
-  spaces
+  the message, fills at 72 columns, and names its `C-c` keys in the
+  echo line
+- diff-mode colors the mail header of a `git format-patch` file, and a
+  cover letter opens with its subject placeholder selected
+- Filling leaves the diff in a patch or commit message alone
+- conf-mode for `~/.ssh/config`, `~/.Xresources` and `~/.Xdefaults`, and
+  `auto-revert-tail-mode` for files under `/var/log`
 
 ### Fixes
 
-- Fix #47: build failure with ncurses' `curses.h`, as on RHEL 9 and
-  CentOS Stream 9.  A new `keyname()` helper clashed with the one in
-  ncurses
+- Fix #47: build failure with ncurses' `curses.h`, as on RHEL 9
 - Fix build with a C library that has no `wctype.h`, such as uClibc-ng
-  built without wide-character support, as in Buildroot toolchains
-  without `BR2_USE_WCHAR`.  Since v4.2 mg uses `iswalnum()` from
-  `wctype.h` to tell word characters in UTF-8 text.  Without the header,
-  mg falls back to its own character table.  Such a C library has no
-  locale support either, so mg never enters UTF-8 mode there and the
-  fallback changes nothing for the user
+  without wide-character support
 
 [v4.4][] - 2026-10-15
 ---------------------

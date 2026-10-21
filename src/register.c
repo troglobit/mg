@@ -1,10 +1,10 @@
 /* This file is in the public domain. */
 
 /*
- * Registers, after GNU Emacs: a place or a piece of text kept under
- * a single character, on the C-x r keys.  point-to-register saves
- * where dot is, jump-to-register goes back there, copy-to-register
- * saves the region, and insert-register inserts it.
+ * Registers: a place or a piece of text kept under a single
+ * character, on the C-x r keys.  point-to-register saves where dot
+ * is, jump-to-register goes back there, copy-to-register saves the
+ * region, and insert-register inserts it.
  */
 
 #include <signal.h>
