@@ -22,6 +22,8 @@ All relevant changes to the project are documented in this file.
 - Filling leaves the diff in a patch or commit message alone
 - conf-mode for `~/.ssh/config`, `~/.Xresources` and `~/.Xdefaults`, and
   `auto-revert-tail-mode` for files under `/var/log`
+- A buffer has one major mode: a file mode replaces the one before it,
+  and an `auto-execute` pattern in `~/.mg` always wins
 
 ### Fixes
 

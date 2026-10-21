@@ -40,7 +40,7 @@ PF *
 find_autoexec(const char *fname)
 {
 	PF		*pfl, *npfl;
-	int		 have, used, exact;
+	int		 have, used, exact, pass;
 	const char	*bname;
 	struct autoexec *ae;
 
@@ -63,13 +63,18 @@ find_autoexec(const char *fname)
 		if (ae->builtin && ae->literal && matches(ae, fname, bname))
 			exact = 1;
 
+	/* the built-in hooks first, so a mode the user names comes last */
 	pfl = NULL;
 	have = 0;
 	used = 0;
-	SLIST_FOREACH(ae, &autos, next) {
-		if (exact && ae->builtin && !ae->literal)
-			continue;
-		if (matches(ae, fname, bname)) {
+	for (pass = 1; pass >= 0; pass--) {
+		SLIST_FOREACH(ae, &autos, next) {
+			if (ae->builtin != pass)
+				continue;
+			if (exact && pass && !ae->literal)
+				continue;
+			if (!matches(ae, fname, bname))
+				continue;
 			if (used >= have) {
 				npfl = reallocarray(pfl, have + AUTO_GROW + 1,
 				    sizeof(PF));

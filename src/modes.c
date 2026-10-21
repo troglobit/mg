@@ -97,6 +97,22 @@ modefillcol(int n)
 }
 
 /*
+ * A buffer has one major mode: take it off modes[1..nmodes], so that
+ * another can take its place, the minor ones staying.  The number of
+ * modes left.
+ */
+static int
+dropmajor(struct maps_s **modes, int nmodes)
+{
+	int	 i, j;
+
+	for (i = j = 1; i <= nmodes; i++)
+		if (modes[i]->p_minor)
+			modes[j++] = modes[i];
+	return (j - 1);
+}
+
+/*
  * A mode named in the startup file is meant for the files opened
  * afterwards, not for *scratch*, which is the only buffer there is
  * at the time, so it goes on the defaults instead.
@@ -133,6 +149,8 @@ changemode(int f, int n, char *newmode)
 			if (modes[i] == m)
 				/* mode already set */
 				return (TRUE);
+		if (!m->p_minor)
+			nmodes = dropmajor(modes, nmodes);
 		if (nmodes >= PBMODES - 1) {
 			dobeep();
 			ewprintf("Too many modes");
@@ -256,6 +274,8 @@ set_default_mode(int f, int n)
 			if (defb_modes[i] == m)
 				/* mode already set */
 				return (TRUE);
+		if (!m->p_minor)
+			defb_nmodes = dropmajor(defb_modes, defb_nmodes);
 		if (defb_nmodes >= PBMODES - 1) {
 			dobeep();
 			ewprintf("Too many modes");
