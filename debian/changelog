@@ -15,6 +15,11 @@ mg2a (4.5) unstable; urgency=medium
   * New json-mode for *.json and *.jsonc
   * conf-mode for ~/.ssh/config, ~/.Xresources and ~/.Xdefaults, and
     auto-revert-tail-mode for files under /var/log
+  * A buffer has one major mode, and an auto-execute pattern in ~/.mg
+    always wins
+  * The major mode is no longer picked from the file name alone: JSON
+    in a *.cfg or *.conf file opens in json-mode, and a #! line wins
+    over the name
   * Fix the build with ncurses' curses.h, as on RHEL 9 (#47)
   * Fix the build with a C library that has no wctype.h, as uClibc-ng
     without wide-character support
