@@ -1016,9 +1016,11 @@ int		 undo(int, int);
 
 /* autoexec.c X */
 int		 auto_execute(int, int);
-PF		*find_autoexec(const char *);
+PF		*find_autoexec(const char *, int *);
+#define AUTO_NAMED	0x01	/* a built-in pattern set the major mode */
+#define AUTO_USER	0x02	/* one of the user's did */
 int		 add_autoexec(const char *, const char *);
-void		 shebang_execute(void);
+void		 content_execute(int);
 
 /* cmode.c X */
 int		 cmode(int, int);

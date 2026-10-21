@@ -585,6 +585,14 @@ buffer has one major mode, so the mode a pattern of the user's names
 is the one the buffer gets.
 The settings a mode makes, such as the tab width, stay when another
 takes its place.
+Unless the user's patterns set the major mode, the text of the file
+may decide instead: a #! line picks
+the mode of its interpreter, and a file that would otherwise open in
+.Ic conf-mode
+or fundamental mode, but starts with a
+.Ql {
+or a JSON array, opens in
+.Ic json-mode .
 .It Ic auto-fill-mode
 Toggle auto-fill mode (sometimes called
 .Ic mail-mode )
@@ -1198,7 +1206,13 @@ writes, which strict JSON does not allow.
 Enabling it also sets a two column indent step in spaces, the
 common convention, and turns on
 .Ic auto-indent-mode .
-Files named *.json and *.jsonc get the mode automatically.
+Files named *.json and *.jsonc get the mode automatically, as do
+files named *.cfg or *.conf, or for nothing in particular, whose text
+starts with a
+.Ql {
+or with a
+.Ql [
+that a value follows, not a word as in an INI section.
 .It Ic jump-to-register
 Go to the place saved in a register, named by the next key typed:
 its buffer in the current window, then its line, or the line of the

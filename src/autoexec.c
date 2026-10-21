@@ -2,6 +2,7 @@
 /* this file is in the public domain */
 /* Author: Vincent Labrecque <vincent@openbsd.org>	April 2002 */
 
+#include <ctype.h>
 #include <fnmatch.h>
 #include <signal.h>
 #include <stdio.h>
@@ -10,12 +11,14 @@
 
 #include "def.h"
 #include "funmap.h"
+#include "kbd.h"
 
 struct autoexec {
 	SLIST_ENTRY(autoexec) next;	/* link in the linked list */
 	const char	*pattern;	/* Pattern to match to filenames */
 	PF		 fp;
 	int		 builtin;	/* registered by a mode, not the user */
+	int		 major;		/* runs a major mode command */
 	int		 literal;	/* no wildcards: names a file */
 };
 
@@ -37,13 +40,14 @@ matches(const struct autoexec *ae, const char *fname, const char *bname)
  * after use.
  */
 PF *
-find_autoexec(const char *fname)
+find_autoexec(const char *fname, int *majors)
 {
 	PF		*pfl, *npfl;
 	int		 have, used, exact, pass;
 	const char	*bname;
 	struct autoexec *ae;
 
+	*majors = 0;
 	if (!ready)
 		return (NULL);
 
@@ -63,7 +67,10 @@ find_autoexec(const char *fname)
 		if (ae->builtin && ae->literal && matches(ae, fname, bname))
 			exact = 1;
 
-	/* the built-in hooks first, so a mode the user names comes last */
+	/*
+	 * The built-in hooks first, so a mode the user names comes last.
+	 * *majors tells whose patterns name a major mode.
+	 */
 	pfl = NULL;
 	have = 0;
 	used = 0;
@@ -84,12 +91,33 @@ find_autoexec(const char *fname)
 				have += AUTO_GROW;
 			}
 			pfl[used++] = ae->fp;
+			if (ae->major)
+				*majors |= pass ? AUTO_NAMED : AUTO_USER;
 		}
 	}
 	if (used)
 		pfl[used] = NULL;
 
 	return (pfl);
+}
+
+/*
+ * Whether func turns on a major mode: foo-mode for a mode foo that is
+ * not a minor one.
+ */
+static int
+ismajorcmd(const char *func)
+{
+	struct maps_s	*m;
+	char	 name[NFILEN];
+	size_t	 len = strlen(func);
+
+	if (len <= 5 || strcmp(func + len - 5, "-mode") != 0 ||
+	    len - 5 >= sizeof(name))
+		return (FALSE);
+	memcpy(name, func, len - 5);
+	name[len - 5] = '\0';
+	return ((m = name_mode(name)) != NULL && !m->p_minor);
 }
 
 static int
@@ -117,6 +145,7 @@ addauto(const char *pattern, const char *func, int user)
 		return (FALSE);
 	ae->fp = fp;
 	ae->builtin = !user;
+	ae->major = ismajorcmd(func);
 	ae->literal = strpbrk(pattern, "*?[") == NULL;
 	ae->pattern = strdup(pattern);
 	if (ae->pattern == NULL) {
@@ -187,12 +216,68 @@ static const struct {
 	{ NULL,		NULL }
 };
 
+static int	 shebang_execute(void);
+
+/*
+ * The first character of the buffer that is not white space, from
+ * line *lpp, byte *op on, both left there; -1 at the end.
+ */
+static int
+nextnonblank(struct line **lpp, int *op)
+{
+	for (; *lpp != curbp->b_headp; *lpp = lforw(*lpp), *op = 0)
+		for (; *op < llength(*lpp); (*op)++)
+			if (!isspace(lgetc(*lpp, *op)))
+				return (lgetc(*lpp, *op));
+	return (-1);
+}
+
+/*
+ * Whether the buffer holds JSON: an object, or an array whose first
+ * element is not a word, which an INI [section] is.
+ */
+static int
+isjson(void)
+{
+	struct line	*lp = bfirstlp(curbp);
+	int		 c, o = 0;
+
+	if ((c = nextnonblank(&lp, &o)) == '{')
+		return (TRUE);
+	if (c != '[')
+		return (FALSE);
+	o++;
+	return ((c = nextnonblank(&lp, &o)) != -1 &&
+	    strchr("{[\"-0123456789]", c) != NULL);
+}
+
+/*
+ * Run a mode command picked by what the current buffer holds, for a
+ * file its name tells nothing about, or the wrong thing: a JSON file
+ * named *.cfg, a script with no suffix.  named is set when a
+ * built-in pattern gave the file its major mode.
+ */
+void
+content_execute(int named)
+{
+	PF		 fp;
+
+	if (shebang_execute())
+		return;
+
+	/* JSON in a file named for something generic, or for nothing */
+	if (named && buf_major(curbp) != name_mode("conf"))
+		return;
+	if (isjson() && (fp = name_function("json-mode")) != NULL)
+		(void)(*fp)(FFARG, 1);
+}
+
 /*
  * Run the mode command matching the interpreter on the #! line of
  * the current buffer, if any.  A /usr/bin/env indirection is peeled
  * off first.
  */
-void
+static int
 shebang_execute(void)
 {
 	struct line	*lp;
@@ -203,7 +288,7 @@ shebang_execute(void)
 	lp = bfirstlp(curbp);
 	len = llength(lp);
 	if (len < 3 || lgetc(lp, 0) != '#' || lgetc(lp, 1) != '!')
-		return;
+		return (FALSE);
 	snprintf(buf, sizeof(buf), "%.*s", len, ltext(lp));
 
 	/* first token, peeling off env indirection and options */
@@ -219,13 +304,14 @@ shebang_execute(void)
 			interp = tok;
 	} while (strcmp(interp, "env") == 0 || interp[0] == '-');
 	if (*interp == '\0')
-		return;
+		return (FALSE);
 
 	for (i = 0; shebangs[i].interp != NULL; i++) {
 		if (strcmp(interp, shebangs[i].interp) != 0)
 			continue;
 		if ((fp = name_function(shebangs[i].mode)) != NULL)
 			(void)(*fp)(FFARG, 1);
-		return;
+		return (TRUE);
 	}
+	return (FALSE);
 }

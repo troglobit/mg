@@ -24,6 +24,9 @@ All relevant changes to the project are documented in this file.
   `auto-revert-tail-mode` for files under `/var/log`
 - A buffer has one major mode: a file mode replaces the one before it,
   and an `auto-execute` pattern in `~/.mg` always wins
+- The major mode is no longer picked from the file name alone: JSON in
+  a `*.cfg` or `*.conf` file opens in `json-mode`, and a `#!` line wins
+  over the name
 
 ### Fixes
 

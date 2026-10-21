@@ -202,6 +202,7 @@ readin(char *fname)
 	int	 status, ro = FALSE;
 #ifdef ENABLE_AUTOEXEC
 	PF	*ael;
+	int	 i, majors;
 #endif
 	char	 dp[NFILEN];
 
@@ -230,20 +231,18 @@ readin(char *fname)
 
 #ifdef ENABLE_AUTOEXEC
 	/*
-	 * Call auto-executing function if we need to.
+	 * Call auto-executing function if we need to.  FFARG forces the
+	 * mode on; a plain call toggles it off again when revert-buffer
+	 * comes through here.  A major mode the user's own patterns set
+	 * stands, else the contents may decide.
 	 */
-	if ((ael = find_autoexec(fname)) != NULL) {
-		int i;
-
-		/*
-		 * FFARG forces the mode on; a plain call toggles it
-		 * off again when revert-buffer comes through here.
-		 */
+	if ((ael = find_autoexec(fname, &majors)) != NULL) {
 		for (i = 0; ael[i] != NULL; i++)
 			(*ael[i])(FFARG, 1);
 		free(ael);
 	}
-	shebang_execute();
+	if (!(majors & AUTO_USER))
+		content_execute(majors & AUTO_NAMED);
 #endif
 
 	/* no change */
