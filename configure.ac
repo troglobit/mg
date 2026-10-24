@@ -25,8 +25,8 @@ case $host_os in
         CPPFLAGS="$CPPFLAGS -D_OPENBSD_SOURCE"
         ;;
     *solaris*)
-	LIBS="-lsocket -lnsl"
-	CPPFLAGS="-DBSD_COMP -D__EXTENSIONS__"
+	LIBS="$LIBS -lsocket -lnsl"
+	CPPFLAGS="$CPPFLAGS -DBSD_COMP -D__EXTENSIONS__"
 	;;
     *)
         ;;
