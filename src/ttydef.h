@@ -29,6 +29,7 @@
 #ifndef HAVE_NCURSES_CURSES_H
 #include <term.h>
 #else
+#define NCURSES_NOMACROS	/* no insstr() etc., we only need terminfo */
 #include <ncurses/curses.h>
 #include <ncurses/term.h>
 #endif
