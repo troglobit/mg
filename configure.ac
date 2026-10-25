@@ -197,10 +197,12 @@ m4_foreach_w([mg_mode], MG_MODES, [
 	AM_CONDITIONAL(m4_toupper([MODE_]mg_mode), [test "x$mg_on" = "xyes"])
 ])
 
-AS_IF([test "x$startup" != "xno"],[
-	AS_IF([test "x$startup" = "xyes"],[
-		AC_MSG_ERROR([Must supply argument])])]
-	AC_DEFINE_UNQUOTED(STARTUPFILE, "$startup", [Init file to run if ~/.mg is missing]))
+AS_IF([test "x$startup" != "xno"], [
+	AS_IF([test "x$startup" = "xyes"], [
+		AC_MSG_ERROR([Must supply argument])])
+	dnl Expand ${prefix} et al. so config.h gets a fully qualified path
+	startup=$(eval echo "$startup")
+	AC_DEFINE_UNQUOTED(STARTUPFILE, "$startup", [Init file to run if ~/.mg is missing])])
 
 AS_IF([test "x$with_mglog" != "xno"],
 	AC_DEFINE_UNQUOTED(MGLOG, "$with_mglog", [Debug logging of mg internals]))
