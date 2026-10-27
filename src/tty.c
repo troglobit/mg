@@ -129,6 +129,10 @@ ttinit(void)
 		/* enter application mode */
 		putpad(enter_ca_mode, 1);
 
+	if (cursor_normal)
+		/* smcup may leave the cursor hidden */
+		putpad(cursor_normal, 1);
+
 	ttresize();
 }
 
@@ -151,6 +155,10 @@ ttreinit(void)
 	if (keypad_xmit)
 		/* turn on keypad */
 		putpad(keypad_xmit, 1);
+
+	if (cursor_normal)
+		/* show the cursor */
+		putpad(cursor_normal, 1);
 
 	ttresize();
 }
