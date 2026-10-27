@@ -329,16 +329,18 @@ getgoal(struct line *dlp)
 
 /*
  * Scroll forward by a specified number
- * of lines, or by a full page if no argument.
+ * of rows, or by a full page if no argument.
  * The "2" is the window overlap (this is the default
  * value from ITS EMACS). Because the top line in
  * the window is zapped, we have to do a hard
- * update and get it back.
+ * update and get it back.  A wrapped line taller
+ * than what is left to scroll stays on screen.
  */
 int
 forwpage(int f, int n)
 {
 	struct line  *lp;
+	int	      rows;
 
 	if (!(f & FFARG)) {
 		n = curwp->w_ntrows - 2;	/* Default scroll.	 */
@@ -348,18 +350,22 @@ forwpage(int f, int n)
 		return (backpage(f | FFRAND, -n));
 
 	lp = curwp->w_linep;
-	while (n--)
+	while (n > 0) {
+		rows = linerows(lp, curwp);
+		if (rows > n && lp != curwp->w_linep)
+			break;
+		n -= rows;
 		if ((lp = lforw(lp)) == curbp->b_headp) {
 			(void)dobeep_msg("End of buffer");
 			return(TRUE);
 		}
+	}
 	curwp->w_linep = lp;
 	curwp->w_rflag |= WFFULL;
 
 	/* if in current window, don't move dot */
-	for (n = curwp->w_ntrows; n-- && lp != curbp->b_headp; lp = lforw(lp))
-		if (lp == curwp->w_dotp)
-			return (TRUE);
+	if (winshows(curwp, curwp->w_dotp))
+		return (TRUE);
 
 	/* Advance the dot the slow way, for line nos */
 	while (curwp->w_dotp != curwp->w_linep) {
@@ -381,7 +387,8 @@ forwpage(int f, int n)
 int
 backpage(int f, int n)
 {
-	struct line  *lp, *lp2;
+	struct line  *lp;
+	int	      rows;
 
 	if (!(f & FFARG)) {
 		n = curwp->w_ntrows - 2;	/* Default scroll.	 */
@@ -390,10 +397,13 @@ backpage(int f, int n)
 	} else if (n < 0)
 		return (forwpage(f | FFRAND, -n));
 
-	lp = lp2 = curwp->w_linep;
-
-	while (n-- && lback(lp) != curbp->b_headp) {
+	lp = curwp->w_linep;
+	while (n > 0 && lback(lp) != curbp->b_headp) {
+		rows = linerows(lback(lp), curwp);
+		if (rows > n && lp != curwp->w_linep)
+			break;
 		lp = lback(lp);
+		n -= rows;
 	}
 	if (lp == curwp->w_linep)
 		(void)dobeep_msg("Beginning of buffer");
@@ -402,22 +412,11 @@ backpage(int f, int n)
 	curwp->w_rflag |= WFFULL;
 
 	/* if in current window, don't move dot */
-	for (n = curwp->w_ntrows; n-- && lp != curbp->b_headp; lp = lforw(lp))
-		if (lp == curwp->w_dotp)
-			return (TRUE);
+	if (winshows(curwp, curwp->w_dotp))
+		return (TRUE);
 
-        lp2 = lforw(lp2);
-
-	/* Move the dot the slow way, for line nos */
-	while (curwp->w_dotp != lp2) {
-                if (curwp->w_dotline <= curwp->w_ntrows)
-			goto out;
-		curwp->w_dotp = lback(curwp->w_dotp);
-		curwp->w_dotline--;
-	}
-out:
-	curwp->w_doto = 0;
-	return (TRUE);
+	/* else to the bottom row */
+	return (movetowinline(FFARG, -1));
 }
 
 /*

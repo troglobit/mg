@@ -1285,8 +1285,10 @@ locales, in a column held back from the text for it.
 .Ic scroll-up
 and
 .Ic scroll-down
-still move by whole lines, which is more than a screenful when the
-lines are long.
+count the rows a wrapped line takes, so a page keeps its two-row
+overlap.
+The top of the window is always the start of a line: one too long to
+fit in what is left of the page stays on screen for the next one.
 Can be set globally with
 .Ic set-default-mode .
 Naming it in the startup file does the same, since there is no buffer
