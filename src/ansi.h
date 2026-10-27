@@ -77,6 +77,7 @@ extern TERMINAL *cur_term;
 #define clr_eos              CUR t_str[7]
 #define cursor_up            CUR t_str[19]
 #define cursor_address       CUR t_str[10]
+#define cursor_normal        CUR t_str[16]
 
 #define enter_ca_mode        "\033[?1049h"
 #define exit_ca_mode         "\033[?1049l"
