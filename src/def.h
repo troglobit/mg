@@ -605,7 +605,9 @@ int		 timetoggle(int, int);
 int		 timeupdate(void);
 int		 visualmark(int, int);
 int		 fontlock(int, int);
+int		 linerows(struct line *, struct mgwin *);
 struct line	*winrowline(struct mgwin *, int);
+int		 winshows(struct mgwin *, struct line *);
 
 /* echo.c X */
 void		 eerase(void);

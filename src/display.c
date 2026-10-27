@@ -299,7 +299,7 @@ wraprows(struct line *lp, struct mgwin *wp, int o, int *col)
  * The rows a line takes in wp: one, unless the window wraps and the
  * line is wider than it is.
  */
-static int
+int
 linerows(struct line *lp, struct mgwin *wp)
 {
 	if (!wrapped(wp))
@@ -321,6 +321,26 @@ winrowline(struct mgwin *wp, int row)
 	    (row -= linerows(lp, wp)) >= 0)
 		lp = lforw(lp);
 	return (lp);
+}
+
+/*
+ * Whether target starts on one of the rows of wp, as framed now.
+ */
+int
+winshows(struct mgwin *wp, struct line *target)
+{
+	struct line	*lp;
+	int		 row;
+
+	for (lp = wp->w_linep, row = 0; row < wp->w_ntrows;
+	    lp = lforw(lp)) {
+		if (lp == target)
+			return (1);
+		if (lp == wp->w_bufp->b_headp)
+			break;
+		row += linerows(lp, wp);
+	}
+	return (0);
 }
 
 /*
@@ -999,18 +1019,8 @@ update(int modelinecolor)
 		if (wp->w_rflag == 0)
 			continue;
 
-		if ((wp->w_rflag & WFFRAME) == 0) {
-			lp = wp->w_linep;
-			i = 0;
-			while (i < wp->w_ntrows) {
-				if (lp == wp->w_dotp)
-					goto out;
-				if (lp == wp->w_bufp->b_headp)
-					break;
-				i += linerows(lp, wp);
-				lp = lforw(lp);
-			}
-		}
+		if ((wp->w_rflag & WFFRAME) == 0 && winshows(wp, wp->w_dotp))
+			goto out;
 		/*
 		 * Put the middle-line in place.
 		 */
