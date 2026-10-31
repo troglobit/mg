@@ -205,6 +205,31 @@ do_gotoeop(int f, int n, int *i)
 }
 
 /*
+ * Display columns taken by the len bytes at s: a UTF-8 sequence counts
+ * as its character, like charcols().
+ */
+static int
+bufcols(const char *s, int len)
+{
+	int	 cols, cp, l;
+
+	cols = 0;
+	while (len > 0) {
+		if (utf8_mode && (unsigned char)*s >= 0x80 &&
+		    (cp = utf8_decode(s, len, &l)) != -1) {
+			cols += utf8_width(cp);
+			s += l;
+			len -= l;
+		} else {
+			cols += ISCTRL(*s) != FALSE ? 2 : 1;
+			s++;
+			len--;
+		}
+	}
+	return (cols);
+}
+
+/*
  * Justify a paragraph.  Fill the current paragraph according to the current
  * fill column.
  */
@@ -213,11 +238,11 @@ fillpara(int f, int n)
 {
 	int	 c;		/* current char during scan		*/
 	int	 wordlen;	/* length of current word		*/
-	int	 clength;	/* position on line during fill		*/
+	int	 ccol;		/* position on line during fill, columns	*/
 	int	 i;		/* index during word copy		*/
 	int	 eopflag;	/* Are we at the End-Of-Paragraph?	*/
 	int	 firstflag;	/* first word? (needs no space)		*/
-	int	 newlength;	/* tentative new line length		*/
+	int	 newcols;	/* tentative new line width, columns	*/
 	int	 eolflag;	/* was at end of line			*/
 	int	 retval;	/* return value				*/
 	int	 bon;		/* undo boundaries were on?		*/
@@ -278,7 +303,7 @@ fillpara(int f, int n)
 	preflen = fillprefix(curwp->w_dotp, pref, sizeof(pref));
 	quoted = memchr(pref, '>', preflen) != NULL;
 	skipquote = 0;
-	clength = curwp->w_doto;
+	ccol = bytecol(curwp->w_dotp, curwp->w_doto, curbp->b_tabw);
 	wordlen = 0;
 
 	/* scan through lines, filling words */
@@ -325,7 +350,7 @@ fillpara(int f, int n)
 		} else if (wordlen) {
 
 			/* calculate tentative new length with word added */
-			newlength = clength + 1 + wordlen;
+			newcols = ccol + 1 + bufcols(wbuf, wordlen);
 
 			/*
 			 * if at end of line or at doublespace and previous
@@ -343,11 +368,11 @@ fillpara(int f, int n)
 				wbuf[wordlen++] = ' ';
 
 			/* at a word break with a word waiting */
-			if (newlength <= curbp->b_fillcol) {
+			if (newcols <= curbp->b_fillcol) {
 				/* add word to current line */
 				if (!firstflag) {
 					(void)linsert(1, ' ');
-					++clength;
+					++ccol;
 				}
 				firstflag = FALSE;
 			} else {
@@ -360,14 +385,13 @@ fillpara(int f, int n)
 				(void)lnewline();
 				for (i = 0; i < preflen; i++)
 					(void)linsert(1, pref[i]);
-				clength = preflen;
+				ccol = bufcols(pref, preflen);
 			}
 
 			/* and add the word in in either case */
-			for (i = 0; i < wordlen; i++) {
+			for (i = 0; i < wordlen; i++)
 				(void)linsert(1, wbuf[i]);
-				++clength;
-			}
+			ccol += bufcols(wbuf, wordlen);
 			wordlen = 0;
 		}
 	}
