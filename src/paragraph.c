@@ -655,7 +655,7 @@ fillword(int f, int n)
 	int	col, i, len, nce, w;
 
 	for (i = col = 0; col <= curbp->b_fillcol; i += len, col += w) {
-		if (i == curwp->w_doto)
+		if (i >= curwp->w_doto)
 			return selfinsert(f, n);
 		w = charcols(curwp->w_dotp, i, col, curwp->w_bufp->b_tabw, &len);
 	}
