@@ -628,16 +628,12 @@ int
 fillword(int f, int n)
 {
 	char	c;
-	int	col, i, nce;
+	int	col, i, len, nce, w;
 
-	for (i = col = 0; col <= curbp->b_fillcol; ++i, ++col) {
+	for (i = col = 0; col <= curbp->b_fillcol; i += len, col += w) {
 		if (i == curwp->w_doto)
 			return selfinsert(f, n);
-		c = lgetc(curwp->w_dotp, i);
-		if (c == '\t')
-			col = ntabstop(col, curwp->w_bufp->b_tabw);
-		else if (ISCTRL(c) != FALSE)
-			++col;
+		w = charcols(curwp->w_dotp, i, col, curwp->w_bufp->b_tabw, &len);
 	}
 	if (syn_verbatim(curbp, curwp->w_dotp, NULL))
 		return (selfinsert(f, n));
