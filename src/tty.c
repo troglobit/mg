@@ -445,7 +445,8 @@ ttattr(int class, int rev)
 	putpad(exit_attribute_mode, 1);
 	if (class > SYN_NONE && class <= SYN_QUOTE &&
 	    set_a_foreground != NULL && max_colors >= 8)
-		putpad(tparm(set_a_foreground, color[class]), 1);
+		putpad(tparm(set_a_foreground, color[class], 0, 0, 0, 0, 0, 0,
+		    0, 0), 1);
 	if (class == SYN_HEADING && enter_bold_mode != NULL)
 		putpad(enter_bold_mode, 1);
 	if (rev && enter_standout_mode != NULL)
