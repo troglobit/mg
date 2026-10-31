@@ -42,7 +42,6 @@
 
 static char *bkuplocation(const char *);
 static int   bkupleavetmp(const char *);
-static int   isgzip(const char *);
 static FILE *ffgzopen(const char *);
 
 static char *bkupdir;
@@ -724,7 +723,7 @@ fchecktime(struct buffer *bp)
 /*
  * Check if ends with .gz
  */
-static int
+int
 isgzip(const char *fn)
 {
         size_t len;

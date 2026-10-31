@@ -25,11 +25,31 @@ struct autoexec {
 static SLIST_HEAD(, autoexec)	 autos;
 static int			 ready;
 
+/*
+ * Patterns match the whole path or just the basename.
+ */
 static int
-matches(const struct autoexec *ae, const char *fname, const char *bname)
+matchname(const char *pattern, const char *fname)
 {
-	return (fnmatch(ae->pattern, fname, 0) == 0 ||
-	    (bname != fname && fnmatch(ae->pattern, bname, 0) == 0));
+	const char	*bname;
+
+	if ((bname = strrchr(fname, '/')) != NULL)
+		bname++;
+	else
+		bname = fname;
+	return (fnmatch(pattern, fname, 0) == 0 ||
+	    (bname != fname && fnmatch(pattern, bname, 0) == 0));
+}
+
+/*
+ * Whether ae applies to fname, or to plain: fname without its .gz,
+ * or NULL.
+ */
+static int
+matches(const struct autoexec *ae, const char *fname, const char *plain)
+{
+	return (matchname(ae->pattern, fname) ||
+	    (plain != NULL && matchname(ae->pattern, plain)));
 }
 
 
@@ -44,18 +64,24 @@ find_autoexec(const char *fname, int *majors)
 {
 	PF		*pfl, *npfl;
 	int		 have, used, exact, pass;
-	const char	*bname;
+	char		 buf[NFILEN];
+	const char	*plain;
 	struct autoexec *ae;
 
 	*majors = 0;
 	if (!ready)
 		return (NULL);
 
-	/* patterns match the whole path or just the basename */
-	if ((bname = strrchr(fname, '/')) != NULL)
-		bname++;
-	else
-		bname = fname;
+	/*
+	 * A file read through gunzip, like foo.md.gz, also gets the
+	 * modes of the name it has uncompressed.
+	 */
+	plain = NULL;
+	if (!secure && isgzip(fname) &&
+	    strlcpy(buf, fname, sizeof(buf)) < sizeof(buf)) {
+		buf[strlen(buf) - 3] = '\0';
+		plain = buf;
+	}
 
 	/*
 	 * A built-in pattern that names the file, like CMakeLists.txt,
@@ -64,7 +90,7 @@ find_autoexec(const char *fname, int *majors)
 	 */
 	exact = 0;
 	SLIST_FOREACH(ae, &autos, next)
-		if (ae->builtin && ae->literal && matches(ae, fname, bname))
+		if (ae->builtin && ae->literal && matches(ae, fname, plain))
 			exact = 1;
 
 	/*
@@ -80,7 +106,7 @@ find_autoexec(const char *fname, int *majors)
 				continue;
 			if (exact && pass && !ae->literal)
 				continue;
-			if (!matches(ae, fname, bname))
+			if (!matches(ae, fname, plain))
 				continue;
 			if (used >= have) {
 				npfl = reallocarray(pfl, have + AUTO_GROW + 1,

@@ -195,6 +195,11 @@ in read-only mode.  To do so it relies on the
 .Nm gunzip
 program being present in
 .Ev $PATH .
+The mode is picked by the name without
+.Pa .gz ,
+so
+.Pa foo.md.gz
+opens in markdown-mode.
 .Sh DEFAULT KEY BINDINGS
 Normal editing commands are very similar to GNU Emacs.
 In the following examples, C-x means Control-x, and M-x means Meta-x,
