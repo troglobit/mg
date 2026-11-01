@@ -20,6 +20,10 @@
 #include "def.h"
 #include "kbd.h"
 
+#ifdef REGEX
+#include <regex.h>
+#endif
+
 struct ctag;
 struct tagpos;
 
@@ -96,6 +100,7 @@ static int	 nseen;
  */
 static struct ctag	**xref;
 static int		 nxref;
+static int		 xrefsame;	/* the list is of lasttag		*/
 
 /* The tag M-. went to last, and which of its definitions. */
 static char		 lasttag[MAX_TOKEN];
@@ -285,6 +290,7 @@ gototag(char *tok, int other)
 	}
 	/* none gone to yet, so C-u M-. starts at the first */
 	lastidx = -1;
+	xrefsame = TRUE;
 	for (n = 0, t = res; t != NULL; t = t->next)
 		n++;
 	if ((v = calloc(n, sizeof(*v))) == NULL)
@@ -293,6 +299,60 @@ gototag(char *tok, int other)
 		v[i++] = t;
 	return (xreflist(v, n, tok));
 }
+
+#ifdef REGEX
+extern int	 casefoldsearch;
+
+/*
+ * List the definitions of the tags whose names match a regular
+ * expression in *xref*, like xref-find-apropos in Emacs.
+ */
+int
+tagsapropos(int f, int n)
+{
+	char	 re[NPAT];
+	regex_t	 rx;
+	struct ctag *p, *t, **v = NULL, **nv;
+	int	 cnt = 0, max = 0, ret;
+
+	if (RB_EMPTY(&tags) && (ret = tagsvisit(f, n)) != TRUE)
+		return (ret);
+	if (eread("Find tags matching regexp: ", re, sizeof(re),
+	    EFNEW | EFCR) == NULL)
+		return (ABORT);
+	if (regcomp(&rx, re, REG_EXTENDED | REG_NOSUB |
+	    (casefoldsearch ? REG_ICASE : 0)) != 0) {
+		dobeep();
+		ewprintf("Bad regexp: %s", re);
+		return (FALSE);
+	}
+	RB_FOREACH(p, tagtree, &tags) {
+		if (regexec(&rx, p->tag, 0, NULL, 0) != 0)
+			continue;
+		for (t = p; t != NULL; t = t->next) {
+			if (cnt == max) {
+				max = max ? max * 2 : 64;
+				if ((nv = reallocarray(v, max,
+				    sizeof(*v))) == NULL) {
+					free(v);
+					regfree(&rx);
+					return (dobeep_msg("Out of memory"));
+				}
+				v = nv;
+			}
+			v[cnt++] = t;
+		}
+	}
+	regfree(&rx);
+	if (cnt == 0) {
+		dobeep();
+		ewprintf("No tags matching %s", re);
+		return (FALSE);
+	}
+	xrefsame = FALSE;
+	return (xreflist(v, cnt, re));
+}
+#endif
 
 /*
  * Go to the next definition of the tag M-. went to last, like C-u M-.
@@ -507,7 +567,8 @@ xrefshow(int go)
 	curbp = wp->w_bufp;
 	s = showtag(xref[i], FALSE);
 	if (s == TRUE && go) {
-		lastidx = i;
+		if (xrefsame)
+			lastidx = i;
 		if (xrefpos != NULL) {
 			SLIST_INSERT_HEAD(&shead, xrefpos, entry);
 			xrefpos = NULL;

@@ -553,7 +553,9 @@ the commands that mean the same here:
 .Ic scroll-up-command ,
 .Ic split-window-below ,
 .Ic split-window-right ,
-.Ic xref-find-definitions
+.Ic xref-find-apropos ,
+.Ic xref-find-definitions ,
+.Ic xref-find-definitions-other-window
 and
 .Ic xref-go-back .
 Many commands take an optional numerical parameter,
@@ -1837,6 +1839,13 @@ Turn runs of spaces in the lines of the region into tabs, where a run
 of a space and at least one more blank crosses a tab stop.
 The text stays in the same columns.
 The region grows to whole lines.
+.It Ic tags-apropos
+List the definitions of the tags whose names match a regular
+expression in an
+.Pa *xref*
+window, as
+.Ic find-tag
+does for one tag.
 .It Ic text-mode
 Toggle text mode, for prose rather than code.
 Enabling it turns on

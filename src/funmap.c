@@ -306,6 +306,9 @@ static struct funmap functnames[] = {
 	{spawncli, "suspend-emacs", 0, NULL},
 	{spawncli, "suspend", 0, NULL},
 	{usebuffer, "switch-to-buffer", 1, NULL},
+#if defined(ENABLE_CTAGS) && defined(REGEX)
+	{tagsapropos, "tags-apropos", 0, NULL},
+#endif
 	{poptobuffer, "switch-to-buffer-other-window", 1, NULL},
 	{tabify, "tabify", 0, NULL},
 #ifdef TOGGLENL
@@ -386,6 +389,9 @@ static struct funmap aliasnames[] = {
 #ifdef ENABLE_CTAGS
 	{findtag, "xref-find-definitions", 1, NULL},
 	{findtagother, "xref-find-definitions-other-window", 1, NULL},
+#ifdef REGEX
+	{tagsapropos, "xref-find-apropos", 0, NULL},
+#endif
 	{poptag, "xref-go-back", 0, NULL},
 #endif /* ENABLE_CTAGS */
 	{NULL, NULL, 0, NULL}
