@@ -88,7 +88,7 @@ static PF cCsc[] = {
 	csfindinc,		/* i */
 	rescan,			/* j */
 	rescan,			/* k */
-	rescan,			/* l */
+	csfuncalled,		/* l */
 	rescan,			/* m */
 	csnextmatch,		/* n */
 	rescan,			/* o */

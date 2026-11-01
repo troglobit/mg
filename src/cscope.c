@@ -12,7 +12,6 @@
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <fnmatch.h>
 #include <limits.h>
 #include <signal.h>
 #include <stdio.h>
@@ -428,7 +427,7 @@ do_cscope(int i)
 {
 	struct buffer *bp;
 	FILE *fpipe;
-	char pattern[MAX_TOKEN], query[3], title[BUFSIZ], path[NFILEN];
+	char pattern[NFILEN], query[3], title[BUFSIZ], path[NFILEN];
 	char *argv[8], *p, *buf;
 	int clen, nores = 0, ac = 0;
 	size_t sz;
@@ -438,13 +437,11 @@ do_cscope(int i)
 	buf = NULL;
 	sz = 0;
 
-	/* If current buffer isn't a source file just return */
-	if (fnmatch("*.[chy]", curbp->b_fname, 0) != 0)
-		return(dobeep_msg("C-c s not defined"));
-
+	/* the word at dot to start with, if any */
 	if (curtoken(0, 1, pattern) == FALSE)
-		return (FALSE);
-	p = eread("%s", pattern, MAX_TOKEN, EFNEW | EFCR | EFDEF, csprompt[i]);
+		pattern[0] = '\0';
+	p = eread("%s", pattern, sizeof(pattern), EFNEW | EFCR | EFDEF,
+	    csprompt[i]);
 	if (p == NULL)
 		return (ABORT);
 	else if (p[0] == '\0')
