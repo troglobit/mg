@@ -181,9 +181,7 @@ retry:
 			(void)ctrlg(FFRAND, 0);
 			goto stopsearch;
 		case CCHR('['):				/* ESC */
-			/* arrow keys start with ESC: quit, then run the key */
-			if (ttwait(300) == FALSE)
-				ungetkey(CCHR('['));
+			ungetesc();
 			goto stopsearch;
 		case '`':
 			goto stopsearch;

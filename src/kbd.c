@@ -75,6 +75,19 @@ ungetkey(int c)
 }
 
 /*
+ * After an ESC that ends a loop reading its own keys, like isearch.
+ * If more keys follow straight away, the ESC starts a sequence, such
+ * as an arrow key, so it is pushed back for the editor to read along
+ * with the rest.
+ */
+void
+ungetesc(void)
+{
+	if (ttwait(300) == FALSE)
+		ungetkey(CCHR('['));
+}
+
+/*
  * Wait for a key.  Meanwhile reload files changed on disk, see
  * auto-revert-mode, and keep the display-time-mode clock current.
  */

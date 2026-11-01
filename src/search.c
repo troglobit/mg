@@ -209,14 +209,7 @@ isearch(int dir)
 
 		switch (c = getkey(FALSE)) {
 		case CCHR('['):
-			/*
-			 * If new characters come in the next 300 msec,
-			 * we can assume that they belong to a longer
-			 * escaped sequence so we should ungetkey the
-			 * ESC to avoid writing out garbage.
-			 */
-			if (ttwait(300) == FALSE)
-				ungetkey(c);
+			ungetesc();
 			/* FALLTHRU */
 		case CCHR('M'):
 			srch_lastdir = dir;
@@ -604,9 +597,7 @@ retry:
 			(void)ctrlg(FFRAND, 0);
 			goto stopsearch;
 		case CCHR('['):
-			/* arrow keys start with ESC: quit, then run the key */
-			if (ttwait(300) == FALSE)
-				ungetkey(CCHR('['));
+			ungetesc();
 			goto stopsearch;
 		case CCHR('M'):
 			goto stopsearch;

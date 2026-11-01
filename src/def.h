@@ -658,6 +658,7 @@ char		*expandtilde(const char *);
 int		 do_meta(int, int);
 int		 bsmap(int, int);
 void		 ungetkey(int);
+void		 ungetesc(void);
 int		 getkey(int);
 int		 doin(void);
 int		 rescan(int, int);
