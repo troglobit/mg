@@ -754,13 +754,11 @@ splitstart(void)
 }
 
 /*
- * Split the current window.  A window smaller than 3 lines cannot be split.
- * The only other error that is possible is a "malloc" failure allocating the
- * structure for the new window.
- * If called with a FFOTHARG, flags on the new window are set to 'n'.
+ * Split the current window, see splitwind().  Returns the new window,
+ * or NULL.
  */
-int
-splitwind(int f, int n)
+static struct mgwin *
+splitv(void)
 {
 	struct mgwin	*wp, *wp1, *wp2;
 	struct line	*lp;
@@ -769,10 +767,10 @@ splitwind(int f, int n)
 	if (curwp->w_ntrows < 3) {
 		dobeep();
 		ewprintf("Cannot split a %d line window", curwp->w_ntrows);
-		return (FALSE);
+		return (NULL);
 	}
 	if ((wp = splitstart()) == NULL)
-		return (FALSE);
+		return (NULL);
 
 	/* figure out which half of the screen we're in */
 	ntru = (curwp->w_ntrows - 1) / 2;	/* Upper size */
@@ -824,20 +822,34 @@ splitwind(int f, int n)
 
 	curwp->w_rflag |= WFMODE | WFFULL;
 	wp->w_rflag |= WFMODE | WFFULL;
-	/* if FFOTHARG, set flags) */
+
+	return (wp);
+}
+
+/*
+ * Split the current window.  A window smaller than 3 lines cannot be split.
+ * The only other error that is possible is a "malloc" failure allocating the
+ * structure for the new window.
+ * If called with a FFOTHARG, flags on the new window are set to 'n'.
+ */
+int
+splitwind(int f, int n)
+{
+	struct mgwin	*wp;
+
+	if ((wp = splitv()) == NULL)
+		return (FALSE);
 	if (f & FFOTHARG)
 		wp->w_flag = n;
-
 	return (TRUE);
 }
 
 /*
- * Split the current window side by side.  The current window becomes
- * the left half; the new window shows the same buffer to the right of
- * a one column divider.
+ * Split the current window side by side, see splitwindh().  Returns
+ * the new window, or NULL.
  */
-int
-splitwindh(int f, int n)
+static struct mgwin *
+splith(void)
 {
 	struct mgwin	*wp;
 	int		 ntcl;
@@ -846,10 +858,10 @@ splitwindh(int f, int n)
 		dobeep();
 		ewprintf("Cannot split a %d column window",
 		    curwp->w_ntcols);
-		return (FALSE);
+		return (NULL);
 	}
 	if ((wp = splitstart()) == NULL)
-		return (FALSE);
+		return (NULL);
 
 	wp->w_toprow = curwp->w_toprow;
 	wp->w_ntrows = curwp->w_ntrows;
@@ -865,9 +877,25 @@ splitwindh(int f, int n)
 
 	curwp->w_rflag |= WFMODE | WFFULL;
 	wp->w_rflag |= WFMODE | WFFULL;
+
+	return (wp);
+}
+
+/*
+ * Split the current window side by side.  The current window becomes
+ * the left half; the new window shows the same buffer to the right of
+ * a one column divider.
+ * If called with a FFOTHARG, flags on the new window are set to 'n'.
+ */
+int
+splitwindh(int f, int n)
+{
+	struct mgwin	*wp;
+
+	if ((wp = splith()) == NULL)
+		return (FALSE);
 	if (f & FFOTHARG)
 		wp->w_flag = n;
-
 	return (TRUE);
 }
 
