@@ -95,8 +95,31 @@ jobs:
           merge-multiple: true
       - name: Extract ChangeLog entry ...
         run: |
-          awk '/-----*/{if (x == 1) exit; x=1;next}x' ChangeLog.md \
-              |head -n -1 > release.md
+          # Unwrap paragraphs and list items, GitHub's web view wraps them
+          awk '/^-----*$/{if (x == 1) exit; x=1;next}x' ChangeLog.md \
+              | head -n -1 \
+              | awk '
+                  {
+                      if (/^$/) {
+                          if (buf) print buf
+                          buf = ""
+                          print
+                          blank = 1
+                          next
+                      }
+                      if (/^  / && buf) {
+                          sub(/^ +/, " ")
+                          buf = buf $0
+                      } else if (/^[-*>#\[|]/ || /^[0-9]+\./ || blank || !buf || brk) {
+                          if (buf) print buf
+                          buf = $0
+                      } else {
+                          buf = buf " " $0
+                      }
+                      blank = 0
+                      brk = /  $/
+                  }
+                  END { if (buf) print buf }' > release.md
           cat release.md
       - uses: ncipollo/release-action@v1
         with:

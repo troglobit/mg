@@ -3,6 +3,52 @@ Change Log
 
 All relevant changes to the project are documented in this file.
 
+[v4.6][] - 2026-11-01
+---------------------
+
+### Changes
+
+- Version control for git on `C-x v`, as in GNU Emacs: diff, log,
+  annotate, old revisions, add, commit and revert, colored like git.
+  The mode line shows the branch, `Git-main` or `Git:main` with
+  changes.  `--disable-vc` builds without it.  See VERSION CONTROL in
+  [mg(1)](https://man.troglobit.com/man1/mg.1.html)
+- Emacs `TAGS` files are read too, and a tag defined in several places
+  is listed in an `*xref*` window.  New `C-x 4 .` and `tags-apropos`
+- cscope only needs cscope itself: `C-c s I` indexes the tree, and
+  matches are listed in `*xref*`.  New `C-c s =` and `C-c s u`
+- isearch and query-replace highlight the matches, and query-replace
+  offers the last replacement as its default
+- Pop-ups open side by side when the window is wide enough
+- A compressed file gets the mode of its name without `.gz`
+- `M-g` is a prefix key, as in Emacs: `M-g c`, `M-g TAB`, `M-g n` and
+  `M-g p`, and new `previous-error`
+- Prompts keep the windows up to date while they wait
+
+### Fixes
+
+- Fix #48: build on illumos, where `ncurses/curses.h` defines macros
+  clashing with mg's own functions
+- Fix the `~/.mg` fallback, which never loaded on a default build, by
+  Nick Ermakov, PR #49
+- Show the cursor at startup, also when the terminal had hidden it,
+  by Miki Yutani, PR #50
+- `C-v` and `M-v` in line-wrap-mode page by screen rows, by Stefano
+  Taverni, PR #51
+- Auto fill and `M-q` count display columns, not bytes, by Nick
+  Ermakov, PR #52 and PR #53
+- Build on NetBSD, whose `tparm()` takes ten parameters, by Christof
+  Meerwald, PR #54
+- configure on Solaris no longer throws away `LIBS` and `CPPFLAGS`
+- Long tag names no longer overflow the prompt
+- cscope no longer runs searches through the shell
+- A FIFO named like a tags file or `.git` no longer hangs mg
+- Fix crashes in `next-error` and git-commit-mode after their window
+  was closed
+- grep and compile output no longer ends each line in `^J`
+- `M-.` offers the word at point, not the text before it
+- An arrow key ends query-replace instead of inserting its codes
+
 [v4.5][] - 2026-10-21
 ---------------------
 
@@ -699,6 +745,7 @@ set as Mg3a.
 	functions.  Some simply marked as "don't care"
   - Fix missing initialization of stack variables
 
+[v4.6]:       https://github.com/troglobit/mg/compare/v4.5...v4.6
 [v4.5]:       https://github.com/troglobit/mg/compare/v4.4...v4.5
 [v4.4]:       https://github.com/troglobit/mg/compare/v4.3...v4.4
 [v4.3]:       https://github.com/troglobit/mg/compare/v4.2...v4.3

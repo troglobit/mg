@@ -106,8 +106,8 @@ Then build Mg from the unpacked release tarball:
 
     make clean
     ./configure --without-curses
-	make
-	sudo make install
+    make
+    sudo make install
 
 ### Building from GIT
 
@@ -145,20 +145,20 @@ The file modes are picked with `--with-modes`, a list separated by
 commas or spaces.  Each name builds one mode, which is turned on for the
 files listed, and can be turned on by hand with its `M-x` command:
 
-| Name       | Mode                | Files                                        |
-|------------|---------------------|----------------------------------------------|
-| `cmake`    | `cmake-mode`        | `CMakeLists.txt`, `*.cmake`                  |
+| **Name**   | **Mode**            | **Files**                                                                            |
+|------------|---------------------|--------------------------------------------------------------------------------------|
+| `cmake`    | `cmake-mode`        | `CMakeLists.txt`, `*.cmake`                                                          |
 | `conf`     | `conf-mode`         | `*.conf`, `*.ini`, `*.toml`, systemd units, `fstab`, `ssh_config`, `.gitconfig`, ... |
-| `diff`     | `diff-mode`         | `*.diff`, `*.patch`, `*.rej`                 |
-| `git`      | `git-commit-mode`   | `COMMIT_EDITMSG`, `MERGE_MSG`, `TAG_EDITMSG`, `git-rebase-todo`, ... |
-| `json`     | `json-mode`         | `*.json`, `*.jsonc`                          |
-| `m4`       | `m4-mode`           | `configure.ac`, `configure.in`, `*.m4`       |
-| `make`     | `makefile-mode`     | `Makefile`, `Makefile.am`, `Makefile.in`, `*.mk`, ... |
-| `markdown` | `markdown-mode`     | `*.md`, `*.markdown`                         |
-| `python`   | `python-mode`       | `*.py`, scripts run by python                |
-| `sh`       | `shell-script-mode` | `*.sh`, `.bashrc`, `.profile`, scripts run by sh, bash, ... |
-| `text`     | `text-mode`         | `*.txt`, `README`, `NEWS`, `TODO`, ...       |
-| `yaml`     | `yaml-mode`         | `*.yml`, `*.yaml`, `.clang-format`, `.yamllint` |
+| `diff`     | `diff-mode`         | `*.diff`, `*.patch`, `*.rej`                                                         |
+| `git`      | `git-commit-mode`   | `COMMIT_EDITMSG`, `MERGE_MSG`, `TAG_EDITMSG`, `git-rebase-todo`, ...                 |
+| `json`     | `json-mode`         | `*.json`, `*.jsonc`                                                                  |
+| `m4`       | `m4-mode`           | `configure.ac`, `configure.in`, `*.m4`                                               |
+| `make`     | `makefile-mode`     | `Makefile`, `Makefile.am`, `Makefile.in`, `*.mk`, ...                                |
+| `markdown` | `markdown-mode`     | `*.md`, `*.markdown`                                                                 |
+| `python`   | `python-mode`       | `*.py`, scripts run by python                                                        |
+| `sh`       | `shell-script-mode` | `*.sh`, `.bashrc`, `.profile`, scripts run by sh, bash, ...                          |
+| `text`     | `text-mode`         | `*.txt`, `README`, `NEWS`, `TODO`, ...                                               |
+| `yaml`     | `yaml-mode`         | `*.yml`, `*.yaml`, `.clang-format`, `.yamllint`                                      |
 
 C is not in the list, since C mode has its own switch, `--disable-cmode`.
 For example, a build with only the modes for a small system's shell
@@ -228,6 +228,7 @@ goes something like this:
 * Oct 12, 2026: Mg v4.3, ido-mode and delete-selection-mode
 * Oct 15, 2026: Mg v4.4, auto-revert and tail mode, sentence commands
 * Oct 21, 2026: Mg v4.5, rectangles, registers, git commit and patch support
+* Nov  1, 2026: Mg v4.6, git version control, Emacs tags, xref and cscope
 
 See the source distribution for the list of [AUTHORS][].
 

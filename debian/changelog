@@ -1,3 +1,19 @@
+mg2a (4.6) unstable; urgency=medium
+
+  * Version control for git on C-x v, as in GNU Emacs, see mg(1).
+    The mode line shows the branch, Git-main or Git:main
+  * Emacs TAGS files, an *xref* list for tags and cscope matches,
+    and cscope only needs cscope itself
+  * isearch and query-replace highlight the matches
+  * Pop-ups open side by side on a wide terminal
+  * Compressed files get the mode of their name without .gz
+  * M-g is a prefix key, as in Emacs
+  * UTF-8 text fills by display columns, line-wrap-mode pages by rows
+  * Fix the build on illumos, NetBSD and Solaris, and the ~/.mg fallback
+  * Fix crashes in next-error and git-commit-mode, and hangs on FIFOs
+
+ -- Joachim Wiberg <troglobit@gmail.com>  Sun, 01 Nov 2026 21:00:00 +0100
+
 mg2a (4.5) unstable; urgency=medium
 
   * Rectangles: rectangle-mark-mode on C-x SPC, and kill-, delete-,

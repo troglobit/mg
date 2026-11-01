@@ -9,9 +9,11 @@ aclocal.m4
 config.log
 config.status
 configure
+cscope*
 GPATH
 GRTAGS
 GSYMS
 GTAGS
 ID
+TAGS
 *~
