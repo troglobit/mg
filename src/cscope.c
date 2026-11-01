@@ -181,10 +181,14 @@ cssetdir(int f, int n)
 /*
  * Put the directory of the cscope database in dir: the nearest one with
  * a cscope.out, going up from the initial directory or the buffer's.
+ * Like git, it stops at a directory owned by someone else and skips a
+ * cscope.out that is not the user's, since cscope would run with it and
+ * update it.
  */
 static int
 csdbdir(char *dir, size_t n)
 {
+	struct stat sb;
 	char path[NFILEN], *p;
 	size_t len;
 
@@ -196,8 +200,12 @@ csdbdir(char *dir, size_t n)
 	while ((len = strlen(dir)) > 0 && dir[len - 1] == '/')
 		dir[len - 1] = '\0';
 	for (;;) {
+		if (stat(dir[0] != '\0' ? dir : "/", &sb) == -1 ||
+		    sb.st_uid != getuid())
+			return (FALSE);
 		(void)snprintf(path, sizeof(path), "%s/cscope.out", dir);
-		if (access(path, R_OK) == 0)
+		if (stat(path, &sb) == 0 && S_ISREG(sb.st_mode) &&
+		    sb.st_uid == getuid())
 			break;
 		if (dir[0] == '\0')
 			return (FALSE);
@@ -538,7 +546,7 @@ addentry(struct buffer *bp, char *csline)
 		addentryr = r;
 		/* names are relative to the database */
 		if (t.fname[0] == '/')
-			r->filename = strndup(t.fname, NFILEN);
+			r->filename = strdup(t.fname);
 		else if (asprintf(&r->filename, "%s/%s", csdir, t.fname) == -1)
 			r->filename = NULL;
 		if (r->filename == NULL)
