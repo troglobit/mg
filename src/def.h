@@ -808,6 +808,7 @@ int		 joinline(int, int);
 
 /* tags.c X */
 int		 findtag(int, int);
+int		 findtagother(int, int);
 int 		 poptag(int, int);
 int		 tagsvisit(int, int);
 int		 curtoken(int, int, char *);

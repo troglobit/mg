@@ -202,6 +202,13 @@ static PF cX4cF[] = {
 	poptofile,		/* ^f */
 	ctrlg			/* ^g */
 };
+static PF cX4dot[] = {
+#ifdef ENABLE_CTAGS
+	findtagother		/* . */
+#else
+	rescan			/* . */
+#endif
+};
 static PF cX4b[] = {
 	poptobuffer,		/* b */
 	rescan,			/* c */
@@ -209,13 +216,16 @@ static PF cX4b[] = {
 	rescan,			/* e */
 	poptofile		/* f */
 };
-static struct KEYMAPE (2) cX4map = {
-	2,
-	2,
+static struct KEYMAPE (3) cX4map = {
+	3,
+	3,
 	rescan,
 	{
 		{
 			CCHR('F'), CCHR('G'), cX4cF, NULL
+		},
+		{
+			'.', '.', cX4dot, NULL
 		},
 		{
 			'b', 'f', cX4b, NULL

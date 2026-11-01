@@ -29,18 +29,19 @@ static int               addetag(const char *, size_t, const char *,
 static int               atbow(void);
 void                     closetags(void);
 static int               ctagcmp(struct ctag *, struct ctag *);
-static int               gototag(char *);
+static int               findtag1(int, int, int);
+static int               gototag(char *, int);
 static int               inserttag(struct ctag *);
-static int               loadbuffer(char *);
+static int               loadbuffer(char *, int);
 static int               loadetags(FILE *, const char *, int);
 static int               loadtags(const char *, int);
 static void              freepos(struct tagpos *);
 static struct tagpos     *markpos(void);
-static int               nexttag(void);
-static int               pushtag(struct ctag *);
+static int               nexttag(int);
+static int               pushtag(struct ctag *, int);
 static int               searchpat(char *, int);
 static struct ctag       *searchtag(char *);
-static int               showtag(struct ctag *);
+static int               showtag(struct ctag *, int);
 static char              *strip(char *, size_t);
 static void              unloadtags(void);
 static int               xrefgoto(int, int);
@@ -187,13 +188,28 @@ tagsvisit(int f, int n)
 int
 findtag(int f, int n)
 {
+	return (findtag1(f, n, FALSE));
+}
+
+/*
+ * C-x 4 .: find-tag, going to the definition in another window.
+ */
+int
+findtagother(int f, int n)
+{
+	return (findtag1(f, n, TRUE));
+}
+
+static int
+findtag1(int f, int n, int other)
+{
 	char utok[MAX_TOKEN], dtok[MAX_TOKEN];
 	char *tok, *bufp;
 	int  ret;
 
 	/* C-u M-. for the next definition, C-u - M-. to go back */
 	if (f & FFARG)
-		return (n < 0 ? poptag(FFRAND, 1) : nexttag());
+		return (n < 0 ? poptag(FFRAND, 1) : nexttag(other));
 
 	/* first, so TAB has the names to complete */
 	if (RB_EMPTY(&tags))
@@ -221,7 +237,7 @@ findtag(int f, int n)
 		return (FALSE);
 	}
 
-	return (gototag(tok));
+	return (gototag(tok, other));
 }
 
 /*
@@ -251,11 +267,11 @@ complete_tag_list(const char *prefix)
 }
 
 /*
- * Go to the definition of tok, or list them in *xref* when there are
- * more than one.
+ * Go to the definition of tok, in another window if other is set, or
+ * list them in *xref* when there are more than one.
  */
 static int
-gototag(char *tok)
+gototag(char *tok, int other)
 {
 	struct ctag *res, *t, **v;
 	int i, n;
@@ -265,7 +281,7 @@ gototag(char *tok)
 	(void)strlcpy(lasttag, tok, sizeof(lasttag));
 	if (res->next == NULL) {
 		lastidx = 0;
-		return (pushtag(res));
+		return (pushtag(res, other));
 	}
 	/* none gone to yet, so C-u M-. starts at the first */
 	lastidx = -1;
@@ -283,7 +299,7 @@ gototag(char *tok)
  * in Emacs.
  */
 static int
-nexttag(void)
+nexttag(int other)
 {
 	struct ctag t, *res;
 	int i;
@@ -303,7 +319,7 @@ nexttag(void)
 		return (FALSE);
 	}
 	lastidx = i;
-	return (pushtag(res));
+	return (pushtag(res, other));
 }
 
 /*
@@ -366,13 +382,13 @@ freepos(struct tagpos *s)
 }
 
 /*
- * Load the file with the definition of res into the current window and
- * put dot on it.
+ * Load the file with the definition of res into the current window, or
+ * another one if other is set, and put dot on it.
  */
 static int
-showtag(struct ctag *res)
+showtag(struct ctag *res, int other)
 {
-	if (loadbuffer(res->fname) == FALSE)
+	if (loadbuffer(res->fname, other) == FALSE)
 		return (FALSE);
 	if (searchpat(res->pat, res->line) == FALSE) {
 		dobeep();
@@ -384,16 +400,17 @@ showtag(struct ctag *res)
 }
 
 /*
- * Go to the definition res, pushing where dot was onto the tag stack.
+ * Go to the definition res, in another window if other is set, pushing
+ * where dot was onto the tag stack.
  */
 static int
-pushtag(struct ctag *res)
+pushtag(struct ctag *res, int other)
 {
 	struct tagpos *s;
 
 	if ((s = markpos()) == NULL)
 		return (FALSE);
-	if (showtag(res) == FALSE) {
+	if (showtag(res, other) == FALSE) {
 		freepos(s);
 		return (FALSE);
 	}
@@ -488,7 +505,7 @@ xrefshow(int go)
 		return (FALSE);
 	curwp = wp;
 	curbp = wp->w_bufp;
-	s = showtag(xref[i]);
+	s = showtag(xref[i], FALSE);
 	if (s == TRUE && go) {
 		lastidx = i;
 		if (xrefpos != NULL) {
@@ -553,7 +570,7 @@ poptag(int f, int n)
 	s = SLIST_FIRST(&shead);
 	SLIST_REMOVE_HEAD(&shead, entry);
 	if (s->isfile)
-		ok = loadbuffer(s->bname);
+		ok = loadbuffer(s->bname, FALSE);
 	else if ((ok = (bp = bfind(s->bname, FALSE)) != NULL) == TRUE) {
 		curbp = bp;
 		ok = showbuffer(bp, curwp, WFFULL);
@@ -997,18 +1014,33 @@ searchtag(char *tok)
  * This is equivalent to filevisit from file.c.
  * Look around to see if we can find the file in another buffer; if we
  * can't find it, create a new buffer, read in the text, and switch to
- * the new buffer.
+ * the new buffer, in another window if other is set.
  */
 int
-loadbuffer(char *bname)
+loadbuffer(char *bname, int other)
 {
 	struct buffer *bufp;
+	struct mgwin *wp;
 	char *adjf;
 
 	if ((adjf = adjustname(bname, TRUE)) == NULL)
 		return (FALSE);
 	if ((bufp = findbuffer(adjf)) == NULL)
 		return (FALSE);
+	wp = curwp;
+	if (other) {
+		/* popbuf() would find the current window showing it */
+		if (bufp != curbp)
+			wp = popbuf(bufp, WNONE);
+		else if (wheadp->w_wndp == NULL)
+			wp = splitpop(WNONE);
+		else
+			for (wp = wheadp; wp == curwp; wp = wp->w_wndp)
+				;
+		if (wp == NULL)
+			return (FALSE);
+	}
+	curwp = wp;
 	curbp = bufp;
 	if (showbuffer(bufp, curwp, WFFULL) != TRUE)
 		return (FALSE);

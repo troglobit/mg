@@ -362,6 +362,8 @@ rectangle-mark-mode
 find-file-other-window
 .It C-x 4 C-g
 keyboard-quit
+.It C-x 4 .
+find-tag-other-window
 .It C-x 4 b
 switch-to-buffer-other-window
 .It C-x 4 f
@@ -1079,6 +1081,11 @@ goes to the next definition of the last tag, and
 .Ic C-u - M-.
 back, like
 .Ic pop-tag-mark .
+.It Ic find-tag-other-window
+Like
+.Ic find-tag ,
+but go to the definition in another window, split off when there is
+only one.
 .It Ic font-lock-mode
 Toggle syntax highlighting, enabled by default.
 Comments, strings, keywords, types, numbers, and preprocessor

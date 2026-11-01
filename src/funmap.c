@@ -159,6 +159,7 @@ static struct funmap functnames[] = {
 	{filevisitro, "find-file-read-only", 1, NULL},
 #ifdef ENABLE_CTAGS
 	{findtag, "find-tag", 1, NULL},
+	{findtagother, "find-tag-other-window", 1, NULL},
 #endif
 #ifdef ENABLE_SYNTAX
 	{fontlock, "font-lock-mode", 0, NULL},
@@ -384,6 +385,7 @@ static struct funmap aliasnames[] = {
 	{splitwindh, "split-window-right", 0, NULL},
 #ifdef ENABLE_CTAGS
 	{findtag, "xref-find-definitions", 1, NULL},
+	{findtagother, "xref-find-definitions-other-window", 1, NULL},
 	{poptag, "xref-go-back", 0, NULL},
 #endif /* ENABLE_CTAGS */
 	{NULL, NULL, 0, NULL}
