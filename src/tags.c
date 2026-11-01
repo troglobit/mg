@@ -36,6 +36,7 @@ static int               loadetags(FILE *, const char *, int);
 static int               loadtags(const char *, int);
 static void              freepos(struct tagpos *);
 static struct tagpos     *markpos(void);
+static int               nexttag(void);
 static int               pushtag(struct ctag *);
 static int               searchpat(char *, int);
 static struct ctag       *searchtag(char *);
@@ -94,6 +95,10 @@ static int	 nseen;
  */
 static struct ctag	**xref;
 static int		 nxref;
+
+/* The tag M-. went to last, and which of its definitions. */
+static char		 lasttag[MAX_TOKEN];
+static int		 lastidx;
 static struct mgwin	*xreffrom;	/* the window the list was asked from */
 static struct tagpos	*xrefpos;	/* where, until pushed		*/
 
@@ -186,6 +191,10 @@ findtag(int f, int n)
 	char *tok, *bufp;
 	int  ret;
 
+	/* C-u M-. for the next definition, C-u - M-. to go back */
+	if (f & FFARG)
+		return (n < 0 ? poptag(FFRAND, 1) : nexttag());
+
 	if (curtoken(f, n, dtok) == FALSE) {
 		dtok[0] = '\0';
 		bufp = eread("Find tag: ", utok, MAX_TOKEN, EFNUL | EFNEW);
@@ -224,8 +233,13 @@ gototag(char *tok)
 
 	if ((res = searchtag(tok)) == NULL)
 		return (FALSE);
-	if (res->next == NULL)
+	(void)strlcpy(lasttag, tok, sizeof(lasttag));
+	if (res->next == NULL) {
+		lastidx = 0;
 		return (pushtag(res));
+	}
+	/* none gone to yet, so C-u M-. starts at the first */
+	lastidx = -1;
 	for (n = 0, t = res; t != NULL; t = t->next)
 		n++;
 	if ((v = calloc(n, sizeof(*v))) == NULL)
@@ -233,6 +247,34 @@ gototag(char *tok)
 	for (i = 0, t = res; t != NULL; t = t->next)
 		v[i++] = t;
 	return (xreflist(v, n, tok));
+}
+
+/*
+ * Go to the next definition of the tag M-. went to last, like C-u M-.
+ * in Emacs.
+ */
+static int
+nexttag(void)
+{
+	struct ctag t, *res;
+	int i;
+
+	t.tag = lasttag;
+	if (lasttag[0] == '\0' ||
+	    (res = RB_FIND(tagtree, &tags, &t)) == NULL) {
+		dobeep();
+		ewprintf("No previous tag");
+		return (FALSE);
+	}
+	for (i = 0; i <= lastidx && res != NULL; i++)
+		res = res->next;
+	if (res == NULL) {
+		dobeep();
+		ewprintf("No more definitions of %s", lasttag);
+		return (FALSE);
+	}
+	lastidx = i;
+	return (pushtag(res));
 }
 
 /*
@@ -419,6 +461,7 @@ xrefshow(int go)
 	curbp = wp->w_bufp;
 	s = showtag(xref[i]);
 	if (s == TRUE && go) {
+		lastidx = i;
 		if (xrefpos != NULL) {
 			SLIST_INSERT_HEAD(&shead, xrefpos, entry);
 			xrefpos = NULL;
