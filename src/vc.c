@@ -8,6 +8,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <ctype.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <stdio.h>
@@ -18,6 +19,25 @@
 #include "def.h"
 #include "kbd.h"
 #include "funmap.h"
+
+/*
+ * What a log or annotation pop-up shows: the directory git ran in, and
+ * the file, or for a log of the repository nothing, with the syntax
+ * rules of the file for the annotation.  The keys in the pop-up work
+ * on the commit at dot.
+ */
+struct vcview {
+	const char		*bname;	/* the pop-up */
+	char			 dir[NFILEN];
+	char			 name[NFILEN];
+	const struct syntax	*sy;
+};
+static struct vcview	 vcchangeview = { .bname = "*vc-change-log*" };
+static struct vcview	 vcannview = { .bname = "*vc-annotate*" };
+
+static int	 vcshowlog(const char *, const char *, const struct syntax *,
+		    char *[]);
+static int	 vcshowrev(const char *, const char *, const char *);
 
 /*
  * The directory and name of the file in the buffer, for the commands
@@ -92,14 +112,15 @@ vcreport(struct buffer *bp, int s, const char *empty)
 
 /*
  * Run git in dir and show what it prints in the pop-up buffer name,
- * in diff-mode when diff is TRUE.  q closes it.  empty is the message
- * when git prints nothing.
+ * colored by the mode the command mode turns on.  q closes it.  empty
+ * is the message when git prints nothing.
  */
 static int
-vcshow(const char *dir, char *argv[], const char *name, int diff,
+vcshow(const char *dir, char *argv[], const char *name, const char *mode,
     const char *empty)
 {
 	struct buffer	*bp;
+	PF	 fn;
 	int	 s;
 
 	if ((s = vcready(dir)) != TRUE)
@@ -110,10 +131,9 @@ vcshow(const char *dir, char *argv[], const char *name, int diff,
 		return (vcreport(bp, s, empty));
 	if (popselect(bp) != TRUE)
 		return (FALSE);
-	if (diff) {
-		(void)changemode(FFARG, 1, "diff");
-		modetabw(8);
-	}
+	/* diff-mode may not be built */
+	if ((fn = name_function(mode)) != NULL)
+		(void)(*fn)(FFARG, 1);
 	ewprintf("q to close");
 	return (TRUE);
 }
@@ -146,7 +166,7 @@ vcdiffs(int root)
 		return (s);
 	if (root)
 		argv[5] = NULL;
-	return (vcshow(dir, argv, "*vc-diff*", TRUE, "No changes"));
+	return (vcshow(dir, argv, "*vc-diff*", "diff-mode", "No changes"));
 }
 
 /* The commits of the file, or with root the repository, newest first. */
@@ -155,14 +175,33 @@ vclogs(int root)
 {
 	char	 dir[NFILEN], name[NFILEN];
 	char	*argv[] = { "git", "--literal-pathspecs", "log", "--no-color",
-		    "--max-count=2000", "--", name, NULL };
+		    "--decorate", "--max-count=2000", "--", name, NULL };
 	int	 s;
 
 	if ((s = vcfile(dir, name, root)) != TRUE)
 		return (s);
 	if (root)
-		argv[5] = NULL;
-	return (vcshow(dir, argv, "*vc-change-log*", FALSE, "No commits"));
+		argv[6] = NULL;
+	return (vcshowlog(dir, root ? "" : name, syntax_lookup(curbp), argv));
+}
+
+/*
+ * Show the log git prints with argv in dir, for the file name there,
+ * or for the repository when name is "", in log-view-mode.
+ */
+static int
+vcshowlog(const char *dir, const char *name, const struct syntax *sy,
+    char *argv[])
+{
+	/* l in a log, through M-x, passes the view's own */
+	if (dir != vcchangeview.dir)
+		(void)strlcpy(vcchangeview.dir, dir, sizeof(vcchangeview.dir));
+	if (name != vcchangeview.name)
+		(void)strlcpy(vcchangeview.name, name,
+		    sizeof(vcchangeview.name));
+	vcchangeview.sy = sy;
+	return (vcshow(dir, argv, vcchangeview.bname, "log-view-mode",
+	    "No commits"));
 }
 
 /* C-x v =: how the file differs from its last commit. */
@@ -194,6 +233,33 @@ vcrootlog(int f, int n)
 }
 
 /*
+ * Each line of the file name in dir, as of revision rev or as it is
+ * when NULL, with the commit that last changed it, dot on line, and
+ * the text colored by the rules sy.
+ */
+static int
+vcblame(const char *dir, char *name, char *rev, int line,
+    const struct syntax *sy)
+{
+	char	*argv[] = { "git", "--literal-pathspecs", "blame", NULL, NULL,
+		    NULL, NULL };
+	int	 i = 3, s;
+
+	if (rev != NULL)
+		argv[i++] = rev;
+	argv[i++] = "--";
+	argv[i] = name;
+	(void)strlcpy(vcannview.dir, dir, sizeof(vcannview.dir));
+	(void)strlcpy(vcannview.name, name, sizeof(vcannview.name));
+	vcannview.sy = sy;
+	syn_annotate(sy);
+	if ((s = vcshow(dir, argv, vcannview.bname, "vc-annotate-mode",
+	    "No lines")) != TRUE)
+		return (s);
+	return (setlineno(line));
+}
+
+/*
  * C-x v g: each line of the file with the commit that last changed
  * it, dot on the line it was on in the file.
  */
@@ -201,29 +267,20 @@ static int
 vcannotate(int f, int n)
 {
 	char	 dir[NFILEN], name[NFILEN];
-	char	*argv[] = { "git", "--literal-pathspecs", "blame", "--", name,
-		    NULL };
-	int	 s, line = curwp->w_dotline;
+	int	 s;
 
 	if ((s = vcfile(dir, name, FALSE)) != TRUE || (s = vcsave()) != TRUE)
 		return (s);
-	if ((s = vcshow(dir, argv, "*vc-annotate*", FALSE, "No lines")) != TRUE)
-		return (s);
-	return (setlineno(line));
+	return (vcblame(dir, name, NULL, curwp->w_dotline,
+	    syntax_lookup(curbp)));
 }
 
-/*
- * C-x v ~: the file as it was in a revision, in a read-only pop-up
- * named file.~rev~, in the modes of a file of that name.
- */
+/* C-x v ~: the file as it was in a revision, HEAD by default. */
 static int
 vcrevision(int f, int n)
 {
-	struct buffer	*bp;
-	char	 dir[NFILEN], name[NFILEN], rev[NFILEN], spec[NFILEN];
-	char	 bname[NBUFN];
-	char	*argv[] = { "git", "show", spec, NULL };
-	int	 s, len;
+	char	 dir[NFILEN], name[NFILEN], rev[NFILEN];
+	int	 s;
 
 	if ((s = vcfile(dir, name, FALSE)) != TRUE || (s = vcready(dir)) != TRUE)
 		return (s);
@@ -232,10 +289,29 @@ vcrevision(int f, int n)
 		return (ABORT);
 	if (rev[0] == '\0')
 		(void)strlcpy(rev, "HEAD", sizeof(rev));
+	return (vcshowrev(dir, name, rev));
+}
+
+/*
+ * The file name in dir as it was in revision rev, in a read-only
+ * pop-up named file.~rev~, in the modes of a file of that name.
+ */
+static int
+vcshowrev(const char *dir, const char *name, const char *rev)
+{
+	struct buffer	*bp;
+	char	 spec[NFILEN], bname[NBUFN];
+	char	*argv[] = { "git", "show", spec, NULL };
+	int	 s, len;
+
 	len = snprintf(spec, sizeof(spec), "%s:./%s", rev, name);
 	if (len < 0 || len >= (int)sizeof(spec))
 		return (dobeep_msg("Revision name too long"));
-	len = snprintf(bname, sizeof(bname), "%s.~%s~", name, rev);
+	/* a whole commit hash is long, its start is enough for the name */
+	len = strlen(rev);
+	if (len >= 40 && strspn(rev, "0123456789abcdef") == (size_t)len)
+		len = 8;
+	len = snprintf(bname, sizeof(bname), "%s.~%.*s~", name, len, rev);
 	if (len < 0 || len >= (int)sizeof(bname))
 		return (dobeep_msg("Revision name too long"));
 
@@ -622,7 +698,7 @@ vclogdiff(int f, int n)
 
 	if ((s = vcinlog()) != TRUE)
 		return (s);
-	return (vcshow(vclogdir, argv, "*vc-diff*", TRUE, "No changes"));
+	return (vcshow(vclogdir, argv, "*vc-diff*", "diff-mode", "No changes"));
 }
 
 /*
@@ -654,6 +730,254 @@ vcnext(int f, int n)
 	}
 }
 
+/* Whether lp is the line a commit starts with, in a log. */
+static int
+vciscommit(const struct line *lp)
+{
+	return (llength(lp) >= 7 && strncmp(ltext(lp), "commit ", 7) == 0);
+}
+
+/*
+ * n and p in a log: to the next or previous commit, n of them.
+ */
+static int
+vclogmove(int n)
+{
+	struct line	*lp = curwp->w_dotp;
+	int	 line = curwp->w_dotline, dir = n < 0 ? -1 : 1;
+
+	for (n = abs(n); n > 0; n--) {
+		do {
+			lp = dir < 0 ? lback(lp) : lforw(lp);
+			line += dir;
+			if (lp == curbp->b_headp)
+				return (dobeep_msg(dir < 0 ? "No earlier commit" :
+				    "No later commit"));
+		} while (!vciscommit(lp));
+		curwp->w_dotp = lp;
+		curwp->w_doto = 0;
+		curwp->w_dotline = line;
+		curwp->w_rflag |= WFMOVE;
+	}
+	return (TRUE);
+}
+
+/*
+ * The commit at dot in a log or an annotation, and what that shows.
+ * In a log it heads the entry dot is in; in an annotation it starts
+ * the line.
+ */
+static int
+vcatdot(char *hash, size_t len, struct vcview **vp)
+{
+	struct line	*lp = curwp->w_dotp;
+	int	 i = 0, n;
+
+	if (strcmp(curbp->b_bname, vcchangeview.bname) == 0) {
+		*vp = &vcchangeview;
+		while (!vciscommit(lp))
+			if ((lp = lback(lp)) == curbp->b_headp)
+				return (dobeep_msg("No commit here"));
+		i = 7;
+	} else if (strcmp(curbp->b_bname, vcannview.bname) == 0) {
+		*vp = &vcannview;
+		if (llength(lp) > 0 && lgetc(lp, 0) == '^')
+			i = 1;	/* the commit the history starts at */
+	} else
+		return (dobeep_msg("Not in a vc log or annotation"));
+	for (n = i; n < llength(lp) && isxdigit(lgetc(lp, n)); n++)
+		;
+	if (n == i || (size_t)(n - i) >= len)
+		return (dobeep_msg("No commit here"));
+	if (strspn(ltext(lp) + i, "0") >= (size_t)(n - i))
+		return (dobeep_msg("Not committed yet"));
+	memcpy(hash, ltext(lp) + i, n - i);
+	hash[n - i] = '\0';
+	return (TRUE);
+}
+
+/* The commit at dot as git show prints it, with flags and paths. */
+static int
+vcshowat(const char *flag, int file)
+{
+	struct vcview	*vp;
+	char	 hash[64];
+	char	*argv[] = { "git", "--literal-pathspecs", "show", "--no-color",
+		    (char *)flag, hash, NULL, NULL, NULL };
+	int	 s;
+
+	if ((s = vcatdot(hash, sizeof(hash), &vp)) != TRUE)
+		return (s);
+	if (file && vp->name[0] != '\0') {
+		argv[6] = "--";
+		argv[7] = vp->name;
+	}
+	return (vcshow(vp->dir, argv, "*vc-diff*", "diff-mode", "No changes"));
+}
+
+/* RET in a log: the commit at dot, its message and its diff. */
+static int
+vcviewcommit(int f, int n)
+{
+	return (vcshowat("--decorate", FALSE));
+}
+
+/* d and = in a log or annotation: the diff of the commit to the file. */
+static int
+vcviewdiff(int f, int n)
+{
+	return (vcshowat("--format=", TRUE));
+}
+
+/* D in a log or annotation: all the commit changed. */
+static int
+vcviewchangeset(int f, int n)
+{
+	return (vcshowat("--format=", FALSE));
+}
+
+/* The commit at dot, see vcatdot(), in a view of one file. */
+static int
+vcatfile(char *hash, size_t len, struct vcview **vp)
+{
+	int	 s;
+
+	if ((s = vcatdot(hash, len, vp)) != TRUE)
+		return (s);
+	if ((*vp)->name[0] == '\0')
+		return (dobeep_msg("Not the log of a file"));
+	return (TRUE);
+}
+
+/* f in a log or annotation: the file as it was in the commit. */
+static int
+vcviewfind(int f, int n)
+{
+	struct vcview	*vp;
+	char	 hash[64];
+	int	 s;
+
+	if ((s = vcatfile(hash, sizeof(hash), &vp)) != TRUE)
+		return (s);
+	return (vcshowrev(vp->dir, vp->name, hash));
+}
+
+/* a in a log: the file annotated as of the commit. */
+static int
+vcviewannotate(int f, int n)
+{
+	struct vcview	*vp;
+	char	 hash[64];
+	int	 s;
+
+	if ((s = vcatfile(hash, sizeof(hash), &vp)) != TRUE)
+		return (s);
+	return (vcblame(vp->dir, vp->name, hash, 1, vp->sy));
+}
+
+/* l in an annotation: the log of the file from the commit on the line. */
+static int
+vcviewlog(int f, int n)
+{
+	struct vcview	*vp;
+	char	 hash[64];
+	char	*argv[] = { "git", "--literal-pathspecs", "log", "--no-color",
+		    "--decorate", "--max-count=2000", hash, "--", NULL, NULL };
+	int	 s;
+
+	if ((s = vcatfile(hash, sizeof(hash), &vp)) != TRUE)
+		return (s);
+	argv[8] = vp->name;
+	return (vcshowlog(vp->dir, vp->name, vp->sy, argv));
+}
+
+static int
+vclognext(int f, int n)
+{
+	return (vclogmove(n));
+}
+
+static int
+vclogprev(int f, int n)
+{
+	return (vclogmove(-n));
+}
+
+static PF logview_cm[] = {
+	vcviewcommit		/* ^M */
+};
+
+static PF logview_eq[] = {
+	vcviewdiff		/* = */
+};
+
+static PF logview_D[] = {
+	vcviewchangeset		/* D */
+};
+
+static PF logview_a[] = {
+	vcviewannotate,		/* a */
+	rescan,			/* b */
+	rescan,			/* c */
+	vcviewdiff,		/* d */
+	rescan,			/* e */
+	vcviewfind		/* f */
+};
+
+static PF logview_n[] = {
+	vclognext,		/* n */
+	rescan,			/* o */
+	vclogprev		/* p */
+};
+
+static struct KEYMAPE (5) logviewmap = {
+	5,
+	5,
+	rescan,
+	{
+		{ CCHR('M'), CCHR('M'), logview_cm, NULL },
+		{ '=', '=', logview_eq, NULL },
+		{ 'D', 'D', logview_D, NULL },
+		{ 'a', 'f', logview_a, NULL },
+		{ 'n', 'p', logview_n, NULL }
+	}
+};
+
+/* The modes of the log and annotate pop-ups, for their colors. */
+static int
+logviewmode(int f, int n)
+{
+	return (changemode(f, n, "log-view"));
+}
+
+static int
+annotatemode(int f, int n)
+{
+	return (changemode(f, n, "vc-annotate"));
+}
+
+static PF annotate_d[] = {
+	vcviewdiff,		/* d */
+	rescan,			/* e */
+	vcviewfind		/* f */
+};
+
+static PF annotate_l[] = {
+	vcviewlog		/* l */
+};
+
+static struct KEYMAPE (4) annotatemap = {
+	4,
+	4,
+	rescan,
+	{
+		{ '=', '=', logview_eq, NULL },
+		{ 'D', 'D', logview_D, NULL },
+		{ 'd', 'f', annotate_d, NULL },
+		{ 'l', 'l', annotate_l, NULL }
+	}
+};
+
 void
 vc_init(void)
 {
@@ -670,6 +994,18 @@ vc_init(void)
 	funmap_add(vccancel, "vc-log-cancel", 0);
 	funmap_add(vclogdiff, "vc-log-diff", 0);
 	(void)minor_add((KEYMAP *)&vclogmap, "vc-log");
+	maps_add((KEYMAP *)&logviewmap, "log-view");
+	maps_add((KEYMAP *)&annotatemap, "vc-annotate");
+	funmap_add(logviewmode, "log-view-mode", 0);
+	funmap_add(annotatemode, "vc-annotate-mode", 0);
+	funmap_add(vclognext, "log-view-msg-next", 0);
+	funmap_add(vclogprev, "log-view-msg-prev", 0);
+	funmap_add(vcviewcommit, "log-view-show-commit", 0);
+	funmap_add(vcviewdiff, "log-view-diff", 0);
+	funmap_add(vcviewchangeset, "log-view-diff-changeset", 0);
+	funmap_add(vcviewfind, "log-view-find-revision", 0);
+	funmap_add(vcviewannotate, "log-view-annotate-version", 0);
+	funmap_add(vcviewlog, "vc-annotate-show-log-revision-at-line", 0);
 
 	dobindkey(fundamental_map, "vc-diff", "^Xv=");
 	dobindkey(fundamental_map, "vc-root-diff", "^XvD");

@@ -245,9 +245,38 @@ in the buffer;
 and
 .Ic vc-print-root-log
 the same for the whole repository.
-The result is listed in a read-only window, which
+The result is listed in a read-only window, colored like git colors
+it in a terminal, which
 .Ic q
 closes.
+In an annotation the text of each line is colored like the file.
+.Pp
+The keys in a log work on the commit dot is in, as in GNU Emacs:
+.Bl -tag -width xxxxxx -offset indent -compact
+.It n , p
+the next and previous commit
+.It RET
+the commit, its message and diff
+.It d , =
+its diff, to the file in the log of a file
+.It D
+its whole diff
+.It f
+the file as it was in it
+.It a
+the file annotated as of it
+.El
+.Pp
+In an annotation,
+.Ic d ,
+.Ic = ,
+.Ic D
+and
+.Ic f
+do the same for the commit of the line dot is on, and
+.Ic l
+shows the log of the file from that commit back.
+.Pp
 .Ic vc-revision-other-window
 shows the file as it was in a revision, also read-only.
 .Pp

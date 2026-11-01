@@ -158,6 +158,10 @@ static int	 yaml_parse(const struct line *, int, char *);
 #ifdef MODE_JSON
 static int	 json_parse(const struct line *, int, char *);
 #endif
+#ifdef ENABLE_VC
+static int	 log_parse(const struct line *, int, char *);
+static int	 annotate_parse(const struct line *, int, char *);
+#endif
 
 struct syntax {
 	const char	 *sy_mode;	/* buffer mode this applies to	*/
@@ -239,6 +243,10 @@ static const struct syntax syntab[] = {
 #endif
 #ifdef MODE_JSON
 	{ .sy_mode = "json", .sy_parse = json_parse, .sy_cstart = "//" },
+#endif
+#ifdef ENABLE_VC
+	{ .sy_mode = "log-view", .sy_parse = log_parse },
+	{ .sy_mode = "vc-annotate", .sy_parse = annotate_parse },
 #endif
 	{ NULL }
 };
@@ -629,7 +637,7 @@ conf_lead(const struct line *lp, char *attr)
 #endif
 
 #if defined(MODE_DIFF) || defined(MODE_GIT) || defined(MODE_MARKDOWN) || \
-    defined(MODE_YAML)
+    defined(MODE_YAML) || defined(ENABLE_VC)
 /*
  * The index of the next occurrence of c at or after i, or the
  * line length when not found.
@@ -771,6 +779,69 @@ diff_parse(const struct line *lp, int state, char *attr)
 	if (matchat(lp, 0, MAIL_BLURB) == len)
 		setattrs(attr, 0, len, SYN_NUMBER);
 	return (0);
+}
+#endif
+
+#ifdef ENABLE_VC
+/*
+ * The output of git log, colored the way git colors it: the commit
+ * line bold, the branches and tags it carries green, and the names
+ * of the fields below it.  The message, indented, is plain.
+ */
+static int
+log_parse(const struct line *lp, int state, char *attr)
+{
+	int	 i, len = llength(lp);
+
+	if (matchat(lp, 0, "commit ") != 0) {
+		i = scanto(lp, 0, '(');
+		setattrs(attr, 0, i, SYN_HEADING);
+		setattrs(attr, i, len - i, SYN_TYPE);
+	} else if (len > 0 && !isspace(lgetc(lp, 0)) &&
+	    (i = scanto(lp, 0, ':')) < len)
+		setattrs(attr, 0, i + 1, SYN_KEYWORD);
+	return (0);
+}
+
+/* The rules of the file vc-annotate shows, see syn_annotate(). */
+static const struct syntax	*annotated;
+
+/*
+ * Color the text of the lines vc-annotate shows by the rules sy of
+ * the file it comes from, see syntax_lookup().
+ */
+void
+syn_annotate(const struct syntax *sy)
+{
+	annotated = sy;
+}
+
+/*
+ * The output of git blame: the commit of each line, in red when the
+ * line is not committed yet, then who changed it and when, set off
+ * from the text of the line.  The text after it is colored like the
+ * file, its state carried from line to line as there.
+ */
+static int
+annotate_parse(const struct line *lp, int state, char *attr)
+{
+	struct line	 text;
+	int	 i, j, len = llength(lp);
+
+	i = scanto(lp, 0, ' ');
+	setattrs(attr, 0, i, matchat(lp, 0, "00000000") != 0 ?
+	    SYN_NUMBER : SYN_KEYWORD);
+	if ((j = scanto(lp, i, ')')) == len)
+		return (state);
+	setattrs(attr, i, j + 1 - i, SYN_COMMENT);
+	/* past ") ", a view of the text, linked like the line itself */
+	if (annotated == NULL || (j += 2) > len)
+		return (state);
+	text = *lp;
+	text.l_text = ltext(lp) + j;
+	text.l_used = text.l_size = len - j;
+	return (syn_parse(annotated, &text, state,
+	    attr != NULL ? attr + j : NULL));
 }
 #endif
 
