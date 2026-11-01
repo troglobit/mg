@@ -550,6 +550,20 @@ cleanup:
 }
 
 /*
+ * What follows writing bp to its file, for write-file and save-buffer
+ * alike.
+ */
+static void
+saved(struct buffer *bp)
+{
+	(void)fupdstat(bp);
+	bp->b_flag &= ~(BFCHG | BFBAK);
+	upmodes(bp);
+	undo_add_boundary(FFRAND, 1);
+	undo_add_modified();
+}
+
+/*
  * Ask for a file name and write the contents of the current buffer to that
  * file.  Update the remembered file name and clear the buffer changed flag.
  * This handling of file names is different from the earlier versions and
@@ -598,11 +612,7 @@ filewrite(int f, int n)
 		if (augbname(bn, curbp->b_fname, sizeof(bn))
 		    == FALSE || setbname(curbp, bn) == FALSE)
 			return (FALSE);
-		(void)fupdstat(curbp);
-		curbp->b_flag &= ~(BFBAK | BFCHG);
-		upmodes(curbp);
-		undo_add_boundary(FFRAND, 1);
-		undo_add_modified();
+		saved(curbp);
 	}
 	return (s);
 }
@@ -665,11 +675,7 @@ buffsave(struct buffer *bp)
 			return (s);
 	}
 	if ((s = writeout(&ffp, bp, bp->b_fname)) == TRUE) {
-		(void)fupdstat(bp);
-		bp->b_flag &= ~(BFCHG | BFBAK);
-		upmodes(bp);
-		undo_add_boundary(FFRAND, 1);
-		undo_add_modified();
+		saved(bp);
 	}
 	return (s);
 }
