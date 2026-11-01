@@ -1073,6 +1073,81 @@ popbuffer(const char *name, struct maps_s *mode)
 }
 
 /*
+ * The minor mode of a pop-up buffer, name, with q to close it.  Being
+ * minor, a major mode can come on top of it, like diff-mode.
+ */
+static int	 popquit(int, int);
+
+static PF pop_q[] = {
+	popquit			/* q */
+};
+
+static struct KEYMAPE (1) popmap = {
+	1,
+	1,
+	rescan,
+	{
+		{
+			'q', 'q', pop_q, NULL
+		}
+	}
+};
+
+static struct mgwin	*popfrom;	/* the window popselect() came from */
+
+struct maps_s *
+popmode(const char *name)
+{
+	struct maps_s	*m;
+
+	if ((m = name_mode(name)) == NULL) {
+		if (maps_add((KEYMAP *)&popmap, name) != TRUE)
+			return (NULL);
+		m = name_mode(name);
+		m->p_minor = 1;
+	}
+	return (m);
+}
+
+/*
+ * Pop up bp and select its window, see popshow(), remembering the
+ * window it was asked from for popdone().
+ */
+int
+popselect(struct buffer *bp)
+{
+	struct mgwin	*wp;
+
+	if (curwp->w_bufp != bp)
+		popfrom = curwp;
+	if ((wp = popshow(bp)) == NULL)
+		return (FALSE);
+	curwp = wp;
+	curbp = bp;
+	return (TRUE);
+}
+
+/*
+ * Close the pop-up bp, see popclose(), back in the window popselect()
+ * came from.
+ */
+int
+popdone(struct buffer *bp)
+{
+	struct mgwin	*from = popfrom;
+
+	popfrom = NULL;
+	return (popclose(bp, from));
+}
+
+/* q in a pop-up: close it. */
+static int
+popquit(int f, int n)
+{
+	return (popdone(curbp));
+}
+
+/*
  * Show bp in a pop-up window.  A window split off for it is flagged
  * ephemeral, for popclose() to delete again.
  */

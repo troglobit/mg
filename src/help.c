@@ -26,8 +26,6 @@ static int	 helpset = FALSE;	/* user set it, keep hands off */
 
 static int	showall(struct buffer *, KEYMAP *, char *);
 static PF	keyfunc(const KCHAR *, int, int *);
-static struct maps_s *popmode(const char *);
-static int	helpshow(struct buffer *);
 
 /*
  * Toggle permanent display of short help text in echo buffer
@@ -164,7 +162,7 @@ describekey(int f, int n)
 	if (addline(bp, "See the mg(1) manual for what it does.") == FALSE)
 		return (FALSE);
 	eerase();
-	return (helpshow(bp));
+	return (popselect(bp));
 }
 
 /*
@@ -311,7 +309,7 @@ wallchart(int f, int n)
 	if ((addline(bp, "Global bindings:") == FALSE) ||
 	    (showall(bp, fundamental_map, "") == FALSE))
 		return (FALSE);
-	return (helpshow(bp));
+	return (popselect(bp));
 }
 
 static int
@@ -391,80 +389,7 @@ apropos_command(int f, int n)
 		}
 	}
 	free_file_list(fnames);
-	return (helpshow(bp));
-}
-
-/*
- * The *quick* and *help* pop-ups: q closes them.
- */
-static int	 popquit(int, int);
-
-static PF pop_q[] = {
-	popquit			/* q */
-};
-
-static struct KEYMAPE (1) popmap = {
-	1,
-	1,
-	rescan,
-	{
-		{
-			'q', 'q', pop_q, NULL
-		}
-	}
-};
-
-static struct mgwin	*popfrom;	/* the window *help* was asked from */
-
-/*
- * The mode a pop-up buffer gets, with q to close it.
- */
-static struct maps_s *
-popmode(const char *name)
-{
-	static int	 initialized = 0;
-
-	if (!initialized) {
-		maps_add((KEYMAP *)&popmap, "quick");
-		maps_add((KEYMAP *)&popmap, "view");
-		initialized = 1;
-	}
-	return (name_mode(name));
-}
-
-/*
- * Close a help pop-up, back in the window it was asked from.
- */
-static int
-helpclose(struct buffer *bp)
-{
-	struct mgwin	*from = popfrom;
-
-	popfrom = NULL;
-	return (popclose(bp, from));
-}
-
-static int
-popquit(int f, int n)
-{
-	return (helpclose(curbp));
-}
-
-/*
- * Pop up the *help* buffer and select its window.
- */
-static int
-helpshow(struct buffer *bp)
-{
-	struct mgwin	*wp;
-
-	if (curwp->w_bufp != bp)
-		popfrom = curwp;
-	if ((wp = popshow(bp)) == NULL)
-		return (FALSE);
-	curwp = wp;
-	curbp = bp;
-	return (TRUE);
+	return (popselect(bp));
 }
 
 /*
@@ -477,7 +402,7 @@ quickhelp(int f, int n)
 
 	/* If already displayed, toggle off */
 	if ((bp = bfind("*quick*", FALSE)) != NULL)
-		return (helpclose(bp));
+		return (popdone(bp));
 
 	/* Create new */
 	if ((bp = popbuffer("*quick*", popmode("quick"))) == NULL)
