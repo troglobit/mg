@@ -279,13 +279,33 @@ poptag(int f, int n)
 int
 loadtags(const char *fn, int depth)
 {
+	/* the files read, so an include loads each one only once */
+	static struct {
+		dev_t	 dev;
+		ino_t	 ino;
+	} seen[64];
+	static int nseen;
 	struct stat sb;
 	char *l;
 	FILE *fd;
-	int c, s;
+	int c, i, s;
 	
 	if (!secure_allowed(fn))
 		return (FALSE);
+	if (depth == 0)
+		nseen = 0;
+	/* before opening, which would block on a FIFO */
+	if (stat(fn, &sb) == 0) {
+		if (!S_ISREG(sb.st_mode)) {
+			dobeep();
+			ewprintf("Not a regular file");
+			return (FALSE);
+		}
+		for (i = 0; i < nseen; i++)
+			if (seen[i].dev == sb.st_dev &&
+			    seen[i].ino == sb.st_ino)
+				return (TRUE);
+	}
 	if ((fd = fopen(fn, "r")) == NULL) {
 		dobeep();
 		ewprintf("Unable to open tags file: %s", fn);
@@ -303,6 +323,14 @@ loadtags(const char *fn, int depth)
 		fclose(fd);
 		return (FALSE);
 	}
+	if (nseen == NELEMS(seen)) {
+		dobeep();
+		ewprintf("Too many tags files");
+		fclose(fd);
+		return (FALSE);
+	}
+	seen[nseen].dev = sb.st_dev;
+	seen[nseen++].ino = sb.st_ino;
 	c = getc(fd);
 	(void)ungetc(c, fd);
 	if (c == '\f') {
