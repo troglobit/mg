@@ -138,14 +138,14 @@ static int
 vcdiffs(int root)
 {
 	char	 dir[NFILEN], name[NFILEN];
-	char	*argv[] = { "git", "diff", "--no-color", "HEAD", "--", name,
-		    NULL };
+	char	*argv[] = { "git", "--literal-pathspecs", "diff", "--no-color",
+		    "HEAD", "--", name, NULL };
 	int	 s;
 
 	if ((s = vcfile(dir, name, root)) != TRUE || (s = vcsave()) != TRUE)
 		return (s);
 	if (root)
-		argv[4] = NULL;
+		argv[5] = NULL;
 	return (vcshow(dir, argv, "*vc-diff*", TRUE, "No changes"));
 }
 
@@ -154,14 +154,14 @@ static int
 vclogs(int root)
 {
 	char	 dir[NFILEN], name[NFILEN];
-	char	*argv[] = { "git", "log", "--no-color", "--max-count=2000",
-		    "--", name, NULL };
+	char	*argv[] = { "git", "--literal-pathspecs", "log", "--no-color",
+		    "--max-count=2000", "--", name, NULL };
 	int	 s;
 
 	if ((s = vcfile(dir, name, root)) != TRUE)
 		return (s);
 	if (root)
-		argv[4] = NULL;
+		argv[5] = NULL;
 	return (vcshow(dir, argv, "*vc-change-log*", FALSE, "No commits"));
 }
 
@@ -201,7 +201,8 @@ static int
 vcannotate(int f, int n)
 {
 	char	 dir[NFILEN], name[NFILEN];
-	char	*argv[] = { "git", "blame", "--", name, NULL };
+	char	*argv[] = { "git", "--literal-pathspecs", "blame", "--", name,
+		    NULL };
 	int	 s, line = curwp->w_dotline;
 
 	if ((s = vcfile(dir, name, FALSE)) != TRUE || (s = vcsave()) != TRUE)
@@ -337,9 +338,9 @@ vcstatus(const char *dir, const char *name)
 {
 	FILE	*fp;
 	pid_t	 pid;
-	char	*argv[] = { "git", "--no-optional-locks", "-c",
-		    "core.fsmonitor=false", "status", "--porcelain", "--ignored",
-		    "--", (char *)name, NULL };
+	char	*argv[] = { "git", "--literal-pathspecs", "--no-optional-locks",
+		    "-c", "core.fsmonitor=false", "status", "--porcelain",
+		    "--ignored", "--", (char *)name, NULL };
 	int	 c, state;
 
 	if ((fp = runopen(dir, argv, &pid, 0)) == NULL)
@@ -422,7 +423,8 @@ vcdo(const char *dir, char *argv[])
 static int
 vcadd(const char *dir, char *name)
 {
-	char	*argv[] = { "git", "add", "--", name, NULL };
+	char	*argv[] = { "git", "--literal-pathspecs", "add", "--", name,
+		    NULL };
 	int	 s;
 
 	if ((s = vcdo(dir, argv)) != TRUE)
@@ -453,7 +455,8 @@ static int
 vcrevert(int f, int n)
 {
 	char	 dir[NFILEN], name[NFILEN], prompt[NFILEN + 32];
-	char	*argv[] = { "git", "checkout", "HEAD", "--", name, NULL };
+	char	*argv[] = { "git", "--literal-pathspecs", "checkout", "HEAD",
+		    "--", name, NULL };
 	int	 s, state;
 
 	if (secure)
@@ -565,8 +568,8 @@ vccommit(int f, int n)
 {
 	struct line	*lp;
 	char	*msg, *p;
-	char	*argv[] = { "git", "commit", "--cleanup=strip", "-m", NULL,
-		    "--", vclogname, NULL };
+	char	*argv[] = { "git", "--literal-pathspecs", "commit",
+		    "--cleanup=strip", "-m", NULL, "--", vclogname, NULL };
 	size_t	 len = 1;
 	int	 s;
 
@@ -586,7 +589,7 @@ vccommit(int f, int n)
 		free(msg);
 		return (dobeep_msg("Empty message, C-c C-k to cancel"));
 	}
-	argv[4] = msg;
+	argv[5] = msg;
 	s = vcdo(vclogdir, argv);
 	free(msg);
 	if (s != TRUE)
@@ -613,8 +616,8 @@ vccancel(int f, int n)
 static int
 vclogdiff(int f, int n)
 {
-	char	*argv[] = { "git", "diff", "--no-color", "HEAD", "--",
-		    vclogname, NULL };
+	char	*argv[] = { "git", "--literal-pathspecs", "diff", "--no-color",
+		    "HEAD", "--", vclogname, NULL };
 	int	 s;
 
 	if ((s = vcinlog()) != TRUE)
