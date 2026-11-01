@@ -25,6 +25,7 @@
 static char	*veread(const char *, char *, size_t, int, va_list)
 			__attribute__((__format__ (printf, 1, 0)));
 static int	 complt(int, int, char *, size_t, int, int *);
+static void	 mbwindows(void);
 static int	 complt_list(int, char *, int);
 static int	 complt_show(struct list *);
 static void	 eformat(const char *, va_list)
@@ -73,6 +74,7 @@ eyorn(const char *sp)
 
 	ewprintf("%s? (y or n) ", sp);
 	for (;;) {
+		mbwindows();
 		s = getkey(FALSE);
 		if (s == 'y' || s == 'Y' || s == ' ') {
 			eerase();
@@ -107,6 +109,7 @@ eynorr(const char *sp)
 
 	ewprintf("%s? (y, n or r) ", sp);
 	for (;;) {
+		mbwindows();
 		s = getkey(FALSE);
 		if (s == 'y' || s == 'Y' || s == ' ') {
 			eerase();
