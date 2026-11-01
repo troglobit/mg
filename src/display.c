@@ -1590,6 +1590,11 @@ modeline(struct mgwin *wp, int modelinecolor)
 		++n;
 	}
 
+	if (bp->b_vc[0] != '\0') {
+		n += vtputs(bp->b_vc, wp);
+		n += vtputs("  ", wp);
+	}
+
 	vtputc('(', wp);
 	++n;
 	/* the major mode first, then the modes that qualify it */

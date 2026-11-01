@@ -7,6 +7,7 @@
  */
 
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -235,6 +236,107 @@ vcrevision(int f, int n)
 		return (FALSE);
 	automode(name);
 	return (TRUE);
+}
+
+/*
+ * The branch checked out in the repository the file at path is in, or
+ * the start of the commit when none is, read from HEAD in its git
+ * directory: .git, or where a .git file points, as in a worktree.
+ */
+static int
+vchead(const char *path, char *head, size_t len)
+{
+	struct stat	 st;
+	FILE	*fp;
+	char	 dir[NFILEN], git[NFILEN], line[NFILEN], *p;
+
+	(void)strlcpy(dir, path, sizeof(dir));
+	for (;;) {
+		if ((p = strrchr(dir, '/')) == NULL)
+			return (FALSE);
+		*p = '\0';
+		if (snprintf(git, sizeof(git), "%s/.git", dir) >= (int)sizeof(git))
+			return (FALSE);
+		if (stat(git, &st) == 0)
+			break;
+	}
+	if (!S_ISDIR(st.st_mode)) {
+		if ((fp = fopen(git, "r")) == NULL)
+			return (FALSE);
+		p = fgets(line, sizeof(line), fp);
+		fclose(fp);
+		if (p == NULL || strncmp(line, "gitdir: ", 8) != 0)
+			return (FALSE);
+		line[strcspn(line, "\n")] = '\0';
+		if (line[8] == '/')
+			(void)strlcpy(git, line + 8, sizeof(git));
+		else if (snprintf(git, sizeof(git), "%s/%s", dir, line + 8) >=
+		    (int)sizeof(git))
+			return (FALSE);
+	}
+	if (strlcat(git, "/HEAD", sizeof(git)) >= sizeof(git) ||
+	    (fp = fopen(git, "r")) == NULL)
+		return (FALSE);
+	p = fgets(line, sizeof(line), fp);
+	fclose(fp);
+	if (p == NULL)
+		return (FALSE);
+	line[strcspn(line, "\n")] = '\0';
+	if (strncmp(line, "ref: refs/heads/", 16) == 0)
+		p = line + 16;
+	else if (strncmp(line, "ref: ", 5) == 0)
+		p = line + 5;
+	else {
+		p = line;	/* detached: the commit, shortened */
+		line[strnlen(line, 7)] = '\0';
+	}
+	(void)strlcpy(head, p, len);
+	return (TRUE);
+}
+
+/*
+ * Set the version control part of the mode line of bp: "Git-main" for
+ * a file as committed on branch main, "Git:main" once it has changes,
+ * nothing for a file git does not track.  git only runs for a file in
+ * a repository, as GNU Emacs does, and so trusts the repository's own
+ * config: fsmonitor is turned off, but a filter driver it names still
+ * runs when git checks the file.  --no-optional-locks keeps git from
+ * rewriting the index.
+ */
+void
+vcstate(struct buffer *bp)
+{
+	struct stat	 st;
+	FILE	*fp;
+	pid_t	 pid;
+	char	 dir[NFILEN], head[sizeof(bp->b_vc) - 4], *p;
+	char	*argv[] = { "git", "--no-optional-locks", "-c",
+		    "core.fsmonitor=false", "status", "--porcelain", "--ignored",
+		    "--", NULL, NULL };
+	int	 c, state;
+
+	bp->b_vc[0] = '\0';
+	/* a new file is not on disk yet */
+	if (secure || bp->b_fname[0] == '\0' || stat(bp->b_fname, &st) != 0 ||
+	    !S_ISREG(st.st_mode) || !vchead(bp->b_fname, head, sizeof(head)))
+		return;
+	(void)strlcpy(dir, bp->b_fname, sizeof(dir));
+	if ((p = strrchr(dir, '/')) == NULL)
+		return;
+	*p = '\0';
+	argv[8] = bp->b_fname + (p + 1 - dir);
+	if ((fp = runopen(dir, argv, &pid, 0)) == NULL)
+		return;
+	/* nothing for a file as committed, else two status letters */
+	if ((c = fgetc(fp)) == EOF)
+		state = '-';
+	else
+		state = c == '?' || c == '!' ? 0 : ':';
+	while (c != EOF)
+		c = fgetc(fp);
+	if (runclose(fp, pid) != 0 || state == 0)
+		return;
+	(void)snprintf(bp->b_vc, sizeof(bp->b_vc), "Git%c%s", state, head);
 }
 
 void

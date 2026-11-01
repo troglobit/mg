@@ -250,6 +250,13 @@ The result is listed in a read-only window, which
 closes.
 .Ic vc-revision-other-window
 shows the file as it was in a revision, also read-only.
+.Pp
+The mode line of a file git tracks shows its branch:
+.Ql Git-main
+when the file is as committed on branch main, and
+.Ql Git:main
+once it has changes.
+It is updated when the file is read or saved.
 .Sh GZIP
 .Nm
 is capable of opening gzipped text files, e.g.

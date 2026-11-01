@@ -252,6 +252,7 @@ readin(char *fname)
 	}
 
 	automode(fname);
+	vcstate(curbp);
 
 	/* no change */
 	curbp->b_flag &= ~BFCHG;
@@ -558,6 +559,7 @@ saved(struct buffer *bp)
 {
 	(void)fupdstat(bp);
 	bp->b_flag &= ~(BFCHG | BFBAK);
+	vcstate(bp);
 	upmodes(bp);
 	undo_add_boundary(FFRAND, 1);
 	undo_add_modified();

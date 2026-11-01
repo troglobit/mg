@@ -405,6 +405,7 @@ struct buffer {
 	int		 b_dotline;	/* Line number of dot */
 	int		 b_markline;	/* Line number of mark */
 	int		 b_lines;	/* Number of lines in file	*/
+	char		 b_vc[40];	/* "Git-main", see vcstate()	 */
 };
 #define b_bufp	b_list.l_p.x_bp
 #define b_bname b_list.l_name
@@ -1078,6 +1079,13 @@ int		 globalwdtoggle(int, int);
 int		 compile(int, int);
 #else
 static inline int globalwd(void) { return FALSE; }
+#endif
+
+/* vc.c X */
+#ifdef ENABLE_VC
+void		 vcstate(struct buffer *);
+#else
+static inline void vcstate(struct buffer *bp) { }
 #endif
 
 /* bell.c */
