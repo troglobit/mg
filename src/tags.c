@@ -93,6 +93,8 @@ tagsvisit(int f, int n)
 	temp = bufp;
 	if (temp[0] == '\0')
 		temp = fname;
+	if ((temp = adjustname(temp, TRUE)) == NULL)
+		return (FALSE);
 
 	return (loadtags(temp));
 }
