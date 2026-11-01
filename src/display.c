@@ -1264,14 +1264,13 @@ update(int modelinecolor)
 		tttop = HUGE;	/* Forget where you set. */
 		ttbot = HUGE;	/* scroll region.	 */
 		tthue = CNONE;	/* Color unknown.	 */
-		if (epresf != TRUE) {
-			epresf = FALSE;	/* The message area.	 */
+		if (epresf == FALSE) {
 			ttmove(0, 0);
 			tteeop();
 		}
 		for (i = 0; i < nrow - 1; ++i) {
 			/* a prompt or message on the echo line stays */
-			if (epresf == TRUE) {
+			if (epresf != FALSE) {
 				ttmove(i, 0);
 				tteeol();
 			}
