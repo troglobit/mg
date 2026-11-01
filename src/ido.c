@@ -148,20 +148,23 @@ ido_stop(void)
 }
 
 /*
- * How well a name matches the text: 0 exactly, 1 as a prefix, 2 as
- * a substring, 3 not at all; case does not matter.
+ * How well a name matches the text: 0 exactly, 1 exactly but for case,
+ * 2 as a prefix, 3 as a substring, 4 not at all.  Case only breaks a
+ * tie, as between tags and TAGS.
  */
 static int
 rank(const char *name, const char *text)
 {
 	size_t	 len = strlen(text);
 
+	if (strcmp(name, text) == 0)
+		return (0);
 	if (strncasecmp(name, text, len) == 0)
-		return (name[len] == '\0' ? 0 : 1);
+		return (name[len] == '\0' ? 1 : 2);
 	for (; *name != '\0'; name++)
 		if (strncasecmp(name, text, len) == 0)
-			return (2);
-	return (3);
+			return (3);
+	return (4);
 }
 
 /*
@@ -180,7 +183,7 @@ ido_match(const char *text)
 	ido.stale = FALSE;
 	ido.sel = 0;
 	ido.nmatch = 0;
-	for (r = 0; r < 3; r++)
+	for (r = 0; r < 4; r++)
 		for (i = 0; i < ido.nname; i++)
 			if (rank(ido.name[i], text) == r)
 				ido.match[ido.nmatch++] = i;
