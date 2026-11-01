@@ -18,8 +18,10 @@
 #include <unistd.h>
 
 #include "def.h"
+#include "kbd.h"
 
 struct ctag;
+struct tagpos;
 
 static int               addctag(char *);
 static int               addetag(const char *, size_t, const char *,
@@ -27,25 +29,40 @@ static int               addetag(const char *, size_t, const char *,
 static int               atbow(void);
 void                     closetags(void);
 static int               ctagcmp(struct ctag *, struct ctag *);
+static int               gototag(char *);
+static int               inserttag(struct ctag *);
 static int               loadbuffer(char *);
 static int               loadetags(FILE *, const char *, int);
 static int               loadtags(const char *, int);
-static int               pushtag(char *);
+static void              freepos(struct tagpos *);
+static struct tagpos     *markpos(void);
+static int               pushtag(struct ctag *);
 static int               searchpat(char *, int);
 static struct ctag       *searchtag(char *);
+static int               showtag(struct ctag *);
 static char              *strip(char *, size_t);
 static void              unloadtags(void);
+static int               xrefgoto(int, int);
+static int               xreflist(struct ctag **, int, const char *);
+static int               xrefnext(int, int);
+static int               xrefprev(int, int);
+static int               xrefquit(int, int);
+static int               xrefshow(int);
+static struct mgwin      *xrefwin(void);
 
 #define DEFAULTFN "tags"
 #define ETAGSFN   "TAGS"
 
 /*
- * ctags(1) and etags(1) entries are parsed and maintained in a tree.
- * The pattern is the start of the line the tag is defined on; etags
- * also gives its line number.
+ * ctags(1) and etags(1) entries are kept in a tree with one node per
+ * name; other definitions of the name are chained to it in the order
+ * read.  The pattern is the start of the line the tag is defined on;
+ * etags also gives its line number.
  */
 struct ctag {
 	RB_ENTRY(ctag) entry;
+	struct ctag *next;	/* another definition of the tag	*/
+	struct ctag *last;	/* in the tree, the last of the chain	*/
 	char *tag;
 	char *fname;
 	char *pat;
@@ -62,6 +79,44 @@ struct tagpos {
 	int    isfile;
 };
 SLIST_HEAD(tagstack, tagpos) shead = SLIST_HEAD_INITIALIZER(shead);
+
+/* The files read, so each is loaded only once until the tags are unloaded. */
+static struct {
+	dev_t	 dev;
+	ino_t	 ino;
+} seen[64];
+static int	 nseen;
+
+/*
+ * The *xref* list of the definitions of a tag, one line for each in
+ * xref[]: n and p show one, RET goes there and q closes the list.
+ * Going to one pushes where the list was asked from on the tag stack.
+ */
+static struct ctag	**xref;
+static int		 nxref;
+static struct mgwin	*xreffrom;	/* the window the list was asked from */
+static struct tagpos	*xrefpos;	/* where, until pushed		*/
+
+static PF xref_cm[] = {
+	xrefgoto		/* ^M */
+};
+
+static PF xref_nq[] = {
+	xrefnext,		/* n */
+	rescan,			/* o */
+	xrefprev,		/* p */
+	xrefquit		/* q */
+};
+
+static struct KEYMAPE (2) xrefmap = {
+	2,
+	2,
+	rescan,
+	{
+		{ CCHR('M'), CCHR('M'), xref_cm, NULL },
+		{ 'n', 'q', xref_nq, NULL }
+	}
+};
 
 int
 ctagcmp(struct ctag *s, struct ctag *t)
@@ -154,7 +209,30 @@ findtag(int f, int n)
 	if (RB_EMPTY(&tags))
 		if ((ret = tagsvisit(f, n)) != TRUE)
 			return (ret);
-	return pushtag(tok);
+	return (gototag(tok));
+}
+
+/*
+ * Go to the definition of tok, or list them in *xref* when there are
+ * more than one.
+ */
+static int
+gototag(char *tok)
+{
+	struct ctag *res, *t, **v;
+	int i, n;
+
+	if ((res = searchtag(tok)) == NULL)
+		return (FALSE);
+	if (res->next == NULL)
+		return (pushtag(res));
+	for (n = 0, t = res; t != NULL; t = t->next)
+		n++;
+	if ((v = calloc(n, sizeof(*v))) == NULL)
+		return (dobeep_msg("Out of memory"));
+	for (i = 0, t = res; t != NULL; t = t->next)
+		v[i++] = t;
+	return (xreflist(v, n, tok));
 }
 
 /*
@@ -163,65 +241,225 @@ findtag(int f, int n)
 void
 unloadtags(void)
 {
-	struct ctag *var, *nxt;
+	struct ctag *var, *nxt, *t;
 	
+	/* the *xref* list points into the tree */
+	free(xref);
+	xref = NULL;
+	nxref = 0;
+	nseen = 0;
 	for (var = RB_MIN(tagtree, &tags); var != NULL; var = nxt) {
 		nxt = RB_NEXT(tagtree, &tags, var);
 		RB_REMOVE(tagtree, &tags, var);
-		/* line parsed with fparseln needs to be freed */
-		free(var->tag);
-		free(var);
+		while ((t = var) != NULL) {
+			var = t->next;
+			/* line parsed with fparseln needs to be freed */
+			free(t->tag);
+			free(t);
+		}
 	}
 }
 
 /*
- * Lookup tag passed in tree and if found, push current location and 
- * buffername onto stack, load the file with tag definition into a new
- * buffer and position dot at the pattern.
+ * The location of dot, for the tag stack, or NULL when out of memory.
  */
-/*ARGSUSED */
-int
-pushtag(char *tok)
+static struct tagpos *
+markpos(void)
 {
-	struct ctag *res;
 	struct tagpos *s;
-	char *bname;
-	int doto, dotline, isfile;
-	
-	if ((res = searchtag(tok)) == NULL)
-		return (FALSE);
-		
-	doto = curwp->w_doto;
-	dotline = curwp->w_dotline;
+	int isfile;
+
 	/* where to return: the file, or the name of a buffer with none */
 	isfile = curbp->b_fname[0] != '\0';
-	if ((bname = strdup(isfile ? curbp->b_fname : curbp->b_bname)) == NULL)
-		return (dobeep_msg("Out of memory"));
-
-	if (loadbuffer(res->fname) == FALSE) {
-		free(bname);
-		return (FALSE);
+	if ((s = malloc(sizeof(struct tagpos))) == NULL ||
+	    (s->bname = strdup(isfile ? curbp->b_fname : curbp->b_bname)) ==
+	    NULL) {
+		free(s);
+		(void)dobeep_msg("Out of memory");
+		return (NULL);
 	}
-	
-	if (searchpat(res->pat, res->line) == TRUE) {
-		if ((s = malloc(sizeof(struct tagpos))) == NULL) {
-			free(bname);
-			return (dobeep_msg("Out of memory"));
-		}
-		s->bname = bname;
-		s->isfile = isfile;
-		s->doto = doto;
-		s->dotline = dotline;
-		SLIST_INSERT_HEAD(&shead, s, entry);
-		return (TRUE);
-	} else {
-		free(bname);
+	s->isfile = isfile;
+	s->doto = curwp->w_doto;
+	s->dotline = curwp->w_dotline;
+	return (s);
+}
+
+/*
+ * Free an entry for the tag stack.
+ */
+static void
+freepos(struct tagpos *s)
+{
+	free(s->bname);
+	free(s);
+}
+
+/*
+ * Load the file with the definition of res into the current window and
+ * put dot on it.
+ */
+static int
+showtag(struct ctag *res)
+{
+	if (loadbuffer(res->fname) == FALSE)
+		return (FALSE);
+	if (searchpat(res->pat, res->line) == FALSE) {
 		dobeep();
 		ewprintf("%s: pattern not found", res->tag);
 		return (FALSE);
 	}
-	/* NOTREACHED */
-	return (FALSE);
+	curwp->w_rflag |= WFMOVE;
+	return (TRUE);
+}
+
+/*
+ * Go to the definition res, pushing where dot was onto the tag stack.
+ */
+static int
+pushtag(struct ctag *res)
+{
+	struct tagpos *s;
+
+	if ((s = markpos()) == NULL)
+		return (FALSE);
+	if (showtag(res) == FALSE) {
+		freepos(s);
+		return (FALSE);
+	}
+	SLIST_INSERT_HEAD(&shead, s, entry);
+	return (TRUE);
+}
+
+/*
+ * List the n definitions in v, of tok, in *xref* and select it.  The
+ * list takes v over.
+ */
+static int
+xreflist(struct ctag **v, int n, const char *tok)
+{
+	static int	 initialized;
+	struct buffer	*bp;
+	struct mgwin	*wp;
+	char		 cwd[NFILEN];
+	const char	*fn;
+	size_t		 clen;
+	int		 i;
+
+	if (!initialized) {
+		maps_add((KEYMAP *)&xrefmap, "xref");
+		initialized = 1;
+	}
+	free(xref);
+	xref = v;
+	nxref = n;
+	if (xrefpos != NULL)
+		freepos(xrefpos);
+	if ((xrefpos = markpos()) == NULL)
+		return (FALSE);
+	xreffrom = curwp;
+
+	if ((bp = popbuffer("*xref*", name_mode("xref"))) == NULL)
+		return (FALSE);
+	/* names under the directory of the buffer are shown relative */
+	if (getbufcwd(cwd, sizeof(cwd)) == FALSE)
+		cwd[0] = '\0';
+	clen = strlen(cwd);
+	for (i = 0; i < n; i++) {
+		fn = v[i]->fname;
+		if (clen > 0 && strncmp(fn, cwd, clen) == 0)
+			fn += clen;
+		if (v[i]->line > 0)
+			addlinef(bp, "%s:%d: %s", fn, v[i]->line, v[i]->pat);
+		else
+			addlinef(bp, "%s: %s", fn, v[i]->pat);
+	}
+	if ((wp = popshow(bp)) == NULL)
+		return (FALSE);
+	curwp = wp;
+	curbp = bp;
+	ewprintf("%d definitions of %s: n/p to show, RET to go, q to quit",
+	    n, tok);
+	return (TRUE);
+}
+
+/*
+ * The window the *xref* list was asked from, if it is still there.
+ */
+static struct mgwin *
+xrefwin(void)
+{
+	struct mgwin *wp;
+
+	for (wp = wheadp; wp != NULL && wp != xreffrom; wp = wp->w_wndp)
+		;
+	return (wp);
+}
+
+/*
+ * Show the definition on the current line of *xref* in the window it
+ * was asked from, or another one, and select that window if go is set.
+ */
+static int
+xrefshow(int go)
+{
+	struct mgwin *xwp = curwp, *wp;
+	int i = curwp->w_dotline - 1, s;
+
+	if (i < 0 || i >= nxref) {
+		dobeep();
+		ewprintf("No definition here");
+		return (FALSE);
+	}
+	if ((wp = xrefwin()) == NULL || wp == xwp)
+		for (wp = wheadp; wp != NULL && wp == xwp; wp = wp->w_wndp)
+			;
+	if (wp == NULL && (wp = splitpop(WNONE)) == NULL)
+		return (FALSE);
+	curwp = wp;
+	curbp = wp->w_bufp;
+	s = showtag(xref[i]);
+	if (s == TRUE && go) {
+		if (xrefpos != NULL) {
+			SLIST_INSERT_HEAD(&shead, xrefpos, entry);
+			xrefpos = NULL;
+		}
+		return (TRUE);
+	}
+	curwp = xwp;
+	curbp = xwp->w_bufp;
+	return (s);
+}
+
+/* RET in *xref*: go to the definition on this line. */
+static int
+xrefgoto(int f, int n)
+{
+	return (xrefshow(TRUE));
+}
+
+/* n in *xref*: show the next definition. */
+static int
+xrefnext(int f, int n)
+{
+	if (curwp->w_dotline < nxref)
+		(void)forwline(FFRAND, 1);
+	return (xrefshow(FALSE));
+}
+
+/* p in *xref*: show the previous definition. */
+static int
+xrefprev(int f, int n)
+{
+	if (curwp->w_dotline > 1)
+		(void)backline(FFRAND, 1);
+	return (xrefshow(FALSE));
+}
+
+/* q in *xref*: close the list, back in the window it was asked from. */
+static int
+xrefquit(int f, int n)
+{
+	return (popclose(curbp, xrefwin()));
 }
 
 /*
@@ -279,12 +517,6 @@ poptag(int f, int n)
 int
 loadtags(const char *fn, int depth)
 {
-	/* the files read, so an include loads each one only once */
-	static struct {
-		dev_t	 dev;
-		ino_t	 ino;
-	} seen[64];
-	static int nseen;
 	struct stat sb;
 	char *l;
 	FILE *fd;
@@ -292,8 +524,6 @@ loadtags(const char *fn, int depth)
 	
 	if (!secure_allowed(fn))
 		return (FALSE);
-	if (depth == 0)
-		nseen = 0;
 	/* before opening, which would block on a FIFO */
 	if (stat(fn, &sb) == 0) {
 		if (!S_ISREG(sb.st_mode)) {
@@ -451,11 +681,32 @@ addetag(const char *name, size_t nlen, const char *fname, const char *pat,
 	memcpy(t->pat, pat, plen);
 	t->pat[plen] = '\0';
 	t->line = line;
-	if (RB_INSERT(tagtree, &tags, t) != NULL) {
-		/* ignore duplicates */
+	if (inserttag(t) == FALSE) {
 		free(s);
 		free(t);
 	}
+	return (TRUE);
+}
+
+/*
+ * Add t to the tree, after the other definitions of its name.  FALSE,
+ * and t is not used, when it repeats the last of them.
+ */
+static int
+inserttag(struct ctag *t)
+{
+	struct ctag *o, *l;
+
+	t->next = NULL;
+	t->last = t;
+	if ((o = RB_INSERT(tagtree, &tags, t)) == NULL)
+		return (TRUE);
+	l = o->last;
+	if (l->line == t->line && strcmp(l->pat, t->pat) == 0 &&
+	    strcmp(l->fname, t->fname) == 0)
+		return (FALSE);
+	l->next = t;
+	o->last = t;
 	return (TRUE);
 }
 
@@ -534,8 +785,7 @@ addctag(char *s)
 		*m = '\0';
 
 	t->pat = strip(l, strlen(l));
-	if (RB_INSERT(tagtree, &tags, t) != NULL) {
-		/* ignore duplicates */
+	if (inserttag(t) == FALSE) {
 		free(t);
 		free(s);
 	}

@@ -1061,6 +1061,17 @@ Opens the specified file in a second buffer.
 Splits the current window if necessary.
 .It Ic find-tag
 Jump to definition of tag at dot.
+A tag defined in more than one place lists the definitions in an
+.Pa *xref*
+window instead:
+.Ic n
+and
+.Ic p
+show one,
+.Ic RET
+goes there and
+.Ic q
+closes the list.
 .It Ic font-lock-mode
 Toggle syntax highlighting, enabled by default.
 Comments, strings, keywords, types, numbers, and preprocessor
