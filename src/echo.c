@@ -1080,6 +1080,11 @@ complt(int flags, int c, char *buf, size_t nbuf, int cpos, int *nx)
 	} else if ((flags & EFFILE) != 0) {
 		buf[cpos] = '\0';
 		wholelist = lh = make_file_list(buf);
+#ifdef ENABLE_CTAGS
+	} else if ((flags & EFTAG) != 0) {
+		buf[cpos] = '\0';
+		wholelist = lh = complete_tag_list(buf);
+#endif
 	} else
 		panic("broken complt call: flags");
 
@@ -1189,6 +1194,11 @@ complt_list(int flags, char *buf, int cpos)
 		cp = strrchr(buf, '/');
 		if (cp)
 			preflen = cp - buf + 1;
+#ifdef ENABLE_CTAGS
+	} else if ((flags & EFTAG) != 0) {
+		buf[cpos] = '\0';
+		wholelist = lh = complete_tag_list(buf);
+#endif
 	} else
 		panic("broken complt call: flags");
 

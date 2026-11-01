@@ -195,12 +195,18 @@ findtag(int f, int n)
 	if (f & FFARG)
 		return (n < 0 ? poptag(FFRAND, 1) : nexttag());
 
+	/* first, so TAB has the names to complete */
+	if (RB_EMPTY(&tags))
+		if ((ret = tagsvisit(f, n)) != TRUE)
+			return (ret);
+
 	if (curtoken(f, n, dtok) == FALSE) {
 		dtok[0] = '\0';
-		bufp = eread("Find tag: ", utok, MAX_TOKEN, EFNUL | EFNEW);
+		bufp = eread("Find tag: ", utok, MAX_TOKEN,
+		    EFNUL | EFNEW | EFTAG);
 	} else
 		bufp = eread("Find tag (default %s): ", utok, MAX_TOKEN,
-		    EFNUL | EFNEW, dtok);
+		    EFNUL | EFNEW | EFTAG, dtok);
 
 	if (bufp == NULL)
 		return (ABORT);
@@ -215,10 +221,33 @@ findtag(int f, int n)
 		return (FALSE);
 	}
 
-	if (RB_EMPTY(&tags))
-		if ((ret = tagsvisit(f, n)) != TRUE)
-			return (ret);
 	return (gototag(tok));
+}
+
+/*
+ * The names of the tags starting with prefix, for completion.
+ */
+struct list *
+complete_tag_list(const char *prefix)
+{
+	struct ctag t, *p;
+	struct list *head = NULL, *el;
+	size_t len = strlen(prefix);
+
+	t.tag = (char *)prefix;
+	for (p = RB_NFIND(tagtree, &tags, &t);
+	    p != NULL && strncmp(p->tag, prefix, len) == 0;
+	    p = RB_NEXT(tagtree, &tags, p)) {
+		if ((el = malloc(sizeof(*el))) == NULL ||
+		    (el->l_name = strdup(p->tag)) == NULL) {
+			free(el);
+			free_file_list(head);
+			return (NULL);
+		}
+		el->l_next = head;
+		head = el;
+	}
+	return (head);
 }
 
 /*

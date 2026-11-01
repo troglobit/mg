@@ -189,7 +189,8 @@ typedef int	(*PF)(int, int);	/* generally useful type */
 #define EFFUNC	0x0001		/* Autocomplete functions.	 */
 #define EFBUF	0x0002		/* Autocomplete buffers.	 */
 #define EFFILE	0x0004		/* " files (maybe someday)	 */
-#define EFAUTO	0x0007		/* Some autocompletion on	 */
+#define EFTAG	0x0080		/* Autocomplete tags.		 */
+#define EFAUTO	0x0087		/* Some autocompletion on	 */
 #define EFNEW	0x0008		/* New prompt.			 */
 #define EFCR	0x0010		/* Echo CR at end; last read.	 */
 #define EFDEF	0x0020		/* buffer contains default args	 */
@@ -810,6 +811,7 @@ int		 findtag(int, int);
 int 		 poptag(int, int);
 int		 tagsvisit(int, int);
 int		 curtoken(int, int, char *);
+struct list	*complete_tag_list(const char *);
 
 /* cscope.c */
 int		 cssymbol(int, int);
