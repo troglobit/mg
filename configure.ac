@@ -205,8 +205,12 @@ m4_foreach_w([mg_mode], MG_MODES, [
 AS_IF([test "x$startup" != "xno"], [
 	AS_IF([test "x$startup" = "xyes"], [
 		AC_MSG_ERROR([Must supply argument])])
-	dnl Expand ${prefix} et al. so config.h gets a fully qualified path
+	dnl Expand ${prefix} et al. so config.h gets a fully qualified path,
+	dnl prefix is NONE until AC_OUTPUT when --prefix is not given
+	save_prefix=$prefix
+	test "x$prefix" = "xNONE" && prefix=$ac_default_prefix
 	startup=$(eval echo "$startup")
+	prefix=$save_prefix
 	AC_DEFINE_UNQUOTED(STARTUPFILE, "$startup", [Init file to run if ~/.mg is missing])])
 
 AS_IF([test "x$with_mglog" != "xno"],
