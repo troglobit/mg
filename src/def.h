@@ -976,8 +976,10 @@ int		 zap(int, int);
 
 /* spawn.c X */
 int		 spawncli(int, int);
-FILE		*runopen(const char *, char *const [], pid_t *);
+#define RUN_STDERR	0x01	/* runopen() passes on errors too */
+FILE		*runopen(const char *, char *const [], pid_t *, int);
 int		 runclose(FILE *, pid_t);
+int		 runbuf(const char *, char *const [], struct buffer *);
 
 /* ttykbd.c X */
 void		 ttykeymapinit(void);

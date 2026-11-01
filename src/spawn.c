@@ -13,6 +13,7 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 #include "ttydef.h"
@@ -56,11 +57,12 @@ spawncli(int f, int n)
 
 /*
  * Run argv in dir, or here when NULL, without a shell, and return its
- * standard output to read.  It gets /dev/null for input and errors,
+ * standard output to read, with its errors too when flags has
+ * RUN_STDERR.  It gets /dev/null for input, and for errors not read,
  * which would otherwise mess up the screen.  Close with runclose().
  */
 FILE *
-runopen(const char *dir, char *const argv[], pid_t *pid)
+runopen(const char *dir, char *const argv[], pid_t *pid, int flags)
 {
 	FILE *fp;
 	int p[2], fd;
@@ -79,7 +81,8 @@ runopen(const char *dir, char *const argv[], pid_t *pid)
 		close(p[1]);
 		if ((fd = open("/dev/null", O_RDWR)) != -1) {
 			(void)dup2(fd, STDIN_FILENO);
-			(void)dup2(fd, STDERR_FILENO);
+			(void)dup2(flags & RUN_STDERR ? STDOUT_FILENO : fd,
+			    STDERR_FILENO);
 			if (fd > STDERR_FILENO)
 				close(fd);
 		}
@@ -110,4 +113,31 @@ runclose(FILE *fp, pid_t pid)
 		if (errno != EINTR)
 			return (-1);
 	return (WIFEXITED(status) ? WEXITSTATUS(status) : -1);
+}
+
+/*
+ * Run argv in dir, see runopen(), and add the lines it prints, errors
+ * included, to bp, or drop them when bp is NULL.  Returns its exit
+ * status, or -1 when it did not run or exit.
+ */
+int
+runbuf(const char *dir, char *const argv[], struct buffer *bp)
+{
+	FILE	*fp;
+	pid_t	 pid;
+	char	*line = NULL;
+	size_t	 cap = 0;
+	ssize_t	 len;
+
+	if ((fp = runopen(dir, argv, &pid, RUN_STDERR)) == NULL)
+		return (-1);
+	while ((len = getline(&line, &cap, fp)) != -1) {
+		if (bp == NULL)
+			continue;
+		if (len > 0 && line[len - 1] == '\n')
+			line[len - 1] = '\0';
+		addline(bp, line);
+	}
+	free(line);
+	return (runclose(fp, pid));
 }

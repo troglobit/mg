@@ -277,7 +277,7 @@ csindex(int f, int n)
 
 	ewprintf("Indexing %s ...", dir);
 	argv[csargs(dir, argv, TRUE)] = NULL;
-	if ((fp = runopen(dir, argv, &pid)) == NULL)
+	if ((fp = runopen(dir, argv, &pid, 0)) == NULL)
 		return(dobeep_msg("problem opening pipe"));
 	while (fgets(buf, sizeof(buf), fp) != NULL)
 		;
@@ -333,7 +333,7 @@ cscreatelist(int f, int n)
 	if (csexists("cscope-indexer") == FALSE)
 		return(dobeep_msg("no such file or directory, cscope-indexer"));
 
-	if ((fpipe = runopen(NULL, argv, &pid)) == NULL)
+	if ((fpipe = runopen(NULL, argv, &pid, 0)) == NULL)
 		return(dobeep_msg("problem opening pipe"));
 
 	bp = bfind("*cscope*", TRUE);
@@ -440,7 +440,7 @@ do_cscope(int i)
 	argv[ac++] = query;
 	argv[ac++] = pattern;
 	argv[ac] = NULL;
-	if ((fpipe = runopen(csdir, argv, &pid)) == NULL)
+	if ((fpipe = runopen(csdir, argv, &pid, 0)) == NULL)
 		return(dobeep_msg("problem opening pipe"));
 
 	xrefclear();
