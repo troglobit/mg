@@ -461,7 +461,7 @@ complete_function_list(const char *fname)
 	len = strlen(fname);
 	head = NULL;
 	for (fn = funs; fn != NULL; fn = fn->fn_next) {
-		if (memcmp(fname, fn->fn_name, len) == 0) {
+		if (strncmp(fname, fn->fn_name, len) == 0) {
 			if ((el = malloc(sizeof(*el))) == NULL) {
 				free_file_list(head);
 				return (NULL);
