@@ -67,23 +67,27 @@ vcready(const char *dir)
 }
 
 /*
- * Drop bp, which git with exit status s filled, and say why: the first
- * line it printed when it failed, else empty.
+ * Drop bp, which git with exit status s filled, and pass on the first
+ * line it printed, or empty when there is none.  TRUE when git did not
+ * fail.
  */
 static int
-vcfail(struct buffer *bp, int s, const char *empty)
+vcreport(struct buffer *bp, int s, const char *empty)
 {
 	char	*msg = NULL;
 
-	if (s != 0 && bfirstlp(bp) != bp->b_headp)
+	if (bfirstlp(bp) != bp->b_headp)
 		msg = linetostr(bfirstlp(bp));
 	(void)killbuffer(bp);
-	if (s != 0)
+	if (s != 0) {
 		dobeep();
-	ewprintf("%s", msg != NULL ? msg : s == 0 ? empty :
-	    s == -1 ? "Cannot run git" : "git failed");
+		if (msg == NULL)
+			empty = s == -1 ? "Cannot run git" : "git failed";
+	}
+	if (msg != NULL || empty != NULL)
+		ewprintf("%s", msg != NULL ? msg : empty);
 	free(msg);
-	return (FALSE);
+	return (s == 0);
 }
 
 /*
@@ -103,7 +107,7 @@ vcshow(const char *dir, char *argv[], const char *name, int diff,
 	if ((bp = popbuffer(name, popmode("view"))) == NULL)
 		return (FALSE);
 	if ((s = runbuf(dir, argv, bp)) != 0 || bfirstlp(bp) == bp->b_headp)
-		return (vcfail(bp, s, empty));
+		return (vcreport(bp, s, empty));
 	if (popselect(bp) != TRUE)
 		return (FALSE);
 	if (diff) {
@@ -237,7 +241,7 @@ vcrevision(int f, int n)
 	if ((bp = popbuffer(bname, popmode("view"))) == NULL)
 		return (FALSE);
 	if ((s = runbuf(dir, argv, bp)) != 0)
-		return (vcfail(bp, s, NULL));
+		return (vcreport(bp, s, NULL));
 	(void)strlcpy(bp->b_cwd, dir, sizeof(bp->b_cwd));
 	if (popselect(bp) != TRUE)
 		return (FALSE);
@@ -324,6 +328,33 @@ vchead(const char *path, char *head, size_t len)
 }
 
 /*
+ * What git says of the file name in dir: '-' as committed, ':' with
+ * changes, '?' untracked, '!' ignored, or 0 when git fails.  See
+ * vcstate() for what running git here trusts.
+ */
+static int
+vcstatus(const char *dir, const char *name)
+{
+	FILE	*fp;
+	pid_t	 pid;
+	char	*argv[] = { "git", "--no-optional-locks", "-c",
+		    "core.fsmonitor=false", "status", "--porcelain", "--ignored",
+		    "--", (char *)name, NULL };
+	int	 c, state;
+
+	if ((fp = runopen(dir, argv, &pid, 0)) == NULL)
+		return (0);
+	/* nothing for a file as committed, else two status letters */
+	if ((c = fgetc(fp)) == EOF)
+		state = '-';
+	else
+		state = c == '?' || c == '!' ? c : ':';
+	while (c != EOF)
+		c = fgetc(fp);
+	return (runclose(fp, pid) == 0 ? state : 0);
+}
+
+/*
  * Set the version control part of the mode line of bp: "Git-main" for
  * a file as committed on branch main, "Git:main" once it has changes,
  * nothing for a file git does not track.  git only runs for a file in
@@ -336,13 +367,8 @@ void
 vcstate(struct buffer *bp)
 {
 	struct stat	 st;
-	FILE	*fp;
-	pid_t	 pid;
 	char	 dir[NFILEN], head[sizeof(bp->b_vc) - 4], *p;
-	char	*argv[] = { "git", "--no-optional-locks", "-c",
-		    "core.fsmonitor=false", "status", "--porcelain", "--ignored",
-		    "--", NULL, NULL };
-	int	 c, state;
+	int	 state;
 
 	bp->b_vc[0] = '\0';
 	/* a new file is not on disk yet */
@@ -353,19 +379,276 @@ vcstate(struct buffer *bp)
 	if ((p = strrchr(dir, '/')) == NULL)
 		return;
 	*p = '\0';
-	argv[8] = bp->b_fname + (p + 1 - dir);
-	if ((fp = runopen(dir, argv, &pid, 0)) == NULL)
-		return;
-	/* nothing for a file as committed, else two status letters */
-	if ((c = fgetc(fp)) == EOF)
-		state = '-';
+	state = vcstatus(dir, bp->b_fname + (p + 1 - dir));
+	if (state == '-' || state == ':')
+		(void)snprintf(bp->b_vc, sizeof(bp->b_vc), "Git%c%s", state,
+		    head);
+}
+
+/* Update the mode line of the buffers visiting dir/name. */
+static void
+vcrefresh(const char *dir, const char *name)
+{
+	struct buffer	*bp;
+	char	 path[NFILEN];
+
+	(void)snprintf(path, sizeof(path), "%s%s", dir, name);
+	for (bp = bheadp; bp != NULL; bp = bp->b_bufp)
+		if (strcmp(bp->b_fname, path) == 0) {
+			vcstate(bp);
+			upmodes(bp);
+		}
+}
+
+/*
+ * Run git in dir for a command that changes something, its first line
+ * of output the message.  git may write to the terminal itself, as
+ * pinentry does to sign a commit, so the screen is redrawn after.
+ */
+static int
+vcdo(const char *dir, char *argv[])
+{
+	struct buffer	*bp;
+	int	 s;
+
+	if ((bp = bfind("*vc*", TRUE)) == NULL || bclear(bp) != TRUE)
+		return (FALSE);
+	s = runbuf(dir, argv, bp);
+	sgarbf = TRUE;
+	return (vcreport(bp, s, NULL));
+}
+
+/* Start tracking dir/name. */
+static int
+vcadd(const char *dir, char *name)
+{
+	char	*argv[] = { "git", "add", "--", name, NULL };
+	int	 s;
+
+	if ((s = vcdo(dir, argv)) != TRUE)
+		return (s);
+	vcrefresh(dir, name);
+	ewprintf("Registered %s", name);
+	return (TRUE);
+}
+
+/* C-x v i: start tracking the file, with git add. */
+static int
+vcregister(int f, int n)
+{
+	char	 dir[NFILEN], name[NFILEN];
+	int	 s;
+
+	if ((s = vcfile(dir, name, FALSE)) != TRUE ||
+	    (s = vcready(dir)) != TRUE || (s = vcsave()) != TRUE)
+		return (s);
+	return (vcadd(dir, name));
+}
+
+/*
+ * C-x v u: throw away the changes to the file, saved or not, back to
+ * its last commit.
+ */
+static int
+vcrevert(int f, int n)
+{
+	char	 dir[NFILEN], name[NFILEN], prompt[NFILEN + 32];
+	char	*argv[] = { "git", "checkout", "HEAD", "--", name, NULL };
+	int	 s, state;
+
+	if (secure)
+		return (secure_denied());
+	if ((s = vcfile(dir, name, FALSE)) != TRUE)
+		return (s);
+	if ((state = vcstatus(dir, name)) == 0)
+		return (dobeep_msg("Not in a git repository"));
+	if (state != ':' && !(curbp->b_flag & BFCHG))
+		return (dobeep_msg("No changes to revert"));
+	(void)snprintf(prompt, sizeof(prompt), "Discard changes in %s", name);
+	if ((s = eyesno(prompt)) != TRUE)
+		return (s);
+	if (state == ':' && (s = vcdo(dir, argv)) != TRUE)
+		return (s);
+	return (revertbp(curbp));
+}
+
+/*
+ * The *vc-log* buffer: C-c C-c commits the file it was opened for,
+ * C-c C-k gives up.
+ */
+static int	 vccommit(int, int);
+static int	 vccancel(int, int);
+static int	 vclogdiff(int, int);
+
+static char	 vclogdir[NFILEN], vclogname[NFILEN];
+
+static PF vclog_cc[] = {
+	vccommit,		/* ^C */
+	vclogdiff		/* ^D */
+};
+
+static PF vclog_ck[] = {
+	vccancel		/* ^K */
+};
+
+static struct KEYMAPE (2) vclogcmap = {
+	2,
+	2,
+	rescan,
+	{
+		{ CCHR('C'), CCHR('D'), vclog_cc, NULL },
+		{ CCHR('K'), CCHR('K'), vclog_ck, NULL }
+	}
+};
+
+static PF vclog_c[] = {
+	NULL			/* ^C, the prefix itself */
+};
+
+static struct KEYMAPE (1) vclogmap = {
+	1,
+	1,
+	rescan,
+	{
+		{ CCHR('C'), CCHR('C'), vclog_c, (KEYMAP *)&vclogcmap }
+	}
+};
+
+/*
+ * Open *vc-log* for the message of a commit of dir/name, in
+ * git-commit-mode when there is one.  A message started for the same
+ * file is kept; one for another file is only dropped when confirmed.
+ */
+static int
+vclogedit(const char *dir, const char *name)
+{
+	struct buffer	*bp;
+	PF	 gitmode;
+	char	 prompt[NFILEN + 32];
+	int	 s, same;
+
+	same = strcmp(vclogdir, dir) == 0 && strcmp(vclogname, name) == 0;
+	if ((bp = bfind("*vc-log*", FALSE)) != NULL && !same &&
+	    bfirstlp(bp) != bp->b_headp) {
+		(void)snprintf(prompt, sizeof(prompt),
+		    "Drop the message for %s", vclogname);
+		if ((s = eyesno(prompt)) != TRUE)
+			return (s);
+	}
+	(void)strlcpy(vclogdir, dir, sizeof(vclogdir));
+	(void)strlcpy(vclogname, name, sizeof(vclogname));
+	if ((bp = bfind("*vc-log*", TRUE)) == NULL ||
+	    (!same && bclear(bp) != TRUE) || popselect(bp) != TRUE)
+		return (FALSE);
+	if ((gitmode = name_function("git-commit-mode")) != NULL)
+		(void)(*gitmode)(FFARG, 1);
 	else
-		state = c == '?' || c == '!' ? 0 : ':';
-	while (c != EOF)
-		c = fgetc(fp);
-	if (runclose(fp, pid) != 0 || state == 0)
-		return;
-	(void)snprintf(bp->b_vc, sizeof(bp->b_vc), "Git%c%s", state, head);
+		ewprintf("C-c C-c to commit, C-c C-k to cancel");
+	return (changemode(FFARG, 1, "vc-log"));
+}
+
+/* Whether the current buffer is *vc-log*, saying so when not. */
+static int
+vcinlog(void)
+{
+	if (strcmp(curbp->b_bname, "*vc-log*") != 0)
+		return (dobeep_msg("Not in *vc-log*"));
+	return (TRUE);
+}
+
+/*
+ * C-c C-c in *vc-log*: commit the file with the message written.  Its
+ * comment lines are left out, as git-commit-mode shows them.
+ */
+static int
+vccommit(int f, int n)
+{
+	struct line	*lp;
+	char	*msg, *p;
+	char	*argv[] = { "git", "commit", "--cleanup=strip", "-m", NULL,
+		    "--", vclogname, NULL };
+	size_t	 len = 1;
+	int	 s;
+
+	if ((s = vcinlog()) != TRUE)
+		return (s);
+	for (lp = bfirstlp(curbp); lp != curbp->b_headp; lp = lforw(lp))
+		len += llength(lp) + 1;
+	if ((msg = p = malloc(len)) == NULL)
+		return (dobeep_msg("Out of memory"));
+	for (lp = bfirstlp(curbp); lp != curbp->b_headp; lp = lforw(lp)) {
+		memcpy(p, ltext(lp), llength(lp));
+		p += llength(lp);
+		*p++ = '\n';
+	}
+	*p = '\0';
+	if (msg[strspn(msg, " \t\n")] == '\0') {
+		free(msg);
+		return (dobeep_msg("Empty message, C-c C-k to cancel"));
+	}
+	argv[4] = msg;
+	s = vcdo(vclogdir, argv);
+	free(msg);
+	if (s != TRUE)
+		return (s);
+	(void)popdone(curbp);
+	vcrefresh(vclogdir, vclogname);
+	return (TRUE);
+}
+
+/* C-c C-k in *vc-log*: close it without committing. */
+static int
+vccancel(int f, int n)
+{
+	int	 s;
+
+	if ((s = vcinlog()) != TRUE)
+		return (s);
+	(void)popdone(curbp);
+	ewprintf("Commit canceled");
+	return (TRUE);
+}
+
+/* C-c C-d in *vc-log*: what the commit will hold, the file against HEAD. */
+static int
+vclogdiff(int f, int n)
+{
+	char	*argv[] = { "git", "diff", "--no-color", "HEAD", "--",
+		    vclogname, NULL };
+	int	 s;
+
+	if ((s = vcinlog()) != TRUE)
+		return (s);
+	return (vcshow(vclogdir, argv, "*vc-diff*", TRUE, "No changes"));
+}
+
+/*
+ * C-x v v: the next step for the file.  A file git does not track is
+ * added, a changed one is committed, after saving it.
+ */
+static int
+vcnext(int f, int n)
+{
+	char	 dir[NFILEN], name[NFILEN];
+	int	 s;
+
+	if (secure)
+		return (secure_denied());
+	if ((s = vcfile(dir, name, FALSE)) != TRUE || (s = vcsave()) != TRUE)
+		return (s);
+	switch (vcstatus(dir, name)) {
+	case '?':
+		return (vcadd(dir, name));
+	case '!':
+		return (dobeep_msg("The file is ignored by git"));
+	case '-':
+		ewprintf("No changes to commit");
+		return (TRUE);
+	case ':':
+		return (vclogedit(dir, name));
+	default:
+		return (dobeep_msg("Not in a git repository"));
+	}
 }
 
 void
@@ -377,6 +660,13 @@ vc_init(void)
 	funmap_add(vcrootlog, "vc-print-root-log", 0);
 	funmap_add(vcrevision, "vc-revision-other-window", 0);
 	funmap_add(vcrootdiff, "vc-root-diff", 0);
+	funmap_add(vcnext, "vc-next-action", 0);
+	funmap_add(vcregister, "vc-register", 0);
+	funmap_add(vcrevert, "vc-revert", 0);
+	funmap_add(vccommit, "vc-log-commit", 0);
+	funmap_add(vccancel, "vc-log-cancel", 0);
+	funmap_add(vclogdiff, "vc-log-diff", 0);
+	(void)minor_add((KEYMAP *)&vclogmap, "vc-log");
 
 	dobindkey(fundamental_map, "vc-diff", "^Xv=");
 	dobindkey(fundamental_map, "vc-root-diff", "^XvD");
@@ -384,4 +674,7 @@ vc_init(void)
 	dobindkey(fundamental_map, "vc-annotate", "^Xvg");
 	dobindkey(fundamental_map, "vc-print-log", "^Xvl");
 	dobindkey(fundamental_map, "vc-revision-other-window", "^Xv~");
+	dobindkey(fundamental_map, "vc-register", "^Xvi");
+	dobindkey(fundamental_map, "vc-revert", "^Xvu");
+	dobindkey(fundamental_map, "vc-next-action", "^Xvv");
 }

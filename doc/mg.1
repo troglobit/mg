@@ -251,12 +251,26 @@ closes.
 .Ic vc-revision-other-window
 shows the file as it was in a revision, also read-only.
 .Pp
+.Ic vc-next-action
+takes the file one step on: one git does not track yet is added, and
+one with changes is committed, after offering to save it.
+The message is written in a
+.Pa *vc-log*
+window, in git-commit-mode:
+.Ic C-c C-c
+commits and
+.Ic C-c C-k
+gives up.
+.Ic vc-revert
+throws away the changes to the file, saved or not.
+.Pp
 The mode line of a file git tracks shows its branch:
 .Ql Git-main
 when the file is as committed on branch main, and
 .Ql Git:main
 once it has changes.
-It is updated when the file is read or saved.
+It is updated when the file is read or saved, and by the commands
+above that change it.
 .Sh GZIP
 .Nm
 is capable of opening gzipped text files, e.g.
@@ -498,10 +512,16 @@ vc-diff
 vc-root-diff
 .It C-x v g
 vc-annotate
+.It C-x v i
+vc-register
 .It C-x v l
 vc-print-log
 .It C-x v L
 vc-print-root-log
+.It C-x v u
+vc-revert
+.It C-x v v
+vc-next-action
 .It C-x v ~
 vc-revision-other-window
 .It C-x {
@@ -2072,10 +2092,21 @@ on the line it was on.
 .It Ic vc-diff
 Show how the file differs from its last commit, in diff-mode.
 An unsaved buffer is offered to be saved first.
+.It Ic vc-next-action
+Take the file one step on: add it when git does not track it, else
+commit its changes.
+An unsaved buffer is offered to be saved first.
+The commit message is written in a
+.Pa *vc-log*
+window, where C-c C-c commits and C-c C-k gives up.
 .It Ic vc-print-log
 Show the commits that changed the file, newest first.
 .It Ic vc-print-root-log
 Show the commits of the whole repository, newest first.
+.It Ic vc-register
+Start tracking the file, with git add.
+.It Ic vc-revert
+Throw away the changes to the file, saved or not, after asking.
 .It Ic vc-revision-other-window
 Show the file as it was in a revision, HEAD by default, in a read-only
 window, named
