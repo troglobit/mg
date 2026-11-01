@@ -22,25 +22,34 @@
 struct ctag;
 
 static int               addctag(char *);
+static int               addetag(const char *, size_t, const char *,
+                             const char *, size_t, int);
 static int               atbow(void);
 void                     closetags(void);
 static int               ctagcmp(struct ctag *, struct ctag *);
 static int               loadbuffer(char *);
-static int               loadtags(const char *);
+static int               loadetags(FILE *, const char *, int);
+static int               loadtags(const char *, int);
 static int               pushtag(char *);
-static int               searchpat(char *);
+static int               searchpat(char *, int);
 static struct ctag       *searchtag(char *);
 static char              *strip(char *, size_t);
 static void              unloadtags(void);
 
 #define DEFAULTFN "tags"
+#define ETAGSFN   "TAGS"
 
-/* ctags(1) entries are parsed and maintained in a tree. */
+/*
+ * ctags(1) and etags(1) entries are parsed and maintained in a tree.
+ * The pattern is the start of the line the tag is defined on; etags
+ * also gives its line number.
+ */
 struct ctag {
 	RB_ENTRY(ctag) entry;
 	char *tag;
 	char *fname;
 	char *pat;
+	int   line;		/* 0 when not known			*/
 };
 RB_HEAD(tagtree, ctag) tags = RB_INITIALIZER(&tags);
 RB_GENERATE(tagtree, ctag, entry, ctagcmp);
@@ -68,18 +77,30 @@ int
 tagsvisit(int f, int n)
 {
 	char fname[NFILEN], *bufp, *temp;
+	const char *dfn = DEFAULTFN;
+	size_t len;
 	
 	if (getbufcwd(fname, sizeof(fname)) == FALSE)
 		fname[0] = '\0';
+	len = strlen(fname);
 	
 	if (strlcat(fname, DEFAULTFN, sizeof(fname)) >= sizeof(fname)) {
 		dobeep();
 		ewprintf("Filename too long");
 		return (FALSE);
 	}
+	/* no ctags(1) file, but an etags(1) one: offer that instead */
+	if (access(fname, F_OK) == -1) {
+		(void)strlcpy(fname + len, ETAGSFN, sizeof(fname) - len);
+		if (access(fname, F_OK) == 0)
+			dfn = ETAGSFN;
+		else
+			(void)strlcpy(fname + len, DEFAULTFN,
+			    sizeof(fname) - len);
+	}
 	
 	bufp = eread("Visit tags table (default %s): ", fname,
-	    NFILEN, EFFILE | EFCR | EFNEW | EFDEF, DEFAULTFN);
+	    NFILEN, EFFILE | EFCR | EFNEW | EFDEF, dfn);
 	if (bufp == NULL)
 		return (ABORT);
 
@@ -96,7 +117,7 @@ tagsvisit(int f, int n)
 	if ((temp = adjustname(temp, TRUE)) == NULL)
 		return (FALSE);
 
-	return (loadtags(temp));
+	return (loadtags(temp, 0));
 }
 
 /*
@@ -182,7 +203,7 @@ pushtag(char *tok)
 		return (FALSE);
 	}
 	
-	if (searchpat(res->pat) == TRUE) {
+	if (searchpat(res->pat, res->line) == TRUE) {
 		if ((s = malloc(sizeof(struct tagpos))) == NULL) {
 			free(bname);
 			return (dobeep_msg("Out of memory"));
@@ -252,14 +273,16 @@ poptag(int f, int n)
 
 /*
  * Parse the tags file and construct the tags tree. Remove escape 
- * characters while parsing the file.
+ * characters while parsing the file.  An etags(1) file, which starts
+ * with a form feed, goes to loadetags().
  */
 int
-loadtags(const char *fn)
+loadtags(const char *fn, int depth)
 {
 	struct stat sb;
 	char *l;
 	FILE *fd;
+	int c, s;
 	
 	if (!secure_allowed(fn))
 		return (FALSE);
@@ -280,6 +303,13 @@ loadtags(const char *fn)
 		fclose(fd);
 		return (FALSE);
 	}
+	c = getc(fd);
+	(void)ungetc(c, fd);
+	if (c == '\f') {
+		s = loadetags(fd, fn, depth);
+		fclose(fd);
+		return (s);
+	}
 	while ((l = fparseln(fd, NULL, NULL, "\\\\\0",
 	    FPARSELN_UNESCCONT | FPARSELN_UNESCREST)) != NULL) {
 		if (addctag(l) == FALSE) {
@@ -288,6 +318,116 @@ loadtags(const char *fn)
 		}
 	}
 	fclose(fd);
+	return (TRUE);
+}
+
+/*
+ * The characters Emacs allows in a tag name in an etags(1) file.
+ */
+static int
+isetag(int c)
+{
+	return (c != '\0' && (isalnum(c) || strchr("-_+*$?:", c) != NULL));
+}
+
+/*
+ * Parse an etags(1) file the way Emacs does.  Each source file has a
+ * section "\f\n<file>,<size>\n" of lines
+ * "<text>\177[<name>\001]<line>,<offset>", where <text> is the start
+ * of the line the tag is on and, when <name> is left out, ends with
+ * it.  A section "<file>,include" names another tags file, read at
+ * depth + 1.  File names are relative to fn, the tags file.
+ */
+static int
+loadetags(FILE *fd, const char *fn, int depth)
+{
+	char	 fname[NFILEN], *l = NULL, *d, *name, *num, *p;
+	size_t	 cap = 0, nlen;
+	ssize_t	 len;
+	int	 dlen, s = TRUE;
+
+	dlen = (p = strrchr(fn, '/')) != NULL ? p - fn + 1 : 0;
+	fname[0] = '\0';
+	while (s == TRUE && (len = getline(&l, &cap, fd)) != -1) {
+		if (len > 0 && l[len - 1] == '\n')
+			l[--len] = '\0';
+		if (l[0] == '\f')
+			continue;
+		if ((d = strchr(l, '\177')) == NULL) {
+			/* a section header */
+			if ((p = strrchr(l, ',')) == NULL)
+				continue;
+			*p++ = '\0';
+			(void)snprintf(fname, sizeof(fname), "%.*s%s",
+			    l[0] == '/' ? 0 : dlen, fn, l);
+			if (strcmp(p, "include") == 0) {
+				if (depth >= 8) {
+					dobeep();
+					ewprintf("Tags files nested too deep");
+					s = FALSE;
+				} else
+					s = loadtags(fname, depth + 1);
+				fname[0] = '\0';
+			}
+			continue;
+		}
+		if (fname[0] == '\0')
+			continue;
+		*d = '\0';
+		if ((num = strchr(d + 1, '\001')) != NULL) {
+			name = d + 1;
+			nlen = num++ - name;
+		} else {
+			/* the last name in the text, before what follows it */
+			for (p = d; p > l && !isetag((unsigned char)p[-1]); p--)
+				;
+			for (name = p; name > l &&
+			    isetag((unsigned char)name[-1]); name--)
+				;
+			nlen = p - name;
+			num = d + 1;
+		}
+		if (nlen == 0)
+			continue;
+		s = addetag(name, nlen, fname, l, d - l, atoi(num));
+	}
+	free(l);
+	return (s);
+}
+
+/*
+ * Add an etags(1) tag, its name, file and pattern copied into one
+ * allocation that unloadtags() frees through the name.
+ */
+static int
+addetag(const char *name, size_t nlen, const char *fname, const char *pat,
+    size_t plen, int line)
+{
+	struct ctag *t;
+	size_t flen = strlen(fname);
+	char *s;
+
+	if ((t = malloc(sizeof(struct ctag))) == NULL ||
+	    (s = malloc(nlen + flen + plen + 3)) == NULL) {
+		free(t);
+		dobeep();
+		ewprintf("Out of memory");
+		return (FALSE);
+	}
+	t->tag = s;
+	memcpy(s, name, nlen);
+	s[nlen] = '\0';
+	t->fname = s + nlen + 1;
+	memcpy(t->fname, fname, flen + 1);
+	t->pat = t->fname + flen + 1;
+	memcpy(t->pat, pat, plen);
+	t->pat[plen] = '\0';
+	t->line = line;
+	if (RB_INSERT(tagtree, &tags, t) != NULL) {
+		/* ignore duplicates */
+		free(s);
+		free(t);
+	}
 	return (TRUE);
 }
 
@@ -350,6 +490,7 @@ addctag(char *s)
 		return (FALSE);
 	}
 	t->tag = s;
+	t->line = 0;
 	if ((l = strchr(s, '\t')) == NULL)
 		goto cleanup;
 	*l++ = '\0';
@@ -378,31 +519,34 @@ cleanup:
 }
 
 /*
- * Search through each line of buffer for pattern.
+ * Search through each line of buffer for one starting with pattern,
+ * the one on line hint if that does, else the first.
  */
 int
-searchpat(char *s_pat)
+searchpat(char *s_pat, int hint)
 {
 	struct line *lp;
-	int dotline;
+	int dotline, found = FALSE;
 	size_t plen;
 
 	plen = strlen(s_pat);
 	dotline = 1;
-	lp = lforw(curbp->b_headp);
-	while (lp != curbp->b_headp) {
-		if (ltext(lp) != NULL && (int)plen <= llength(lp) &&
-		    (strncmp(s_pat, ltext(lp), plen) == 0)) {
-			curwp->w_doto = 0;
+	for (lp = lforw(curbp->b_headp); lp != curbp->b_headp;
+	    lp = lforw(lp), dotline++) {
+		if (ltext(lp) == NULL || (int)plen > llength(lp) ||
+		    strncmp(s_pat, ltext(lp), plen) != 0)
+			continue;
+		if (!found || dotline == hint) {
 			curwp->w_dotp = lp;
 			curwp->w_dotline = dotline;
-			return (TRUE);
-		} else {
-			lp = lforw(lp);
-			dotline++;
+			found = TRUE;
 		}
+		if (hint == 0 || dotline == hint)
+			break;
 	}
-	return (FALSE);
+	if (found)
+		curwp->w_doto = 0;
+	return (found);
 }
 
 /*

@@ -176,9 +176,21 @@ command.
 .Sh TAGS
 .Nm
 supports tag files created by
-.Xr ctags 1 ,
-allowing the user to quickly locate various object definitions.
-Note though that emacs uses etags, not ctags.
+.Xr ctags 1
+and by
+.Xr etags 1 ,
+like
+.Ql make tags
+in an automake project, allowing the user to quickly locate various
+object definitions.
+.Ic visit-tags-table
+offers
+.Pa tags
+in the directory of the current buffer, or
+.Pa TAGS
+when there is only that.
+An etags file may include others, and its file names are taken
+relative to where it is.
 .Sh CSCOPE
 .Nm
 supports navigating source code using cscope.
@@ -1891,7 +1903,11 @@ Enabled by default, unlike GNU Emacs.
 Toggle the visible bell.
 If this toggle is on, the modeline will flash.
 .It Ic visit-tags-table
-Load tags file to be used for subsequent find-tag.
+Load tags file to be used for subsequent find-tag, in
+.Xr ctags 1
+or
+.Xr etags 1
+format.
 .It Ic visual-mark-mode
 Toggle visual mark mode, enabled by default.
 When enabled, the region between mark and dot is drawn in reverse
