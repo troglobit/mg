@@ -351,6 +351,7 @@ SLIST_HEAD(vhead, varentry);
  */
 #define WNONE  0x00 			/* No special window options.	*/
 #define WEPHEM 0x01 			/* Window is ephemeral.	 	*/
+#define WPOPUP 0x02 			/* Window was made for a pop-up.*/
 
 struct undo_rec;
 TAILQ_HEAD(undoq, undo_rec);
@@ -543,6 +544,7 @@ int		 prevwind(int, int);
 int		 onlywind(int, int);
 int		 splitwind(int, int);
 int		 splitwindh(int, int);
+struct mgwin	*splitpop(int);
 int		 balancewind(int, int);
 int		 moveseam(int, int, int);
 int		 enlargewindh(int, int);

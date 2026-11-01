@@ -231,7 +231,7 @@ poptobuffer(int f, int n)
 	else if ((bp = bfind(bufp, TRUE)) == NULL)
 		return (FALSE);
 	if (bp == curbp)
-		return (splitwind(f, n));
+		return (splitpop(WNONE) != NULL);
 	/* and put it in a new, non-ephemeral window */
 	if ((wp = popbuf(bp, WNONE)) == NULL)
 		return (FALSE);
@@ -898,37 +898,35 @@ popbuf(struct buffer *bp, int flags)
 	if (bp->b_nwnd == 0) {	/* Not on screen yet.	 */
 		/*
 		 * Pick a window for a pop-up: one above or below in
-		 * the same columns, so side by side windows are left
-		 * alone; otherwise split the current window, and the
-		 * pop-up appears beside it.  Only a new window is
-		 * flagged ephemeral.
+		 * the same columns, or beside a pop-up in the same
+		 * rows, else one an earlier pop-up made, so windows
+		 * split side by side are left alone; otherwise split
+		 * the current window, see splitpop().  Only a new
+		 * window is flagged ephemeral.
 		 */
 		for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
 			if (wp != curwp &&
-			    wp->w_leftcol == curwp->w_leftcol &&
-			    wp->w_ntcols == curwp->w_ntcols)
+			    ((wp->w_leftcol == curwp->w_leftcol &&
+			      wp->w_ntcols == curwp->w_ntcols) ||
+			     ((curwp->w_flag & WPOPUP) &&
+			      wp->w_toprow == curwp->w_toprow &&
+			      wp->w_ntrows == curwp->w_ntrows)))
 				break;
-		if (wp == NULL) {
-			if (splitwind(FFOTHARG, flags) != FALSE) {
-				for (wp = wheadp; wp != NULL;
-				     wp = wp->w_wndp)
-					if (wp != curwp &&
-					    wp->w_leftcol ==
-					    curwp->w_leftcol &&
-					    wp->w_ntcols ==
-					    curwp->w_ntcols)
-						break;
-			} else if (wheadp->w_wndp == NULL) {
-				return (NULL);
-			} else {
-				/* cannot split: take another window */
-				wp = wheadp;
-				while (wp != NULL && wp == curwp)
-					wp = wp->w_wndp;
-				wp->w_flag &= ~WEPHEM;
-			}
-		} else
+		if (wp == NULL)
+			for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
+				if (wp != curwp && (wp->w_flag & WPOPUP))
+					break;
+		if (wp != NULL)
 			wp->w_flag &= ~WEPHEM;
+		else if ((wp = splitpop(flags)) == NULL) {
+			if (wheadp->w_wndp == NULL)
+				return (NULL);
+			/* cannot split: take another window */
+			wp = wheadp;
+			while (wp != NULL && wp == curwp)
+				wp = wp->w_wndp;
+			wp->w_flag &= ~WEPHEM;
+		}
 	} else {
 		for (wp = wheadp; wp != NULL; wp = wp->w_wndp) {
 			if (wp->w_bufp == bp) {

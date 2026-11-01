@@ -900,6 +900,26 @@ splitwindh(int f, int n)
 }
 
 /*
+ * Split the current window for a pop-up, like split-window-sensibly in
+ * Emacs: side by side when it is wide enough for two 80 column windows
+ * but too short to halve, else one above the other.  The new window is
+ * flagged WPOPUP and flags.  Returns it, or NULL if it cannot split.
+ */
+struct mgwin *
+splitpop(int flags)
+{
+	struct mgwin	*wp;
+
+	if (curwp->w_ntrows < 80 && curwp->w_ntcols >= 2 * 80)
+		wp = splith();
+	else
+		wp = splitv();
+	if (wp != NULL)
+		wp->w_flag = flags | WPOPUP;
+	return (wp);
+}
+
+/*
  * Enlarge the current window.  Find the window that loses space.  Make sure
  * it is big enough.  If so, hack the window descriptions, and ask redisplay
  * to do all the hard work.  You don't just set "force reframe" because dot

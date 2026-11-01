@@ -1771,6 +1771,13 @@ refuse layouts where that would misalign a neighbor;
 .Ic delete-other-windows
 always works.
 Side by side windows do not survive a change of terminal width.
+.Pp
+Windows that pop up for help, buffer lists, completions and the
+.Ic C-x 4
+commands open side by side when the current window is at least 160
+columns wide and less than 80 lines tall, else above each other.
+A new pop-up reuses a window an earlier one opened, and leaves
+windows split by hand alone.
 .It Ic split-window-vertically
 Split the current window.
 A window smaller than 3 lines cannot be split.
