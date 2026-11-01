@@ -29,6 +29,7 @@
 #define CSEGREP       6
 #define CSFINDFILE    7
 #define CSINCLUDES    8
+#define CSASSIGN      9
 
 struct cstokens {
 	const char *fname;
@@ -48,7 +49,8 @@ static const char      *csprompt[] = {
 	"Change this text string: ",
 	"Find this egrep pattern: ",
 	"Find this file: ",
-	"Find files #including this file: "
+	"Find files #including this file: ",
+	"Find assignments to this symbol: "
 };
 
 static int  csclose(FILE *, pid_t);
@@ -130,6 +132,16 @@ int
 csfindinc(int f, int n)
 {
 	return (do_cscope(CSINCLUDES));
+}
+
+/*
+ * Find assignments to this symbol, cscope 15.8 and later.  Bound to
+ * C-c s =
+ */
+int
+csassign(int f, int n)
+{
+	return (do_cscope(CSASSIGN));
 }
 
 /*

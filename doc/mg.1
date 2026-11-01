@@ -267,6 +267,8 @@ set-mark-command
 beginning-of-line
 .It C-b, Left
 backward-char
+.It C-c s =
+cscope-find-assignments-to-this-symbol
 .It C-c s I
 cscope-index-files
 .It C-c s a
@@ -877,6 +879,8 @@ Navigate to the next file.
 Navigate to the previous file.
 .It Ic cscope-create-list-of-files-to-index
 Create cscope's List and Index in the given directory.
+.It Ic cscope-find-assignments-to-this-symbol
+Find the places a symbol is assigned to, with cscope 15.8 or later.
 .It Ic cscope-index-files
 Build the cscope database of a directory and those below it, with
 .Ql cscope -b -q -R ,

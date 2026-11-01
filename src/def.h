@@ -836,6 +836,7 @@ int		 csprevmatch(int, int);
 int		 cscreatelist(int, int);
 int		 cssetdir(int, int);
 int		 csindex(int, int);
+int		 csassign(int, int);
 
 /* extend.c X */
 int		 insert(int, int);

@@ -100,15 +100,22 @@ static PF cCsc[] = {
 	poptag			/* u */
 };
 
+static PF cCseq[] = {
+	csassign		/* = */
+};
+
 static PF cCsI[] = {
 	csindex			/* I */
 };
 
-static struct KEYMAPE (2) cCsmap = {
-	2,
-	2,
+static struct KEYMAPE (3) cCsmap = {
+	3,
+	3,
 	rescan,
 	{
+		{
+			'=', '=', cCseq, NULL
+		},
 		{
 			'I', 'I', cCsI, NULL
 		},
