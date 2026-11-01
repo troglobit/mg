@@ -99,11 +99,18 @@ static PF cCsc[] = {
 	csfindtext		/* t */
 };
 
-static struct KEYMAPE (1) cCsmap = {
-	1,
-	1,
+static PF cCsI[] = {
+	csindex			/* I */
+};
+
+static struct KEYMAPE (2) cCsmap = {
+	2,
+	2,
 	rescan,
 	{
+		{
+			'I', 'I', cCsI, NULL
+		},
 		{
 			'a', 't', cCsc, NULL
 		}

@@ -92,6 +92,7 @@ static struct funmap functnames[] = {
 #ifdef CSCOPE
 	{cscreatelist, "cscope-create-list-of-files-to-index", 1, NULL},
 	{cssetdir, "cscope-set-initial-directory", 1, NULL},
+	{csindex, "cscope-index-files", 1, NULL},
 	{csfuncalled, "cscope-find-called-functions", 1, NULL},
 	{csegrep, "cscope-find-egrep-pattern", 1, NULL},
 	{csfindinc, "cscope-find-files-including-file", 1, NULL},

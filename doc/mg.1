@@ -193,17 +193,21 @@ An etags file may include others, and its file names are taken
 relative to where it is.
 .Sh CSCOPE
 .Nm
-supports navigating source code using cscope.
-However,
-.Nm
-requires cscope and cscope-indexer executables to be present in
-.Ev $PATH
-for it to work.
+supports navigating source code using cscope, which must be in
+.Ev $PATH .
+.Ic cscope-index-files
+builds the database;
+.Ic cscope-create-list-of-files-to-index
+does it with cscope-indexer, if that is installed.
 The database,
 .Pa cscope.out ,
 is the nearest one in the directory of the buffer or above it, or
 above the directory set with
 .Ic cscope-set-initial-directory .
+Like git, the search stops at a directory owned by someone else, and
+only takes a
+.Pa cscope.out
+of the user's.
 cscope runs in that directory, with the options the database was
 built with, so it updates the database as files change.
 .Sh GZIP
@@ -241,6 +245,8 @@ set-mark-command
 beginning-of-line
 .It C-b, Left
 backward-char
+.It C-c s I
+cscope-index-files
 .It C-c s a
 cscope-set-initial-directory
 .It C-c s c
@@ -847,6 +853,16 @@ Navigate to the next file.
 Navigate to the previous file.
 .It Ic cscope-create-list-of-files-to-index
 Create cscope's List and Index in the given directory.
+.It Ic cscope-index-files
+Build the cscope database of a directory and those below it, with
+.Ql cscope -b -q -R ,
+or without
+.Fl R
+when a
+.Pa cscope.files
+there lists the files to index.
+The directory offered is that of the database there is, else the top
+of the git checkout, else that of the buffer.
 .It Ic cscope-set-initial-directory
 Look for the cscope database from the given directory up, instead of
 from that of the buffer.

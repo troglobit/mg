@@ -69,6 +69,7 @@ static const char      *csprompt[] = {
 
 static int  addentry(struct buffer *, char *);
 static int  csclose(FILE *, pid_t);
+static int  csargs(const char *, char **, int);
 static int  csdbdir(char *, size_t);
 static void csflush(void);
 static FILE *csopen(const char *, char *const [], pid_t *);
@@ -215,6 +216,91 @@ csdbdir(char *dir, size_t n)
 	}
 	if (dir[0] == '\0')
 		(void)strlcpy(dir, "/", n);
+	return (TRUE);
+}
+
+/*
+ * Start argv with cscope and the options for the database in dir, the
+ * same to build it as to search it, so a search updates the database
+ * rather than rebuilds it: -q for the inverted index, and -R unless a
+ * cscope.files lists the files.  A search only takes -q when there is
+ * an inverted index already.  Returns the number of arguments.
+ */
+static int
+csargs(const char *dir, char **argv, int build)
+{
+	char path[NFILEN];
+	int ac = 0;
+
+	argv[ac++] = "cscope";
+	if (build)
+		argv[ac++] = "-b";
+	(void)snprintf(path, sizeof(path), "%s/cscope.in.out", dir);
+	if (build || access(path, F_OK) == 0)
+		argv[ac++] = "-q";
+	(void)snprintf(path, sizeof(path), "%s/cscope.files", dir);
+	if (access(path, F_OK) == -1)
+		argv[ac++] = "-R";
+	return (ac);
+}
+
+/*
+ * Build the cscope database of a directory and those below it.  The
+ * default is the directory of the database there is, else the top of
+ * the git checkout, else that of the buffer.  Bound to C-c s I.
+ */
+int
+csindex(int f, int n)
+{
+	char dir[NFILEN], found[NFILEN], path[NFILEN], *bufp, *adjf, *p;
+	char *argv[6], buf[BUFSIZ];
+	FILE *fp;
+	pid_t pid;
+	int s;
+
+	if (csdbdir(dir, sizeof(dir)) == FALSE) {
+		if (getbufcwd(dir, sizeof(dir)) == FALSE)
+			dir[0] = '\0';
+		(void)strlcpy(found, dir, sizeof(found));
+		for (;;) {
+			if (snprintf(path, sizeof(path), "%s/.git", found) <
+			    (int)sizeof(path) && access(path, F_OK) == 0) {
+				(void)strlcpy(dir, found, sizeof(dir));
+				break;
+			}
+			if ((p = strrchr(found, '/')) == NULL || p == found)
+				break;
+			*p = '\0';
+		}
+	}
+	bufp = eread("Index files in directory: ", dir, sizeof(dir),
+	    EFNEW | EFCR | EFDEF);
+	if (bufp == NULL)
+		return (ABORT);
+	if ((adjf = adjustname(bufp, TRUE)) == NULL)
+		return (FALSE);
+	if (fisdir(adjf) != TRUE)
+		return (dobeep_msgs(adjf, "Not a directory"));
+	(void)strlcpy(dir, adjf, sizeof(dir));
+	if (secure)
+		return (secure_denied());
+	if (csexists("cscope") == FALSE)
+		return(dobeep_msg("no such file or directory, cscope"));
+
+	ewprintf("Indexing %s ...", dir);
+	argv[csargs(dir, argv, TRUE)] = NULL;
+	if ((fp = csopen(dir, argv, &pid)) == NULL)
+		return(dobeep_msg("problem opening pipe"));
+	while (fgets(buf, sizeof(buf), fp) != NULL)
+		;
+	if ((s = csclose(fp, pid)) != 0)
+		return (dobeep_msgs("cscope failed in", dir));
+
+	/* search there from here on, if it is not above the buffer */
+	if (csdbdir(found, sizeof(found)) == FALSE ||
+	    strcmp(found, dir) != 0)
+		(void)strlcpy(csinitdir, dir, sizeof(csinitdir));
+	ewprintf("Indexed %s", dir);
 	return (TRUE);
 }
 
@@ -435,7 +521,7 @@ do_cscope(int i)
 {
 	struct buffer *bp;
 	FILE *fpipe;
-	char pattern[NFILEN], query[3], title[BUFSIZ], path[NFILEN];
+	char pattern[NFILEN], query[3], title[BUFSIZ];
 	char *argv[8], *p, *buf;
 	int clen, nores = 0, ac = 0;
 	size_t sz;
@@ -460,21 +546,11 @@ do_cscope(int i)
 	if (csexists("cscope") == FALSE)
 		return(dobeep_msg("no such file or directory, cscope"));
 	if (csdbdir(csdir, sizeof(csdir)) == FALSE)
-		return(dobeep_msg("No cscope database here or above"));
+		return(dobeep_msg("No cscope database here or above, "
+		    "C-c s I to index"));
 
-	/*
-	 * Search in the directory of the database, with the options it
-	 * was built with, so cscope updates it rather than rebuild it:
-	 * -q for an inverted index, -R unless it has a list of files.
-	 */
 	csflush();
-	argv[ac++] = "cscope";
-	(void)snprintf(path, sizeof(path), "%s/cscope.in.out", csdir);
-	if (access(path, F_OK) == 0)
-		argv[ac++] = "-q";
-	(void)snprintf(path, sizeof(path), "%s/cscope.files", csdir);
-	if (access(path, F_OK) == -1)
-		argv[ac++] = "-R";
+	ac = csargs(csdir, argv, FALSE);
 	(void)snprintf(query, sizeof(query), "-%d", i);
 	argv[ac++] = "-L";
 	argv[ac++] = query;
