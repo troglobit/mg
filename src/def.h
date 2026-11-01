@@ -494,6 +494,7 @@ int		 filevisitalt(int, int);
 int		 filevisitro(int, int);
 int		 poptofile(int, int);
 int		 readin(char *);
+void		 automode(const char *);
 int		 insertfile(char *, char *, int);
 int		 filewrite(int, int);
 int		 filesave(int, int);

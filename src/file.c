@@ -189,6 +189,32 @@ poptofile(int f, int n)
 }
 
 /*
+ * Set the modes of the current buffer for a file named fname, from
+ * the auto-execute patterns and what the buffer holds.
+ */
+void
+automode(const char *fname)
+{
+#ifdef ENABLE_AUTOEXEC
+	PF	*ael;
+	int	 i, majors;
+
+	/*
+	 * FFARG forces the mode on; a plain call toggles it off again
+	 * when revert-buffer comes through here.  A major mode the
+	 * user's own patterns set stands, else the contents may decide.
+	 */
+	if ((ael = find_autoexec(fname, &majors)) != NULL) {
+		for (i = 0; ael[i] != NULL; i++)
+			(*ael[i])(FFARG, 1);
+		free(ael);
+	}
+	if (!(majors & AUTO_USER))
+		content_execute(majors & AUTO_NAMED);
+#endif
+}
+
+/*
  * Read the file "fname" into the current buffer.  Make all of the text
  * in the buffer go away, after checking for unsaved changes.  This is
  * called by the "read" command, the "visit" command, and the mainline
@@ -200,10 +226,6 @@ readin(char *fname)
 	struct mgwin	*wp;
 	struct stat	 statbuf;
 	int	 status, ro = FALSE;
-#ifdef ENABLE_AUTOEXEC
-	PF	*ael;
-	int	 i, majors;
-#endif
 	char	 dp[NFILEN];
 
 	/* might be old */
@@ -229,21 +251,7 @@ readin(char *fname)
 		}
 	}
 
-#ifdef ENABLE_AUTOEXEC
-	/*
-	 * Call auto-executing function if we need to.  FFARG forces the
-	 * mode on; a plain call toggles it off again when revert-buffer
-	 * comes through here.  A major mode the user's own patterns set
-	 * stands, else the contents may decide.
-	 */
-	if ((ael = find_autoexec(fname, &majors)) != NULL) {
-		for (i = 0; ael[i] != NULL; i++)
-			(*ael[i])(FFARG, 1);
-		free(ael);
-	}
-	if (!(majors & AUTO_USER))
-		content_execute(majors & AUTO_NAMED);
-#endif
+	automode(fname);
 
 	/* no change */
 	curbp->b_flag &= ~BFCHG;
