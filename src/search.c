@@ -601,6 +601,10 @@ retry:
 			(void)ctrlg(FFRAND, 0);
 			goto stopsearch;
 		case CCHR('['):
+			/* arrow keys start with ESC: quit, then run the key */
+			if (ttwait(300) == FALSE)
+				ungetkey(CCHR('['));
+			goto stopsearch;
 		case CCHR('M'):
 			goto stopsearch;
 		case '!':
