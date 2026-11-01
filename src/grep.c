@@ -26,6 +26,9 @@ static int	 gid(int, int);
 static struct buffer	*compile_mode(const char *, const char *);
 void grep_init(void);
 
+/* the lines compile_mode() puts before the output: cd, command, blank */
+#define COMPILE_HEAD	3
+
 static char compile_last_command[NFILEN] = "make ";
 
 /*
@@ -53,6 +56,7 @@ grep_init(void)
 {
 	funmap_add(compile_goto_error, "compile-goto-error", 0);
 	funmap_add(next_error, "next-error", 0);
+	funmap_add(previous_error, "previous-error", 0);
 	funmap_add(grep, "grep", 1);
 	funmap_add(compile, "compile", 0);
 	funmap_add(gid, "gid", 1);
@@ -252,70 +256,89 @@ compile_mode(const char *name, const char *command)
 	return (bp);
 }
 
+/*
+ * Whether lp, a line of a compile buffer, is a location: "file:line:"
+ * with the file relative to the buffer's directory.
+ */
 static int
-compile_goto_error(int f, int n)
+compile_loc(struct line *lp, char *path, size_t len, int *lineno)
+{
+	char	*line, *p, *fname, *ln, *adjf;
+	const char *errstr;
+	int	 s = FALSE;
+
+	if ((line = linetostr(lp)) == NULL)
+		return (FALSE);
+	p = line;
+	if ((fname = strsep(&p, ":")) == NULL || *fname == '\0')
+		goto out;
+	if ((ln = strsep(&p, ":")) == NULL || *ln == '\0')
+		goto out;
+	*lineno = (int)strtonum(ln, INT_MIN, INT_MAX, &errstr);
+	if (errstr)
+		goto out;
+	if (fname[0] != '/') {
+		if (getbufcwd(path, len) == FALSE ||
+		    strlcat(path, fname, len) >= len)
+			goto out;
+	} else if ((adjf = adjustname(fname, TRUE)) == NULL ||
+	    strlcpy(path, adjf, len) >= len)
+		goto out;
+	s = TRUE;
+out:
+	free(line);
+	return (s);
+}
+
+/*
+ * Go to the first location from lp, line dotline of the current compile
+ * buffer, going in direction dir, and show it in another window.  The
+ * lines compile_mode() adds around the output are left out: the
+ * command, and the time it finished, can look like locations.
+ */
+static int
+compile_find(struct line *lp, int dotline, int dir)
 {
 	struct buffer	*bp;
 	struct mgwin	*wp;
-	char	*fname, *line, *lp, *ln;
+	char	 path[NFILEN];
 	int	 lineno;
-	char	*adjf, path[NFILEN];
-	const char *errstr;
-	struct line	*last;
 
-	compile_buffer = curbp;
-	last = blastlp(compile_buffer);
-
- retry:
-	/* last line is compilation result */
-	if (curwp->w_dotp == last)
-		return (FALSE);
-
-	if ((line = linetostr(curwp->w_dotp)) == NULL)
-		return (FALSE);
-	lp = line;
-	if ((fname = strsep(&lp, ":")) == NULL || *fname == '\0')
-		goto fail;
-	if ((ln = strsep(&lp, ":")) == NULL || *ln == '\0')
-		goto fail;
-	lineno = (int)strtonum(ln, INT_MIN, INT_MAX, &errstr);
-	if (errstr)
-		goto fail;
-
-	if (fname && fname[0] != '/') {
-		if (getbufcwd(path, sizeof(path)) == FALSE)
-			goto fail;
-		if (strlcat(path, fname, sizeof(path)) >= sizeof(path))
-			goto fail;
-		adjf = path;
-	} else {
-		adjf = adjustname(fname, TRUE);
+	for (; lp != curbp->b_headp && lp != blastlp(curbp);
+	    lp = dir < 0 ? lback(lp) : lforw(lp), dotline += dir) {
+		if (dotline <= COMPILE_HEAD) {
+			if (dir < 0)
+				break;
+		} else if (compile_loc(lp, path, sizeof(path), &lineno))
+			goto found;
 	}
-	free(line);
+	return (dobeep_msg(dir < 0 ? "No earlier hits" : "No more hits"));
+found:
+	curwp->w_dotp = lp;
+	curwp->w_doto = 0;
+	curwp->w_dotline = dotline;
+	curwp->w_rflag |= WFMOVE;
 
-	if (adjf == NULL)
-		return (FALSE);
-
-	if ((bp = findbuffer(adjf)) == NULL)
+	if ((bp = findbuffer(path)) == NULL)
 		return (FALSE);
 	if ((wp = popbuf(bp, WNONE)) == NULL)
 		return (FALSE);
 	curbp = bp;
 	curwp = wp;
 	if (bp->b_fname[0] == '\0')
-		readin(adjf);
-	gotoline(FFARG, lineno);
-	return (TRUE);
-fail:
-	free(line);
-	if (curwp->w_dotp != blastlp(curbp)) {
-		curwp->w_dotp = lforw(curwp->w_dotp);
-		curwp->w_rflag |= WFMOVE;
-		goto retry;
-	}
-	dobeep();
-	ewprintf("No more hits");
-	return (FALSE);
+		readin(path);
+	return (setlineno(lineno));
+}
+
+/*
+ * RET in a compile buffer: go to the location on this line, or the
+ * first one after it.
+ */
+static int
+compile_goto_error(int f, int n)
+{
+	compile_buffer = curbp;
+	return (compile_find(curwp->w_dotp, curwp->w_dotline, 1));
 }
 
 /*
@@ -349,34 +372,36 @@ next_error_buf(struct buffer *bp)
 	compile_buffer = bp;
 }
 
+/*
+ * Go to the next location in the list shown last, or with a negative
+ * argument the one before.
+ */
 int
 next_error(int f, int n)
 {
 	struct buffer	*bp;
 	struct mgwin	*wp;
+	int	 dir = n < 0 ? -1 : 1;
 
-	if ((bp = compile_buf()) == NULL) {
-		dobeep();
-		ewprintf("No compilation active");
-		return (FALSE);
-	}
+	if ((bp = compile_buf()) == NULL)
+		return (dobeep_msg("No compilation active"));
 #ifdef ENABLE_CTAGS
 	if (bp->b_modes[1] != name_mode("compile"))
-		return (xrefstep(n < 0 ? -1 : 1, FALSE));
+		return (xrefstep(dir, FALSE));
 #endif
 	if ((wp = popbuf(bp, WNONE)) == NULL)
 		return (FALSE);
 	curwp = wp;
 	curbp = bp;
-	if (curwp->w_dotp == blastlp(curbp)) {
-		dobeep();
-		ewprintf("No more hits");
-		return (FALSE);
-	}
-	curwp->w_dotp = lforw(curwp->w_dotp);
-	curwp->w_rflag |= WFMOVE;
+	return (compile_find(dir < 0 ? lback(curwp->w_dotp) :
+	    lforw(curwp->w_dotp), curwp->w_dotline + dir, dir));
+}
 
-	return (compile_goto_error(f, n));
+/* Go to the location before the last one, see next_error(). */
+int
+previous_error(int f, int n)
+{
+	return (next_error(f, -n));
 }
 
 /*

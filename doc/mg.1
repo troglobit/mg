@@ -1499,9 +1499,8 @@ or an
 list from
 .Ic find-tag
 or cscope.
-With a negative argument, go back one in an
-.Pa *xref*
-list.
+With a negative argument, go back instead, see
+.Ic previous-error .
 .It Ic next-line
 Move forward
 .Va n
@@ -1548,6 +1547,10 @@ Repeating it walks on through the older buffers, in the order of
 .Ic list-buffers ,
 and wraps around, so holding the key visits every buffer once.
 Bound to C-x left arrow and C-x C-left arrow.
+.It Ic previous-error
+Go to the previous location in the list
+.Ic next-error
+steps through.
 .It Ic previous-line
 Move backwards
 .Va n

@@ -1061,6 +1061,7 @@ int		 cc_lfindent(int, int);
 /* grep.c X */
 #ifdef ENABLE_COMPILE_GREP
 int		 next_error(int, int);
+int		 previous_error(int, int);
 void		 next_error_buf(struct buffer *);
 int		 globalwd(void);
 int		 globalwdtoggle(int, int);
