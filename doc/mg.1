@@ -232,6 +232,24 @@ closes it.
 and
 .Ic cscope-prev-symbol
 step through it from any window.
+.Sh VERSION CONTROL
+The C-x v keys of GNU Emacs work on a file in a git repository, and need
+.Xr git 1 .
+.Ic vc-diff ,
+.Ic vc-print-log
+and
+.Ic vc-annotate
+show the diff, the commits, and who last changed each line of the file
+in the buffer;
+.Ic vc-root-diff
+and
+.Ic vc-print-root-log
+the same for the whole repository.
+The result is listed in a read-only window, which
+.Ic q
+closes.
+.Ic vc-revision-other-window
+shows the file as it was in a revision, also read-only.
 .Sh GZIP
 .Nm
 is capable of opening gzipped text files, e.g.
@@ -467,6 +485,18 @@ yank-rectangle
 save-some-buffers
 .It C-x u
 undo
+.It C-x v =
+vc-diff
+.It C-x v D
+vc-root-diff
+.It C-x v g
+vc-annotate
+.It C-x v l
+vc-print-log
+.It C-x v L
+vc-print-root-log
+.It C-x v ~
+vc-revision-other-window
 .It C-x {
 shrink-window-horizontally
 .It C-x }
@@ -2029,6 +2059,25 @@ As it moves, convert any characters to upper case.
 Toggle accepting a single y or n in place of a spelled out yes or no
 answer to important questions.
 Enabled by default, unlike GNU Emacs.
+.It Ic vc-annotate
+Show each line of the file with the commit that last changed it, dot
+on the line it was on.
+.It Ic vc-diff
+Show how the file differs from its last commit, in diff-mode.
+An unsaved buffer is offered to be saved first.
+.It Ic vc-print-log
+Show the commits that changed the file, newest first.
+.It Ic vc-print-root-log
+Show the commits of the whole repository, newest first.
+.It Ic vc-revision-other-window
+Show the file as it was in a revision, HEAD by default, in a read-only
+window, named
+.Pa file.~rev~ ,
+which
+.Ic q
+closes.
+.It Ic vc-root-diff
+Show how the whole repository differs from its last commit.
 .It Ic visible-bell
 Toggle the visible bell.
 If this toggle is on, the modeline will flash.

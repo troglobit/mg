@@ -58,6 +58,9 @@ endif
 if HELP
 mg_SOURCES     += help.c
 endif
+if VC
+mg_SOURCES     += vc.c
+endif
 if IDO
 mg_SOURCES     += ido.c
 endif

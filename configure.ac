@@ -57,6 +57,7 @@ AC_ARG_ENABLE(ido,      AS_HELP_STRING([--disable-ido],      [Disable ido-mode, 
 AC_ARG_ENABLE(regexp,   AS_HELP_STRING([--disable-regexp],   [Disable full regexp search]))
 AC_ARG_ENABLE(syntax,   AS_HELP_STRING([--disable-syntax],   [Disable syntax highlighting and comment-dwim]))
 AC_ARG_ENABLE(togglenl, AS_HELP_STRING([--disable-togglenl], [Disable toggle-newline-prompt extension]))
+AC_ARG_ENABLE(vc,       AS_HELP_STRING([--disable-vc],       [Disable C-x v version control, for git]))
 AC_ARG_ENABLE(all,      AS_HELP_STRING([--disable-all],      [Disable all optional features]))
 
 AC_ARG_WITH(modes,
@@ -127,6 +128,7 @@ AS_IF([test "x$enable_all" = "xno"],
 	enable_regexp="no"
 	enable_togglenl="no"
 	enable_syntax="no"
+	enable_vc="no"
 	modes="no"
 	startup="no")
 
@@ -171,6 +173,9 @@ AS_IF([test "x$enable_help" != "xno"], enable_help="yes"
 
 AS_IF([test "x$enable_regexp" != "xno"], enable_regexp="yes"
 	AC_DEFINE(REGEX, 1, [Enable regexp search support]))
+
+AS_IF([test "x$enable_vc" != "xno"], enable_vc="yes"
+	AC_DEFINE(ENABLE_VC, 1, [Enable C-x v version control, for git]))
 
 AS_IF([test "x$enable_togglenl" != "xno"], enable_togglenl="yes"
 	AC_DEFINE(TOGGLENL, 1, [Enable toggle-newline-prompt support]))
@@ -220,6 +225,7 @@ AM_CONDITIONAL(DIRED,    [test "x$enable_dired"    = "xyes"])
 AM_CONDITIONAL(HELP,     [test "x$enable_help"     = "xyes"])
 AM_CONDITIONAL(IDO,      [test "x$enable_ido"      = "xyes"])
 AM_CONDITIONAL(TINY,     [test "x$enable_tiny"     = "xyes"])
+AM_CONDITIONAL(VC,       [test "x$enable_vc"       = "xyes"])
 AM_CONDITIONAL(MGLOG,    [test "x$with_mglog"     != "xno"])
 AM_CONDITIONAL(DOCS,     [test "x$with_docs"      != "xno"])
 AM_CONDITIONAL(NOCURSES, [test "x$with_curses"     = "xno"])
@@ -268,6 +274,7 @@ cat <<EOF
   syntax.........: $enable_syntax
   file modes.....: ${modes:-no}
   toggle newline.: $enable_togglenl
+  vc, for git....: $enable_vc
 
 ------------- Compiler version --------------
 $($CC --version || true)
