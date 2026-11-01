@@ -515,6 +515,10 @@ move-to-column
 goto-char
 .It M-g g, M-g M-g
 goto-line
+.It M-g n, M-g M-n
+next-error
+.It M-g p, M-g M-p
+previous-error
 .It M-h
 mark-paragraph
 .It M-k
@@ -1514,6 +1518,7 @@ list from
 or cscope.
 With a negative argument, go back instead, see
 .Ic previous-error .
+Bound to C-x `, M-g n and M-g M-n.
 .It Ic next-line
 Move forward
 .Va n
@@ -1564,6 +1569,7 @@ Bound to C-x left arrow and C-x C-left arrow.
 Go to the previous location in the list
 .Ic next-error
 steps through.
+Bound to M-g p and M-g M-p.
 .It Ic previous-line
 Move backwards
 .Va n

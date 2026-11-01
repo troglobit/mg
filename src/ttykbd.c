@@ -305,6 +305,12 @@ ttykeymapinit(void)
 	dobindkey(fundamental_map, "goto-line", "\eg\eg");
 	dobindkey(fundamental_map, "goto-char", "\egc");
 	dobindkey(fundamental_map, "move-to-column", "\eg\t");
+#ifdef ENABLE_COMPILE_GREP
+	dobindkey(fundamental_map, "next-error", "\egn");
+	dobindkey(fundamental_map, "next-error", "\eg\en");
+	dobindkey(fundamental_map, "previous-error", "\egp");
+	dobindkey(fundamental_map, "previous-error", "\eg\ep");
+#endif
 
 	/* Shift and an arrow key mark text, like in GNU Emacs */
 	funmap_add(shiftleft, "shift-backward-char", 0);
