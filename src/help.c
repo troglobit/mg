@@ -205,7 +205,7 @@ keyfunc(const KCHAR *keys, int n, int *mode)
 	int	 i;
 
 	for (*mode = curbp->b_nmodes; *mode >= 0; --*mode) {
-		map = curbp->b_modes[*mode]->p_map;
+		map = pre = curbp->b_modes[*mode]->p_map;
 		for (i = 0; i < n; i++) {
 			pre = map;
 			if ((fp = doscan(map, keys[i], &map)) != NULL)
