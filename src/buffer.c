@@ -1098,15 +1098,9 @@ static struct mgwin	*popfrom;	/* the window popselect() came from */
 struct maps_s *
 popmode(const char *name)
 {
-	struct maps_s	*m;
-
-	if ((m = name_mode(name)) == NULL) {
-		if (maps_add((KEYMAP *)&popmap, name) != TRUE)
-			return (NULL);
-		m = name_mode(name);
-		m->p_minor = 1;
-	}
-	return (m);
+	if (name_mode(name) == NULL && minor_add((KEYMAP *)&popmap, name) != TRUE)
+		return (NULL);
+	return (name_mode(name));
 }
 
 /*

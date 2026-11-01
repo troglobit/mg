@@ -789,6 +789,19 @@ maps_add(KEYMAP *map, const char *name)
 	return (TRUE);
 }
 
+/*
+ * Register a minor mode: its keys come on top of the major mode's,
+ * and switching major modes leaves it on.
+ */
+int
+minor_add(KEYMAP *map, const char *name)
+{
+	if (maps_add(map, name) != TRUE)
+		return (FALSE);
+	maps->p_minor = 1;
+	return (TRUE);
+}
+
 struct maps_s *
 name_mode(const char *name)
 {

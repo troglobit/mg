@@ -62,6 +62,7 @@ struct maps_s	*name_mode(const char *);
 PF		 doscan(KEYMAP *, int, KEYMAP **);
 void		 maps_init(void);
 int		 maps_add(KEYMAP *, const char *);
+int		 minor_add(KEYMAP *, const char *);
 
 extern struct map_element	*ele;
 extern struct maps_s		*defb_modes[];
