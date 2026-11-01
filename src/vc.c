@@ -8,10 +8,12 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "def.h"
 #include "kbd.h"
@@ -239,15 +241,42 @@ vcrevision(int f, int n)
 }
 
 /*
+ * The first line of the regular file at path, without its newline.
+ * Opening does not wait, so a FIFO planted in its place cannot hang.
+ */
+static int
+vcline(const char *path, char *line, size_t len)
+{
+	struct stat	 st;
+	FILE	*fp;
+	char	*p;
+	int	 fd;
+
+	if ((fd = open(path, O_RDONLY | O_NONBLOCK)) == -1)
+		return (FALSE);
+	if (fstat(fd, &st) == -1 || !S_ISREG(st.st_mode) ||
+	    (fp = fdopen(fd, "r")) == NULL) {
+		close(fd);
+		return (FALSE);
+	}
+	p = fgets(line, len, fp);
+	fclose(fp);
+	if (p == NULL)
+		return (FALSE);
+	line[strcspn(line, "\n")] = '\0';
+	return (TRUE);
+}
+
+/*
  * The branch checked out in the repository the file at path is in, or
  * the start of the commit when none is, read from HEAD in its git
  * directory: .git, or where a .git file points, as in a worktree.
+ * Like git, the search stops at a directory owned by someone else.
  */
 static int
 vchead(const char *path, char *head, size_t len)
 {
 	struct stat	 st;
-	FILE	*fp;
 	char	 dir[NFILEN], git[NFILEN], line[NFILEN], *p;
 
 	(void)strlcpy(dir, path, sizeof(dir));
@@ -255,33 +284,28 @@ vchead(const char *path, char *head, size_t len)
 		if ((p = strrchr(dir, '/')) == NULL)
 			return (FALSE);
 		*p = '\0';
+		if (stat(dir[0] != '\0' ? dir : "/", &st) == -1 ||
+		    st.st_uid != getuid())
+			return (FALSE);
 		if (snprintf(git, sizeof(git), "%s/.git", dir) >= (int)sizeof(git))
 			return (FALSE);
 		if (stat(git, &st) == 0)
 			break;
 	}
-	if (!S_ISDIR(st.st_mode)) {
-		if ((fp = fopen(git, "r")) == NULL)
+	if (S_ISREG(st.st_mode)) {
+		if (!vcline(git, line, sizeof(line)) ||
+		    strncmp(line, "gitdir: ", 8) != 0)
 			return (FALSE);
-		p = fgets(line, sizeof(line), fp);
-		fclose(fp);
-		if (p == NULL || strncmp(line, "gitdir: ", 8) != 0)
-			return (FALSE);
-		line[strcspn(line, "\n")] = '\0';
 		if (line[8] == '/')
 			(void)strlcpy(git, line + 8, sizeof(git));
 		else if (snprintf(git, sizeof(git), "%s/%s", dir, line + 8) >=
 		    (int)sizeof(git))
 			return (FALSE);
-	}
+	} else if (!S_ISDIR(st.st_mode))
+		return (FALSE);
 	if (strlcat(git, "/HEAD", sizeof(git)) >= sizeof(git) ||
-	    (fp = fopen(git, "r")) == NULL)
+	    !vcline(git, line, sizeof(line)))
 		return (FALSE);
-	p = fgets(line, sizeof(line), fp);
-	fclose(fp);
-	if (p == NULL)
-		return (FALSE);
-	line[strcspn(line, "\n")] = '\0';
 	if (strncmp(line, "ref: refs/heads/", 16) == 0)
 		p = line + 16;
 	else if (strncmp(line, "ref: ", 5) == 0)
