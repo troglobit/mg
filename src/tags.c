@@ -567,6 +567,9 @@ xreflist(const char *base, const char *msg)
 
 	if ((bp = popbuffer("*xref*", name_mode("xref"))) == NULL)
 		return (FALSE);
+#ifdef ENABLE_COMPILE_GREP
+	next_error_buf(bp);
+#endif
 	if (base != NULL)
 		(void)snprintf(cwd, sizeof(cwd), "%s/", base);
 	else if (getbufcwd(cwd, sizeof(cwd)) == FALSE)

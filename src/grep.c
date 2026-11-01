@@ -28,7 +28,11 @@ void grep_init(void);
 
 static char compile_last_command[NFILEN] = "make ";
 
-/* The buffer for next-error, see compile_buf() before using it. */
+/*
+ * The list next-error steps through: the last grep or compile buffer,
+ * or *xref*, whichever was shown last.  See compile_buf() before
+ * using it.
+ */
 static struct buffer	*compile_buffer;
 
 static PF compile_pf[] = {
@@ -317,7 +321,7 @@ fail:
 /*
  * The buffer for next-error, or NULL once it has been killed.  Its
  * memory may since have gone to another buffer, so that has to be in
- * compile mode too.
+ * compile or xref mode too.
  */
 static struct buffer *
 compile_buf(void)
@@ -326,9 +330,23 @@ compile_buf(void)
 
 	for (bp = bheadp; bp != NULL; bp = bp->b_bufp)
 		if (bp == compile_buffer)
-			return (bp->b_modes[1] == name_mode("compile") ?
-			    bp : NULL);
+			break;
+	if (bp == NULL || bp->b_nmodes < 1)
+		return (NULL);
+	if (bp->b_modes[1] == name_mode("compile"))
+		return (bp);
+#ifdef ENABLE_CTAGS
+	if (bp->b_modes[1] == name_mode("xref"))
+		return (bp);
+#endif
 	return (NULL);
+}
+
+/* Make bp, a list like *xref*, the one next-error steps through. */
+void
+next_error_buf(struct buffer *bp)
+{
+	compile_buffer = bp;
 }
 
 int
@@ -342,6 +360,10 @@ next_error(int f, int n)
 		ewprintf("No compilation active");
 		return (FALSE);
 	}
+#ifdef ENABLE_CTAGS
+	if (bp->b_modes[1] != name_mode("compile"))
+		return (xrefstep(n < 0 ? -1 : 1, FALSE));
+#endif
 	if ((wp = popbuf(bp, WNONE)) == NULL)
 		return (FALSE);
 	curwp = wp;

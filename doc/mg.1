@@ -1489,6 +1489,19 @@ Undo a
 .Ic previous-buffer :
 show the buffer used after this one, walking back toward the newest.
 Bound to C-x right arrow and C-x C-right arrow.
+.It Ic next-error
+Go to the next location in the list shown last: the output of
+.Ic grep
+or
+.Ic compile ,
+or an
+.Pa *xref*
+list from
+.Ic find-tag
+or cscope.
+With a negative argument, go back one in an
+.Pa *xref*
+list.
 .It Ic next-line
 Move forward
 .Va n
