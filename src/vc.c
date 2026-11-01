@@ -525,14 +525,19 @@ vcregister(int f, int n)
 
 /*
  * C-x v u: throw away the changes to the file, saved or not, back to
- * its last commit.
+ * its last commit.  As in Emacs, the diff to be undone is shown while
+ * asking, and closed once it is.
  */
 static int
 vcrevert(int f, int n)
 {
+	struct buffer	*bp = curbp, *dbp = NULL;
+	struct mgwin	*wp = curwp;
 	char	 dir[NFILEN], name[NFILEN], prompt[NFILEN + 32];
 	char	*argv[] = { "git", "--literal-pathspecs", "checkout", "HEAD",
 		    "--", name, NULL };
+	char	*diff[] = { "git", "--literal-pathspecs", "diff", "--no-color",
+		    "HEAD", "--", name, NULL };
 	int	 s, state;
 
 	if (secure)
@@ -543,9 +548,22 @@ vcrevert(int f, int n)
 		return (dobeep_msg("Not in a git repository"));
 	if (state != ':' && !(curbp->b_flag & BFCHG))
 		return (dobeep_msg("No changes to revert"));
+	/* what is on disk; unsaved edits have no diff to show */
+	if (state == ':') {
+		if ((s = vcshow(dir, diff, "*vc-diff*", "diff-mode",
+		    NULL)) != TRUE)
+			return (s);
+		if (curwp != wp) {
+			dbp = curbp;
+			curwp = wp;
+			curbp = bp;
+		}
+	}
 	(void)snprintf(prompt, sizeof(prompt), "Discard changes in %s", name);
 	if ((s = eyesno(prompt)) != TRUE)
 		return (s);
+	if (dbp != NULL)
+		(void)popdone(dbp);
 	if (state == ':' && (s = vcdo(dir, argv)) != TRUE)
 		return (s);
 	return (revertbp(curbp));

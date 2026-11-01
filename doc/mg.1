@@ -291,7 +291,8 @@ commits and
 .Ic C-c C-k
 gives up.
 .Ic vc-revert
-throws away the changes to the file, saved or not.
+throws away the changes to the file, saved or not, showing the diff
+to be undone while it asks.
 .Pp
 The mode line of a file git tracks shows its branch:
 .Ql Git-main
@@ -2136,6 +2137,9 @@ Show the commits of the whole repository, newest first.
 Start tracking the file, with git add.
 .It Ic vc-revert
 Throw away the changes to the file, saved or not, after asking.
+As in GNU Emacs, the saved changes to undo are shown in
+.Pa *vc-diff*
+while it asks, and the window closes once they are gone.
 .It Ic vc-revision-other-window
 Show the file as it was in a revision, HEAD by default, in a read-only
 window, named
