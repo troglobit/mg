@@ -810,6 +810,11 @@ int		 joinline(int, int);
 int		 findtag(int, int);
 int		 findtagother(int, int);
 int		 tagsapropos(int, int);
+void		 xrefclear(void);
+int		 xrefadd(const char *, const char *, int, const char *,
+		     const char *);
+int		 xreflist(const char *, const char *);
+int		 xrefstep(int, int);
 int 		 poptag(int, int);
 int		 tagsvisit(int, int);
 int		 curtoken(int, int, char *);

@@ -43,18 +43,19 @@ static void              freepos(struct tagpos *);
 static struct tagpos     *markpos(void);
 static int               nexttag(int);
 static int               pushtag(struct ctag *, int);
+static int               showloc(const char *, char *, int, const char *, int);
 static int               searchpat(char *, int);
 static struct ctag       *searchtag(char *);
-static int               showtag(struct ctag *, int);
 static char              *strip(char *, size_t);
 static void              unloadtags(void);
 static int               xrefgoto(int, int);
 static int               xrefgotoquit(int, int);
-static int               xreflist(struct ctag **, int, const char *);
 static int               xrefnext(int, int);
+static int               xrefnextfile(int, int);
 static int               xrefprev(int, int);
+static int               xrefprevfile(int, int);
 static int               xrefquit(int, int);
-static int               xrefshow(int);
+static int               xrefvisit(int);
 static struct mgwin      *xrefwin(void);
 
 #define DEFAULTFN "tags"
@@ -95,13 +96,24 @@ static struct {
 static int	 nseen;
 
 /*
- * The *xref* list of the definitions of a tag, one line for each in
- * xref[]: n and p show one, RET goes there, TAB too and closes the
- * list, and q only closes it.
- * Going to one pushes where the list was asked from on the tag stack.
+ * The *xref* list of locations, the definitions of a tag or what a
+ * cscope search found, one line for each in xref[]: n and p show one,
+ * N and P the first of the next or previous file, RET goes there, TAB
+ * too and closes the list, and q only closes it.  Going to one pushes
+ * where the list was asked from on the tag stack.  A location is found
+ * by the start of its line, pat, near its line number, or by the line
+ * number alone when pat is empty.
  */
-static struct ctag	**xref;
-static int		 nxref;
+struct xent {
+	char	*fname;
+	char	*pat;
+	char	*text;			/* shown in the list		*/
+	char	*name;			/* for messages			*/
+	int	 line;
+};
+static struct xent	*xref;
+static int		 nxref, maxxref;
+static int		 xrefcur;	/* the entry gone to last, or -1	*/
 static int		 xrefsame;	/* the list is of lasttag		*/
 
 /* The tag M-. went to last, and which of its definitions. */
@@ -118,6 +130,12 @@ static PF xref_ci[] = {
 	xrefgoto		/* ^M */
 };
 
+static PF xref_NP[] = {
+	xrefnextfile,		/* N */
+	rescan,			/* O */
+	xrefprevfile		/* P */
+};
+
 static PF xref_nq[] = {
 	xrefnext,		/* n */
 	rescan,			/* o */
@@ -125,12 +143,13 @@ static PF xref_nq[] = {
 	xrefquit		/* q */
 };
 
-static struct KEYMAPE (2) xrefmap = {
-	2,
-	2,
+static struct KEYMAPE (3) xrefmap = {
+	3,
+	3,
 	rescan,
 	{
 		{ CCHR('I'), CCHR('M'), xref_ci, NULL },
+		{ 'N', 'P', xref_NP, NULL },
 		{ 'n', 'q', xref_nq, NULL }
 	}
 };
@@ -284,8 +303,9 @@ complete_tag_list(const char *prefix)
 static int
 gototag(char *tok, int other)
 {
-	struct ctag *res, *t, **v;
-	int i, n;
+	char msg[NFILEN];
+	struct ctag *res, *t;
+	int n;
 
 	if ((res = searchtag(tok)) == NULL)
 		return (FALSE);
@@ -296,14 +316,13 @@ gototag(char *tok, int other)
 	}
 	/* none gone to yet, so C-u M-. starts at the first */
 	lastidx = -1;
+	xrefclear();
+	for (n = 0, t = res; t != NULL; t = t->next, n++)
+		if (xrefadd(t->fname, t->pat, t->line, t->tag, t->pat) == FALSE)
+			return (FALSE);
 	xrefsame = TRUE;
-	for (n = 0, t = res; t != NULL; t = t->next)
-		n++;
-	if ((v = calloc(n, sizeof(*v))) == NULL)
-		return (dobeep_msg("Out of memory"));
-	for (i = 0, t = res; t != NULL; t = t->next)
-		v[i++] = t;
-	return (xreflist(v, n, tok));
+	(void)snprintf(msg, sizeof(msg), "%d definitions of %s", n, tok);
+	return (xreflist(NULL, msg));
 }
 
 #ifdef REGEX
@@ -316,10 +335,10 @@ extern int	 casefoldsearch;
 int
 tagsapropos(int f, int n)
 {
-	char	 re[NPAT];
+	char	 re[NPAT], msg[NFILEN];
 	regex_t	 rx;
-	struct ctag *p, *t, **v = NULL, **nv;
-	int	 cnt = 0, max = 0, ret;
+	struct ctag *p, *t;
+	int	 cnt = 0, ret;
 
 	if (RB_EMPTY(&tags) && (ret = tagsvisit(f, n)) != TRUE)
 		return (ret);
@@ -332,22 +351,16 @@ tagsapropos(int f, int n)
 		ewprintf("Bad regexp: %s", re);
 		return (FALSE);
 	}
+	xrefclear();
 	RB_FOREACH(p, tagtree, &tags) {
 		if (regexec(&rx, p->tag, 0, NULL, 0) != 0)
 			continue;
-		for (t = p; t != NULL; t = t->next) {
-			if (cnt == max) {
-				max = max ? max * 2 : 64;
-				if ((nv = reallocarray(v, max,
-				    sizeof(*v))) == NULL) {
-					free(v);
-					regfree(&rx);
-					return (dobeep_msg("Out of memory"));
-				}
-				v = nv;
+		for (t = p; t != NULL; t = t->next, cnt++)
+			if (xrefadd(t->fname, t->pat, t->line, t->tag,
+			    t->pat) == FALSE) {
+				regfree(&rx);
+				return (FALSE);
 			}
-			v[cnt++] = t;
-		}
 	}
 	regfree(&rx);
 	if (cnt == 0) {
@@ -355,8 +368,9 @@ tagsapropos(int f, int n)
 		ewprintf("No tags matching %s", re);
 		return (FALSE);
 	}
-	xrefsame = FALSE;
-	return (xreflist(v, cnt, re));
+	(void)snprintf(msg, sizeof(msg), "%d definitions matching %s", cnt,
+	    re);
+	return (xreflist(NULL, msg));
 }
 #endif
 
@@ -396,10 +410,6 @@ unloadtags(void)
 {
 	struct ctag *var, *nxt, *t;
 	
-	/* the *xref* list points into the tree */
-	free(xref);
-	xref = NULL;
-	nxref = 0;
 	nseen = 0;
 	for (var = RB_MIN(tagtree, &tags); var != NULL; var = nxt) {
 		nxt = RB_NEXT(tagtree, &tags, var);
@@ -448,17 +458,20 @@ freepos(struct tagpos *s)
 }
 
 /*
- * Load the file with the definition of res into the current window, or
- * another one if other is set, and put dot on it.
+ * Load fname into the current window, or another one if other is set,
+ * and put dot on the line starting with pat, near line, or on line when
+ * pat is empty.  name is for the message when it is not there.
  */
 static int
-showtag(struct ctag *res, int other)
+showloc(const char *fname, char *pat, int line, const char *name, int other)
 {
-	if (loadbuffer(res->fname, other) == FALSE)
+	if (loadbuffer((char *)fname, other) == FALSE)
 		return (FALSE);
-	if (searchpat(res->pat, res->line) == FALSE) {
+	if (pat[0] == '\0')
+		(void)setlineno(line);
+	else if (searchpat(pat, line) == FALSE) {
 		dobeep();
-		ewprintf("%s: pattern not found", res->tag);
+		ewprintf("%s: pattern not found", name);
 		return (FALSE);
 	}
 	curwp->w_rflag |= WFMOVE;
@@ -476,7 +489,8 @@ pushtag(struct ctag *res, int other)
 
 	if ((s = markpos()) == NULL)
 		return (FALSE);
-	if (showtag(res, other) == FALSE) {
+	if (showloc(res->fname, res->pat, res->line, res->tag, other) ==
+	    FALSE) {
 		freepos(s);
 		return (FALSE);
 	}
@@ -485,11 +499,53 @@ pushtag(struct ctag *res, int other)
 }
 
 /*
- * List the n definitions in v, of tok, in *xref* and select it.  The
- * list takes v over.
+ * Empty the list of locations, for a new one.
  */
-static int
-xreflist(struct ctag **v, int n, const char *tok)
+void
+xrefclear(void)
+{
+	while (nxref > 0)
+		free(xref[--nxref].fname);
+	xrefcur = -1;
+	xrefsame = FALSE;
+}
+
+/*
+ * Add a location to the list, see struct xent; the list keeps copies.
+ */
+int
+xrefadd(const char *fname, const char *pat, int line, const char *name,
+    const char *text)
+{
+	struct xent *e;
+
+	if (nxref == maxxref) {
+		if ((e = reallocarray(xref, maxxref ? maxxref * 2 : 16,
+		    sizeof(*e))) == NULL)
+			return (dobeep_msg("Out of memory"));
+		xref = e;
+		maxxref = maxxref ? maxxref * 2 : 16;
+	}
+	/* one allocation for the strings, freed through fname */
+	e = &xref[nxref];
+	if (asprintf(&e->fname, "%s%c%s%c%s%c%s", fname, '\0', pat, '\0',
+	    text, '\0', name) == -1)
+		return (dobeep_msg("Out of memory"));
+	e->pat = e->fname + strlen(fname) + 1;
+	e->text = e->pat + strlen(pat) + 1;
+	e->name = e->text + strlen(text) + 1;
+	e->line = line;
+	nxref++;
+	return (TRUE);
+}
+
+/*
+ * Show the list in the *xref* pop-up and select it, with msg on the
+ * echo line.  File names under base, or the directory of the buffer
+ * when it is NULL, are shown relative to it.
+ */
+int
+xreflist(const char *base, const char *msg)
 {
 	static int	 initialized;
 	struct buffer	*bp;
@@ -503,9 +559,6 @@ xreflist(struct ctag **v, int n, const char *tok)
 		maps_add((KEYMAP *)&xrefmap, "xref");
 		initialized = 1;
 	}
-	free(xref);
-	xref = v;
-	nxref = n;
 	if (xrefpos != NULL)
 		freepos(xrefpos);
 	if ((xrefpos = markpos()) == NULL)
@@ -514,25 +567,26 @@ xreflist(struct ctag **v, int n, const char *tok)
 
 	if ((bp = popbuffer("*xref*", name_mode("xref"))) == NULL)
 		return (FALSE);
-	/* names under the directory of the buffer are shown relative */
-	if (getbufcwd(cwd, sizeof(cwd)) == FALSE)
+	if (base != NULL)
+		(void)snprintf(cwd, sizeof(cwd), "%s/", base);
+	else if (getbufcwd(cwd, sizeof(cwd)) == FALSE)
 		cwd[0] = '\0';
 	clen = strlen(cwd);
-	for (i = 0; i < n; i++) {
-		fn = v[i]->fname;
+	for (i = 0; i < nxref; i++) {
+		fn = xref[i].fname;
 		if (clen > 0 && strncmp(fn, cwd, clen) == 0)
 			fn += clen;
-		if (v[i]->line > 0)
-			addlinef(bp, "%s:%d: %s", fn, v[i]->line, v[i]->pat);
+		if (xref[i].line > 0)
+			addlinef(bp, "%s:%d: %s", fn, xref[i].line,
+			    xref[i].text);
 		else
-			addlinef(bp, "%s: %s", fn, v[i]->pat);
+			addlinef(bp, "%s: %s", fn, xref[i].text);
 	}
 	if ((wp = popshow(bp)) == NULL)
 		return (FALSE);
 	curwp = wp;
 	curbp = bp;
-	ewprintf("%d definitions of %s: n/p show, RET go, TAB go and close, "
-	    "q close", n, tok);
+	ewprintf("%s: n/p show, RET go, TAB go and close, q close", msg);
 	return (TRUE);
 }
 
@@ -550,18 +604,39 @@ xrefwin(void)
 }
 
 /*
- * Show the definition on the current line of *xref* in the window it
+ * Go to entry i of the list in the current window, and push where the
+ * list was asked from on the tag stack, once.
+ */
+static int
+xrefgo(int i)
+{
+	struct xent *e = &xref[i];
+
+	if (showloc(e->fname, e->pat, e->line, e->name, FALSE) != TRUE)
+		return (FALSE);
+	xrefcur = i;
+	if (xrefsame)
+		lastidx = i;
+	if (xrefpos != NULL) {
+		SLIST_INSERT_HEAD(&shead, xrefpos, entry);
+		xrefpos = NULL;
+	}
+	return (TRUE);
+}
+
+/*
+ * Show the location on the current line of the list in the window it
  * was asked from, or another one, and select that window if go is set.
  */
 static int
-xrefshow(int go)
+xrefvisit(int go)
 {
 	struct mgwin *xwp = curwp, *wp;
 	int i = curwp->w_dotline - 1, s;
 
 	if (i < 0 || i >= nxref) {
 		dobeep();
-		ewprintf("No definition here");
+		ewprintf("No location here");
 		return (FALSE);
 	}
 	if ((wp = xrefwin()) == NULL || wp == xwp)
@@ -571,55 +646,122 @@ xrefshow(int go)
 		return (FALSE);
 	curwp = wp;
 	curbp = wp->w_bufp;
-	s = showtag(xref[i], FALSE);
-	if (s == TRUE && go) {
-		if (xrefsame)
-			lastidx = i;
-		if (xrefpos != NULL) {
-			SLIST_INSERT_HEAD(&shead, xrefpos, entry);
-			xrefpos = NULL;
-		}
-		return (TRUE);
+	if (go)
+		s = xrefgo(i);
+	else
+		s = showloc(xref[i].fname, xref[i].pat, xref[i].line,
+		    xref[i].name, FALSE);
+	if (s != TRUE || !go) {
+		curwp = xwp;
+		curbp = xwp->w_bufp;
 	}
-	curwp = xwp;
-	curbp = xwp->w_bufp;
 	return (s);
 }
 
-/* RET in *xref*: go to the definition on this line. */
+/*
+ * The entry after i, or before it when dir is -1, or with byfile the
+ * first entry of the next or previous file; -1 when there is none.
+ */
+static int
+xrefnth(int i, int dir, int byfile)
+{
+	const char *fn = i >= 0 && i < nxref ? xref[i].fname : NULL;
+
+	i += dir;
+	if (byfile && fn != NULL) {
+		while (i >= 0 && i < nxref && strcmp(xref[i].fname, fn) == 0)
+			i += dir;
+		/* back to the first entry of that file */
+		if (dir < 0)
+			while (i > 0 &&
+			    strcmp(xref[i - 1].fname, xref[i].fname) == 0)
+				i--;
+	}
+	return (i >= 0 && i < nxref ? i : -1);
+}
+
+/*
+ * Go to the next location of the last list, or the previous one when
+ * dir is -1, or with byfile to the next or previous file, in the
+ * current window.
+ */
+int
+xrefstep(int dir, int byfile)
+{
+	int i;
+
+	if (nxref == 0)
+		return (dobeep_msg("No list of locations"));
+	if (xrefcur < 0 && dir > 0)
+		i = 0;
+	else if ((i = xrefnth(xrefcur, dir, byfile)) == -1)
+		return (dobeep_msg(dir > 0 ? "No more locations" :
+		    "No earlier locations"));
+	/* in the list itself, as RET on that line, not over the list */
+	if (curbp->b_modes[1] == name_mode("xref")) {
+		(void)setlineno(i + 1);
+		return (xrefvisit(TRUE));
+	}
+	return (xrefgo(i));
+}
+
+/* RET in *xref*: go to the location on this line. */
 static int
 xrefgoto(int f, int n)
 {
-	return (xrefshow(TRUE));
+	return (xrefvisit(TRUE));
 }
 
-/* TAB in *xref*: go to the definition on this line and close the list. */
+/* TAB in *xref*: go to the location on this line and close the list. */
 static int
 xrefgotoquit(int f, int n)
 {
 	struct buffer *bp = curbp;
 
-	if (xrefshow(TRUE) != TRUE)
+	if (xrefvisit(TRUE) != TRUE)
 		return (FALSE);
 	return (popclose(bp, curwp));
 }
 
-/* n in *xref*: show the next definition. */
+/*
+ * Move dot in *xref* to the next location, or the previous one when
+ * dir is -1, or with byfile to the next or previous file, and show it.
+ */
+static int
+xrefmove(int dir, int byfile)
+{
+	int i;
+
+	if ((i = xrefnth(curwp->w_dotline - 1, dir, byfile)) == -1)
+		return (dobeep_msg(dir > 0 ? "No more locations" :
+		    "No earlier locations"));
+	(void)setlineno(i + 1);
+	return (xrefvisit(FALSE));
+}
+
+/* n, p, N and P in *xref*. */
 static int
 xrefnext(int f, int n)
 {
-	if (curwp->w_dotline < nxref)
-		(void)forwline(FFRAND, 1);
-	return (xrefshow(FALSE));
+	return (xrefmove(1, FALSE));
 }
 
-/* p in *xref*: show the previous definition. */
 static int
 xrefprev(int f, int n)
 {
-	if (curwp->w_dotline > 1)
-		(void)backline(FFRAND, 1);
-	return (xrefshow(FALSE));
+	return (xrefmove(-1, FALSE));
+}
+
+static int
+xrefnextfile(int f, int n)
+{
+	return (xrefmove(1, TRUE));
+}
+
+static int
+xrefprevfile(int f, int n)
+{
+	return (xrefmove(-1, TRUE));
 }
 
 /* q in *xref*: close the list, back in the window it was asked from. */

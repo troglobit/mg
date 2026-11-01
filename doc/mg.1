@@ -210,6 +210,28 @@ only takes a
 of the user's.
 cscope runs in that directory, with the options the database was
 built with, so it updates the database as files change.
+What a search finds is listed in the
+.Pa *xref*
+window, as for
+.Ic find-tag :
+.Ic n
+and
+.Ic p
+show a match,
+.Ic N
+and
+.Ic P
+the first in the next or previous file,
+.Ic RET
+goes there,
+.Ic TAB
+goes there and closes the list, and
+.Ic q
+closes it.
+.Ic cscope-next-symbol
+and
+.Ic cscope-prev-symbol
+step through it from any window.
 .Sh GZIP
 .Nm
 is capable of opening gzipped text files, e.g.

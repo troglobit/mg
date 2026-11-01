@@ -37,24 +37,8 @@ struct cstokens {
 	const char *pattern;
 };
 
-struct csmatch {
-	TAILQ_ENTRY(csmatch) entry;
-	int lineno;
-};
-
-struct csrecord {
-	TAILQ_ENTRY(csrecord) entry;
-	char *filename;
-	TAILQ_HEAD(matches, csmatch) matches;
-};
-
-static TAILQ_HEAD(csrecords, csrecord) csrecords = TAILQ_HEAD_INITIALIZER(csrecords);
 static char             csinitdir[NFILEN];	/* where to look, if set */
 static char             csdir[NFILEN];		/* of the database searched */
-static struct csrecord *addentryr;
-static struct csrecord *currecord;
-static struct csmatch  *curmatch;
-static const char      *addentryfn;
 static const char      *csprompt[] = {
 	"Find this symbol: ",
 	"Find this global definition: ",
@@ -67,17 +51,13 @@ static const char      *csprompt[] = {
 	"Find files #including this file: "
 };
 
-static int  addentry(struct buffer *, char *);
 static int  csclose(FILE *, pid_t);
 static int  csargs(const char *, char **, int);
 static int  csdbdir(char *, size_t);
-static void csflush(void);
 static FILE *csopen(const char *, char *const [], pid_t *);
 static int  do_cscope(int);
 static int  csexists(const char *);
 static int  getattr(char *, struct cstokens *);
-static int  jumptomatch(void);
-static void prettyprint(struct buffer *, struct cstokens *);
 static const char *ltrim(const char *);
 
 /*
@@ -381,31 +361,7 @@ cscreatelist(int f, int n)
 int
 csnextmatch(int f, int n)
 {
-	struct csrecord *r;
-	struct csmatch *m;
-
-	if (curmatch == NULL) {
-		if ((r = TAILQ_FIRST(&csrecords)) == NULL)
-			return(dobeep_msg("The *cscope* buffer does "
-			    "not exist yet"));
-
-		currecord = r;
-		curmatch = TAILQ_FIRST(&r->matches);
-	} else {
-		m = TAILQ_NEXT(curmatch, entry);
-		if (m == NULL) {
-			r = TAILQ_NEXT(currecord, entry);
-			if (r == NULL) {
-				return(dobeep_msg("The end of *cscope* buffer "
-				    "has been reached"));
-			} else {
-				currecord = r;
-				curmatch = TAILQ_FIRST(&currecord->matches);
-			}
-		} else
-			curmatch = m;
-	}
-	return (jumptomatch());
+	return (xrefstep(1, FALSE));
 }
 
 /*
@@ -414,28 +370,7 @@ csnextmatch(int f, int n)
 int
 csprevmatch(int f, int n)
 {
-	struct csmatch *m;
-	struct csrecord *r;
-
-	if (curmatch == NULL)
-		return (FALSE);
-	else {
-		m  = TAILQ_PREV(curmatch, matches, entry);
-		if (m)
-			curmatch = m;
-		else {
-			r = TAILQ_PREV(currecord, csrecords, entry);
-			if (r == NULL) {
-				return(dobeep_msg("The beginning of *cscope* "
-				    "buffer has been reached"));
-			} else {
-				currecord = r;
-				curmatch = TAILQ_LAST(&currecord->matches,
-				    matches);
-			}
-		}
-	}
-	return (jumptomatch());
+	return (xrefstep(-1, FALSE));
 }
 
 /*
@@ -444,20 +379,7 @@ csprevmatch(int f, int n)
 int
 csnextfile(int f, int n)
 {
-	struct csrecord *r;
-
-	if (curmatch == NULL) {
-		if ((r = TAILQ_FIRST(&csrecords)) == NULL)
-			return(dobeep_msg("The *cscope* buffer does not "
-			    "exist yet"));
-	} else {
-		if ((r = TAILQ_NEXT(currecord, entry)) == NULL)
-			return(dobeep_msg("The end of *cscope* buffer has "
-			    "been reached"));
-	}
-	currecord = r;
-	curmatch = TAILQ_FIRST(&currecord->matches);
-	return (jumptomatch());
+	return (xrefstep(1, TRUE));
 }
 
 /*
@@ -466,70 +388,25 @@ csnextfile(int f, int n)
 int
 csprevfile(int f, int n)
 {
-	struct csrecord *r;
-
-	if (curmatch == NULL) {
-		if ((r = TAILQ_FIRST(&csrecords)) == NULL)
-			return(dobeep_msg("The *cscope* buffer does not"
-			    "exist yet"));
-	} else {
-		if ((r = TAILQ_PREV(currecord, csrecords, entry)) == NULL)
-			return(dobeep_msg("The beginning of *cscope* buffer "
-			    "has been reached"));
-	}
-	currecord = r;
-	curmatch = TAILQ_FIRST(&currecord->matches);
-	return (jumptomatch());
+	return (xrefstep(-1, TRUE));
 }
 
 /*
- * The current symbol location is extracted from currecord->filename and
- * curmatch->lineno. Load the file similar to filevisit and goto the
- * lineno recorded.
- */
-int
-jumptomatch(void)
-{
-	struct buffer *bp;
-	char *adjf;
-
-	if (curmatch == NULL || currecord == NULL)
-		return (FALSE);
-	adjf = adjustname(currecord->filename, TRUE);
-	if (adjf == NULL)
-		return (FALSE);
-	if ((bp = findbuffer(adjf)) == NULL)
-		return (FALSE);
-	curbp = bp;
-	if (showbuffer(bp, curwp, WFFULL) != TRUE)
-		return (FALSE);
-	if (bp->b_fname[0] == '\0') {
-		if (readin(adjf) != TRUE)
-			killbuffer(bp);
-	}
-	gotoline(FFARG, curmatch->lineno);
-	return (TRUE);
-}
-
-/*
- * Ask for the symbol, construct cscope commandline with the symbol
- * and passed in index. Popen cscope, read the output into *cscope*
- * buffer and pop it.
+ * Ask for the symbol, run cscope with it for query i in the directory
+ * of the database, and list what it finds in *xref*.
  */
 int
 do_cscope(int i)
 {
-	struct buffer *bp;
+	struct cstokens t;
 	FILE *fpipe;
-	char pattern[NFILEN], query[3], title[BUFSIZ];
-	char *argv[8], *p, *buf;
-	int clen, nores = 0, ac = 0;
-	size_t sz;
+	char pattern[NFILEN], query[3], path[NFILEN], text[BUFSIZ];
+	char msg[NFILEN], *argv[8], *p, *buf = NULL;
+	const char *errstr;
+	int ac, lineno, nres = 0, s = TRUE;
+	size_t sz = 0;
 	ssize_t len;
 	pid_t pid;
-
-	buf = NULL;
-	sz = 0;
 
 	/* the word at dot to start with, if any */
 	if (curtoken(0, 1, pattern) == FALSE)
@@ -549,7 +426,6 @@ do_cscope(int i)
 		return(dobeep_msg("No cscope database here or above, "
 		    "C-c s I to index"));
 
-	csflush();
 	ac = csargs(csdir, argv, FALSE);
 	(void)snprintf(query, sizeof(query), "-%d", i);
 	argv[ac++] = "-L";
@@ -559,97 +435,38 @@ do_cscope(int i)
 	if ((fpipe = csopen(csdir, argv, &pid)) == NULL)
 		return(dobeep_msg("problem opening pipe"));
 
-	bp = bfind("*cscope*", TRUE);
-	if (bclear(bp) != TRUE) {
-		csclose(fpipe, pid);
-		return (FALSE);
-	}
-	bp->b_flag |= BFREADONLY;
-
-	clen = snprintf(title, sizeof(title), "%s%s", csprompt[i], pattern);
-	if (clen < 0 || clen >= (int)sizeof(title)) {
-		csclose(fpipe, pid);
-		return (FALSE);
-	}
-	addline(bp, title);
-	addline(bp, "");
-	addline(bp, "-------------------------------------------------------------------------------");
-	while ((len = getline(&buf, &sz, fpipe)) != -1) {
-		if (buf[len - 1] == *bp->b_nlchr)
+	xrefclear();
+	while (s == TRUE && (len = getline(&buf, &sz, fpipe)) != -1) {
+		if (buf[len - 1] == '\n')
 			buf[len - 1] = '\0';
-		if (addentry(bp, buf) != TRUE) {
-			free(buf);
-			csclose(fpipe, pid);
-			return (FALSE);
-		}
-		nores = 1;
+		if (getattr(buf, &t) == FALSE)
+			continue;
+		lineno = strtonum(t.lineno, 1, INT_MAX, &errstr);
+		if (errstr != NULL)
+			continue;
+		/* names are relative to the database */
+		if (t.fname[0] == '/')
+			(void)strlcpy(path, t.fname, sizeof(path));
+		else if (snprintf(path, sizeof(path), "%s/%s", csdir,
+		    t.fname) >= (int)sizeof(path))
+			continue;
+		(void)snprintf(text, sizeof(text), "%s: %s", t.function,
+		    ltrim(t.pattern));
+		/* cscope respaces the line, so go by its number */
+		s = xrefadd(path, "", lineno, t.function, text);
+		nres++;
 	}
 	free(buf);
 	if (ferror(fpipe))
 		ewprintf("Problem reading pipe");
 	csclose(fpipe, pid);
-	addline(bp, "-------------------------------------------------------------------------------");
-	if (nores == 0)
-		ewprintf("No matches were found.");
-	return (popbuftop(bp, WNONE));
-}
-
-/*
- * For each line read from cscope output, extract the tokens,
- * add them to list and pretty print a line in *cscope* buffer.
- */
-int
-addentry(struct buffer *bp, char *csline)
-{
-	struct csrecord *r;
-	struct csmatch *m;
-	struct cstokens t;
-	int lineno;
-	char buf[BUFSIZ];
-	const char *errstr;
-
-	r = NULL;
-	if (getattr(csline, &t) == FALSE)
-		return (FALSE);
-
-	lineno = strtonum(t.lineno, INT_MIN, INT_MAX, &errstr);
-	if (errstr)
-		return (FALSE);
-
-	if (addentryfn == NULL || strcmp(addentryfn, t.fname) != 0) {
-		if ((r = malloc(sizeof(struct csrecord))) == NULL)
-			return (FALSE);
-		addentryr = r;
-		/* names are relative to the database */
-		if (t.fname[0] == '/')
-			r->filename = strdup(t.fname);
-		else if (asprintf(&r->filename, "%s/%s", csdir, t.fname) == -1)
-			r->filename = NULL;
-		if (r->filename == NULL)
-			goto cleanup;
-		/* the name as cscope gives it, for the next line */
-		addentryfn = r->filename + strlen(r->filename) - strlen(t.fname);
-		TAILQ_INIT(&r->matches);
-		if ((m = malloc(sizeof(struct csmatch))) == NULL)
-			goto cleanup;
-		m->lineno = lineno;
-		TAILQ_INSERT_TAIL(&r->matches, m, entry);
-		TAILQ_INSERT_TAIL(&csrecords, r, entry);
-		addline(bp, "");
-		if (snprintf(buf, sizeof(buf), "*** %s", t.fname) < 0)
-			goto cleanup;
-		addline(bp, buf);
-	} else {
-		if ((m = malloc(sizeof(struct csmatch))) == NULL)
-			goto cleanup;
-		m->lineno = lineno;
-		TAILQ_INSERT_TAIL(&addentryr->matches, m, entry);
-	}
-	prettyprint(bp, &t);
-	return (TRUE);
-cleanup:
-	free(r);
-	return (FALSE);
+	if (s != TRUE)
+		return (s);
+	if (nres == 0)
+		return (dobeep_msg("No matches were found."));
+	(void)snprintf(msg, sizeof(msg), "%d match%s for %s", nres,
+	    nres == 1 ? "" : "es", pattern);
+	return (xreflist(csdir, msg));
 }
 
 /*
@@ -684,44 +501,12 @@ getattr(char *line, struct cstokens *t)
 	return (TRUE);
 }
 
-void
-prettyprint(struct buffer *bp, struct cstokens *t)
-{
-	char buf[BUFSIZ];
-
-	if (snprintf(buf, sizeof(buf), "%s[%s]\t\t%s",
-	    t->function, t->lineno, ltrim(t->pattern)) < 0)
-		return;
-	addline(bp, buf);
-}
-
 const char *
 ltrim(const char *s)
 {
 	while (isblank((unsigned char)*s))
 		s++;
 	return s;
-}
-
-void
-csflush(void)
-{
-	struct csrecord *r;
-	struct csmatch *m;
-
-	while ((r = TAILQ_FIRST(&csrecords)) != NULL) {
-		free(r->filename);
-		while ((m = TAILQ_FIRST(&r->matches)) != NULL) {
-			TAILQ_REMOVE(&r->matches, m, entry);
-			free(m);
-		}
-		TAILQ_REMOVE(&csrecords, r, entry);
-		free(r);
-	}
-	addentryr = NULL;
-	addentryfn = NULL;
-	currecord = NULL;
-	curmatch = NULL;
 }
 
 /*
