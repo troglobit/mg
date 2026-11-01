@@ -1122,11 +1122,13 @@ complt(int flags, int c, char *buf, size_t nbuf, int cpos, int *nx)
 		 */
 		if (nxtra < 0 && nhits > 1 && c == ' ')
 			nxtra = 1; /* ??? */
-		for (i = 0; i < nxtra && (size_t)cpos < nbuf; ++i) {
+		/* a completion too long for buf is cut, leaving the NUL room */
+		for (i = 0; i < nxtra && (size_t)cpos + 1 < nbuf; ++i) {
 			buf[cpos] = lh2->l_name[cpos];
 			eputc(buf[cpos++]);
 		}
-		/* XXX should grow nbuf */
+		if (nxtra > 0)
+			nxtra = i;
 		ttflush();
 		free_file_list(wholelist);
 		*nx = nxtra;
