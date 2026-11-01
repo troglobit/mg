@@ -8,6 +8,7 @@
 
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -66,7 +67,9 @@ static const char      *csprompt[] = {
 };
 
 static int  addentry(struct buffer *, char *);
+static int  csclose(FILE *, pid_t);
 static void csflush(void);
+static FILE *csopen(const char *, char *const [], pid_t *);
 static int  do_cscope(int);
 static int  csexists(const char *);
 static int  getattr(char *, struct cstokens *);
@@ -156,9 +159,11 @@ cscreatelist(int f, int n)
 	struct buffer *bp;
 	struct stat sb;
 	FILE *fpipe;
-	char dir[NFILEN], cmd[BUFSIZ], title[BUFSIZ], *line, *bufp;
+	char dir[NFILEN], title[BUFSIZ], *line, *bufp;
+	char *argv[] = { "cscope-indexer", "-v", dir, NULL };
 	size_t sz;
 	ssize_t len;
+	pid_t pid;
 	int clen;
 
 	line = NULL;
@@ -185,16 +190,12 @@ cscreatelist(int f, int n)
 	if (csexists("cscope-indexer") == FALSE)
 		return(dobeep_msg("no such file or directory, cscope-indexer"));
 
-	clen = snprintf(cmd, sizeof(cmd), "cscope-indexer -v %s", dir);
-	if (clen < 0 || clen >= (int)sizeof(cmd))
-		return (FALSE);
-
-	if ((fpipe = popen(cmd, "r")) == NULL)
+	if ((fpipe = csopen(NULL, argv, &pid)) == NULL)
 		return(dobeep_msg("problem opening pipe"));
 
 	bp = bfind("*cscope*", TRUE);
 	if (bclear(bp) != TRUE) {
-		pclose(fpipe);
+		csclose(fpipe, pid);
 		return (FALSE);
 	}
 	bp->b_flag |= BFREADONLY;
@@ -202,7 +203,7 @@ cscreatelist(int f, int n)
 	clen = snprintf(title, sizeof(title), "%s%s",
 	    "Creating cscope file list 'cscope.files' in: ", dir);
 	if (clen < 0 || clen >= (int)sizeof(title)) {
-		pclose(fpipe);
+		csclose(fpipe, pid);
 		return (FALSE);
 	}
 	addline(bp, title);
@@ -215,7 +216,7 @@ cscreatelist(int f, int n)
 	free(line);
 	if (ferror(fpipe))
 		ewprintf("Problem reading pipe");
-	pclose(fpipe);
+	csclose(fpipe, pid);
 	return (popbuftop(bp, WNONE));
 }
 
@@ -365,11 +366,13 @@ do_cscope(int i)
 {
 	struct buffer *bp;
 	FILE *fpipe;
-	char pattern[MAX_TOKEN], cmd[BUFSIZ], title[BUFSIZ];
+	char pattern[MAX_TOKEN], query[3], title[BUFSIZ];
+	char *argv[] = { "cscope", "-L", query, pattern, NULL };
 	char *p, *buf;
 	int clen, nores = 0;
 	size_t sz;
 	ssize_t len;
+	pid_t pid;
 
 	buf = NULL;
 	sz = 0;
@@ -392,24 +395,20 @@ do_cscope(int i)
 		return(dobeep_msg("no such file or directory, cscope"));
 
 	csflush();
-	clen = snprintf(cmd, sizeof(cmd), "cscope -L -%d %s 2>/dev/null",
-	    i, pattern);
-	if (clen < 0 || clen >= (int)sizeof(cmd))
-		return (FALSE);
-
-	if ((fpipe = popen(cmd, "r")) == NULL)
+	(void)snprintf(query, sizeof(query), "-%d", i);
+	if ((fpipe = csopen(NULL, argv, &pid)) == NULL)
 		return(dobeep_msg("problem opening pipe"));
 
 	bp = bfind("*cscope*", TRUE);
 	if (bclear(bp) != TRUE) {
-		pclose(fpipe);
+		csclose(fpipe, pid);
 		return (FALSE);
 	}
 	bp->b_flag |= BFREADONLY;
 
 	clen = snprintf(title, sizeof(title), "%s%s", csprompt[i], pattern);
 	if (clen < 0 || clen >= (int)sizeof(title)) {
-		pclose(fpipe);
+		csclose(fpipe, pid);
 		return (FALSE);
 	}
 	addline(bp, title);
@@ -420,6 +419,7 @@ do_cscope(int i)
 			buf[len - 1] = '\0';
 		if (addentry(bp, buf) != TRUE) {
 			free(buf);
+			csclose(fpipe, pid);
 			return (FALSE);
 		}
 		nores = 1;
@@ -427,7 +427,7 @@ do_cscope(int i)
 	free(buf);
 	if (ferror(fpipe))
 		ewprintf("Problem reading pipe");
-	pclose(fpipe);
+	csclose(fpipe, pid);
 	addline(bp, "-------------------------------------------------------------------------------");
 	if (nores == 0)
 		ewprintf("No matches were found.");
@@ -556,6 +556,64 @@ csflush(void)
 	addentryfn = NULL;
 	currecord = NULL;
 	curmatch = NULL;
+}
+
+/*
+ * Run argv in dir, or here when NULL, without a shell, and return its
+ * standard output to read.  It gets /dev/null for input and errors,
+ * which would otherwise mess up the screen.  Close with csclose().
+ */
+static FILE *
+csopen(const char *dir, char *const argv[], pid_t *pid)
+{
+	FILE *fp;
+	int p[2], fd;
+
+	if (pipe(p) == -1)
+		return (NULL);
+	switch ((*pid = fork())) {
+	case -1:
+		close(p[0]);
+		close(p[1]);
+		return (NULL);
+	case 0:
+		close(p[0]);
+		if (dup2(p[1], STDOUT_FILENO) == -1)
+			_exit(1);
+		close(p[1]);
+		if ((fd = open("/dev/null", O_RDWR)) != -1) {
+			(void)dup2(fd, STDIN_FILENO);
+			(void)dup2(fd, STDERR_FILENO);
+			if (fd > STDERR_FILENO)
+				close(fd);
+		}
+		if (dir != NULL && chdir(dir) == -1)
+			_exit(1);
+		execvp(argv[0], argv);
+		_exit(127);
+	}
+	close(p[1]);
+	if ((fp = fdopen(p[0], "r")) == NULL) {
+		close(p[0]);
+		(void)waitpid(*pid, NULL, 0);
+	}
+	return (fp);
+}
+
+/*
+ * Close a stream from csopen() and reap the program, returning its
+ * exit status, or -1 when it did not exit normally.
+ */
+static int
+csclose(FILE *fp, pid_t pid)
+{
+	int status;
+
+	fclose(fp);
+	while (waitpid(pid, &status, 0) == -1)
+		if (errno != EINTR)
+			return (-1);
+	return (WIFEXITED(status) ? WEXITSTATUS(status) : -1);
 }
 
 /*
