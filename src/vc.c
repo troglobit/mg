@@ -55,6 +55,17 @@ vcgit(const char *dir)
 	return (runbuf(dir, argv, NULL) == 0);
 }
 
+/* Whether git may run in dir, saying why not. */
+static int
+vcready(const char *dir)
+{
+	if (secure)
+		return (secure_denied());
+	if (!vcgit(dir))
+		return (dobeep_msg("Not in a git repository"));
+	return (TRUE);
+}
+
 /*
  * Drop bp, which git with exit status s filled, and say why: the first
  * line it printed when it failed, else empty.
@@ -87,10 +98,8 @@ vcshow(const char *dir, char *argv[], const char *name, int diff,
 	struct buffer	*bp;
 	int	 s;
 
-	if (secure)
-		return (secure_denied());
-	if (!vcgit(dir))
-		return (dobeep_msg("Not in a git repository"));
+	if ((s = vcready(dir)) != TRUE)
+		return (s);
 	if ((bp = popbuffer(name, popmode("view"))) == NULL)
 		return (FALSE);
 	if ((s = runbuf(dir, argv, bp)) != 0 || bfirstlp(bp) == bp->b_headp)
@@ -211,12 +220,8 @@ vcrevision(int f, int n)
 	char	*argv[] = { "git", "show", spec, NULL };
 	int	 s, len;
 
-	if (secure)
-		return (secure_denied());
-	if ((s = vcfile(dir, name, FALSE)) != TRUE)
+	if ((s = vcfile(dir, name, FALSE)) != TRUE || (s = vcready(dir)) != TRUE)
 		return (s);
-	if (!vcgit(dir))
-		return (dobeep_msg("Not in a git repository"));
 	if (eread("Revision (default HEAD): ", rev, sizeof(rev),
 	    EFNUL | EFNEW) == NULL)
 		return (ABORT);
