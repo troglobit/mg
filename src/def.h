@@ -942,7 +942,9 @@ int		 backisearch(int, int);
 int		 queryrepl(int, int);
 int		 forwsrch(void);
 int		 backsrch(void);
-int		 readpattern(char *);
+int		 readpattern(const char *, char *);
+int		 readrepl(const char *, const char *, char *, char *, char *,
+		     char *);
 int		 zapuptochar(int, int);
 int		 zaptochar(int, int);
 int		 zap(int, int);

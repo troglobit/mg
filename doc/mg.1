@@ -1478,6 +1478,10 @@ mode automatically.
 .It Ic query-replace
 Query Replace.
 Search and replace strings selectively, prompting after each match.
+The last string and its replacement are offered as the default, so
+RET on the empty prompt runs the same replace again.
+.Ic replace-string
+shares the default.
 .It Ic quick-help
 Toggle quick help buffer.
 .It Ic rename-buffer
@@ -1494,6 +1498,10 @@ Replace string globally without individual prompting.
 Replace strings selectively.
 Does a search and replace operation using regular
 expressions for both patterns.
+Like
+.Ic query-replace ,
+the last pair is offered as the default, shared with
+.Ic replace-regexp .
 .It Ic quoted-insert
 Insert the next character verbatim into the current buffer; i.e. ignore
 any function bound to that key.

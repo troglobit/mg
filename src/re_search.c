@@ -40,11 +40,16 @@ char	re_pat[NPAT];			/* regex pattern		    */
 int	re_srch_lastdir = SRCH_NOPR;	/* last search flags		    */
 int	casefoldsearch = TRUE;		/* does search ignore case?	    */
 
+static char	refrom[NPAT];		/* last replace, the default	    */
+static char	reto[NPAT];
+
 static int	 re_doreplace(RSIZE, char *);
 static int	 re_forwsrch(void);
 static int	 re_matchline(struct line *, int, int *, int *);
 static int	 re_backsrch(void);
 static int	 re_readpattern(char *);
+static int	 re_readrepl(const char *, const char *, char *);
+static int	 re_compile(void);
 static int	 killmatches(int);
 static int	 countmatches(int);
 
@@ -142,11 +147,9 @@ re_queryrepl(int f, int n)
 	int	plen, s;		/* length of found string	*/
 	char	news[NPAT];		/* replacement string		*/
 
-	if ((s = re_readpattern("RE Query replace")) != TRUE)
+	if ((s = re_readrepl("RE Query replace",
+	    "Query replace %s with: ", news)) != TRUE)
 		return (s);
-	if (eread("Query replace %s with: ", news, NPAT,
-	    EFNUL | EFNEW | EFCR, re_pat) == NULL)
-		return (ABORT);
 	ewprintf("Query replacing %s with %s:", re_pat, news);
 
 	/*
@@ -225,11 +228,8 @@ re_repl(int f, int n)
 	int     plen, s;		/* length of found string       */
 	char    news[NPAT];		/* replacement string           */
 
-	if ((s = re_readpattern("RE Replace")) != TRUE)
+	if ((s = re_readrepl("RE Replace", "Replace %s with: ", news)) != TRUE)
 		return (s);
-	if (eread("Replace %s with: ", news, NPAT,
-	    EFNUL | EFNEW | EFCR, re_pat) == NULL)
-                return (ABORT);
 
 	while (re_forwsrch() == TRUE) {
 		plen = regex_match[0].rm_eo - regex_match[0].rm_so;
@@ -483,8 +483,7 @@ re_backsrch(void)
 static int
 re_readpattern(char *re_prompt)
 {
-	static int	dofree = 0;
-	int		flags, error, s;
+	int		s;
 	char		tpat[NPAT], *rep;
 
 	if (re_pat[0] == '\0')
@@ -497,29 +496,58 @@ re_readpattern(char *re_prompt)
 	if (rep[0] != '\0') {
 		/* New pattern given */
 		(void)strlcpy(re_pat, tpat, sizeof(re_pat));
-		if (casefoldsearch)
-			flags = REG_EXTENDED | REG_ICASE;
-		else
-			flags = REG_EXTENDED;
-		if (dofree)
-			regfree(&regex_buff);
-		error = regcomp(&regex_buff, re_pat, flags);
-		if (error != 0) {
-			char	message[256];
-			regerror(error, &regex_buff, message, sizeof(message));
-			dobeep();
-			ewprintf("Regex Error: %s", message);
-			re_pat[0] = '\0';
-			return (FALSE);
-		}
-		dofree = 1;
-		s = TRUE;
+		s = re_compile();
 	} else if (rep[0] == '\0' && re_pat[0] != '\0')
 		/* Just using old pattern */
 		s = TRUE;
 	else
 		s = FALSE;
 	return (s);
+}
+
+/*
+ * Read the regex and replacement for a replace command, see
+ * readrepl().  A regex that does not compile is not kept as the
+ * default.
+ */
+static int
+re_readrepl(const char *prompt, const char *wfmt, char *news)
+{
+	int	s;
+
+	if ((s = readrepl(prompt, wfmt, re_pat, refrom, reto, news)) != TRUE)
+		return (s);
+	if ((s = re_compile()) != TRUE)
+		refrom[0] = '\0';
+	return (s);
+}
+
+/*
+ * Compile re_pat into regex_buff, telling why when it fails.
+ */
+static int
+re_compile(void)
+{
+	static int	dofree = 0;
+	int		flags, error;
+
+	if (casefoldsearch)
+		flags = REG_EXTENDED | REG_ICASE;
+	else
+		flags = REG_EXTENDED;
+	if (dofree)
+		regfree(&regex_buff);
+	error = regcomp(&regex_buff, re_pat, flags);
+	if (error != 0) {
+		char	message[256];
+		regerror(error, &regex_buff, message, sizeof(message));
+		dobeep();
+		ewprintf("Regex Error: %s", message);
+		re_pat[0] = '\0';
+		return (FALSE);
+	}
+	dofree = 1;
+	return (TRUE);
 }
 
 /*

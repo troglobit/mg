@@ -51,6 +51,9 @@ static int	cip;
 
 int		srch_lastdir = SRCH_NOPR;	/* Last search flags.	 */
 
+static char	replfrom[NPAT];		/* last replace, the default	*/
+static char	replto[NPAT];
+
 /*
  * Search forward.  Get a search string from the user, and search for it
  * starting at ".".  If found, "." gets moved to just after the matched
@@ -62,7 +65,7 @@ forwsearch(int f, int n)
 {
 	int	s;
 
-	if ((s = readpattern("Search")) != TRUE)
+	if ((s = readpattern("Search", pat)) != TRUE)
 		return (s);
 	if (forwsrch() == FALSE) {
 		dobeep();
@@ -84,7 +87,7 @@ backsearch(int f, int n)
 {
 	int	s;
 
-	if ((s = readpattern("Search backward")) != TRUE)
+	if ((s = readpattern("Search backward", pat)) != TRUE)
 		return (s);
 	if (backsrch() == FALSE) {
 		dobeep();
@@ -564,7 +567,7 @@ queryrepl(int f, int n)
 	int	s;
 	int	rcnt = 0;		/* replacements made so far	*/
 	int	plen;			/* length of found string	*/
-	char	news[NPAT], *rep;	/* replacement string		*/
+	char	news[NPAT];		/* replacement string		*/
 
 	if (macrodef) {
 		dobeep();
@@ -572,13 +575,9 @@ queryrepl(int f, int n)
 		return (FALSE);
 	}
 
-	if ((s = readpattern("Query replace")) != TRUE)
+	if ((s = readrepl("Query replace", "Query replace %s with: ", pat,
+	    replfrom, replto, news)) != TRUE)
 		return (s);
-	if ((rep = eread("Query replace %s with: ", news, NPAT,
-	    EFNUL | EFNEW | EFCR, pat)) == NULL)
-		return (ABORT);
-	else if (rep[0] == '\0')
-		news[0] = '\0';
 	ewprintf("Query replacing %s with %s:", pat, news);
 	plen = strlen(pat);
 
@@ -649,15 +648,10 @@ replstr(int f, int n)
 {
 	char	news[NPAT];
 	int	s, plen, rcnt = 0;
-	char	*r;
 
-	if ((s = readpattern("Replace string")) != TRUE)
-		return s;
-
-	r = eread("Replace string %s with: ", news, NPAT,
-	    EFNUL | EFNEW | EFCR,  pat);
-	if (r == NULL)
-		 return (ABORT);
+	if ((s = readrepl("Replace string", "Replace string %s with: ",
+	    pat, replfrom, replto, news)) != TRUE)
+		return (s);
 
 	plen = strlen(pat);
 	while (forwsrch() == TRUE) {
@@ -871,35 +865,70 @@ showmatches(int dir)
 }
 
 /*
- * Read a pattern.  Stash it in the external variable "pat".  The "pat" is not
- * updated if the user types in an empty line.  If the user typed an empty
+ * Read a pattern.  Stash it in rpat, NPAT bytes, usually "pat".  The rpat is
+ * not updated if the user types in an empty line.  If the user typed an empty
  * line, and there is no old pattern, it is an error.  Display the old pattern,
  * in the style of Jeff Lomicka.  There is some do-it-yourself control
  * expansion.
  */
 int
-readpattern(char *r_prompt)
+readpattern(const char *r_prompt, char *rpat)
 {
 	char	tpat[NPAT], *rep;
 	int	retval;
 
-	if (pat[0] == '\0')
+	if (rpat[0] == '\0')
 		rep = eread("%s: ", tpat, NPAT, EFNEW | EFCR, r_prompt);
 	else
 		rep = eread("%s (default %s): ", tpat, NPAT,
-		    EFNUL | EFNEW | EFCR, r_prompt, pat);
+		    EFNUL | EFNEW | EFCR, r_prompt, rpat);
 
 	/* specified */
 	if (rep == NULL) {
 		retval = ABORT;
 	} else if (rep[0] != '\0') {
-		(void)strlcpy(pat, tpat, sizeof(pat));
+		(void)strlcpy(rpat, tpat, NPAT);
 		retval = TRUE;
-	} else if (pat[0] != '\0') {
+	} else if (rpat[0] != '\0') {
 		retval = TRUE;
 	} else
 		retval = FALSE;
 	return (retval);
+}
+
+/*
+ * Read the pattern into rpat and the replacement into news for a
+ * replace command, asking with prompt and then the wfmt format.  The
+ * last pair, from and to, is the default: RET on an empty line takes
+ * both.  Without a pair it falls back to readpattern().  The pair read
+ * becomes the new default.
+ */
+int
+readrepl(const char *prompt, const char *wfmt, char *rpat, char *from,
+    char *to, char *news)
+{
+	char	tpat[NPAT], *rep;
+	int	s;
+
+	if (from[0] == '\0') {
+		if ((s = readpattern(prompt, rpat)) != TRUE)
+			return (s);
+	} else {
+		if ((rep = eread("%s (default %s -> %s): ", tpat, NPAT,
+		    EFNUL | EFNEW | EFCR, prompt, from, to)) == NULL)
+			return (ABORT);
+		if (rep[0] == '\0') {
+			(void)strlcpy(rpat, from, NPAT);
+			(void)strlcpy(news, to, NPAT);
+			return (TRUE);
+		}
+		(void)strlcpy(rpat, tpat, NPAT);
+	}
+	if (eread(wfmt, news, NPAT, EFNUL | EFNEW | EFCR, rpat) == NULL)
+		return (ABORT);
+	(void)strlcpy(from, rpat, NPAT);
+	(void)strlcpy(to, news, NPAT);
+	return (TRUE);
 }
 
 /*
