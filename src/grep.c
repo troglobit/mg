@@ -28,13 +28,8 @@ void grep_init(void);
 
 static char compile_last_command[NFILEN] = "make ";
 
-/*
- * Hints for next-error
- *
- * XXX - need some kind of callback to find out when those get killed.
- */
-struct mgwin	*compile_win;
-struct buffer	*compile_buffer;
+/* The buffer for next-error, see compile_buf() before using it. */
+static struct buffer	*compile_buffer;
 
 static PF compile_pf[] = {
 	compile_goto_error
@@ -81,7 +76,7 @@ grep(int f, int n)
 	if ((wp = popbuf(bp, WNONE)) == NULL)
 		return (FALSE);
 	curbp = bp;
-	compile_win = curwp = wp;
+	curwp = wp;
 	return (TRUE);
 }
 
@@ -107,7 +102,7 @@ compile(int f, int n)
 	if ((wp = popbuf(bp, WNONE)) == NULL)
 		return (FALSE);
 	curbp = bp;
-	compile_win = curwp = wp;
+	curwp = wp;
 	gotoline(FFARG, 0);
 	return (TRUE);
 }
@@ -165,7 +160,7 @@ gid(int f, int n)
 	if ((wp = popbuf(bp, WNONE)) == NULL)
 		return (FALSE);
 	curbp = bp;
-	compile_win = curwp = wp;
+	curwp = wp;
 	return (TRUE);
 }
 
@@ -263,7 +258,6 @@ compile_goto_error(int f, int n)
 	const char *errstr;
 	struct line	*last;
 
-	compile_win = curwp;
 	compile_buffer = curbp;
 	last = blastlp(compile_buffer);
 
@@ -319,16 +313,38 @@ fail:
 	return (FALSE);
 }
 
+/*
+ * The buffer for next-error, or NULL once it has been killed.  Its
+ * memory may since have gone to another buffer, so that has to be in
+ * compile mode too.
+ */
+static struct buffer *
+compile_buf(void)
+{
+	struct buffer	*bp;
+
+	for (bp = bheadp; bp != NULL; bp = bp->b_bufp)
+		if (bp == compile_buffer)
+			return (bp->b_modes[1] == name_mode("compile") ?
+			    bp : NULL);
+	return (NULL);
+}
+
 int
 next_error(int f, int n)
 {
-	if (compile_win == NULL || compile_buffer == NULL) {
+	struct buffer	*bp;
+	struct mgwin	*wp;
+
+	if ((bp = compile_buf()) == NULL) {
 		dobeep();
 		ewprintf("No compilation active");
 		return (FALSE);
 	}
-	curwp = compile_win;
-	curbp = compile_buffer;
+	if ((wp = popbuf(bp, WNONE)) == NULL)
+		return (FALSE);
+	curwp = wp;
+	curbp = bp;
 	if (curwp->w_dotp == blastlp(curbp)) {
 		dobeep();
 		ewprintf("No more hits");
