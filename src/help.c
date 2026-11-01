@@ -26,7 +26,7 @@ static int	 helpset = FALSE;	/* user set it, keep hands off */
 
 static int	showall(struct buffer *, KEYMAP *, char *);
 static PF	keyfunc(const KCHAR *, int, int *);
-static struct buffer *popbuffer(const char *, const char *);
+static struct maps_s *popmode(const char *);
 static int	helpshow(struct buffer *);
 
 /*
@@ -149,7 +149,7 @@ describekey(int f, int n)
 	}
 	keyseqname(kname, sizeof(kname), key.k_chars, key.k_count);
 
-	if ((bp = popbuffer("*help*", "view")) == NULL)
+	if ((bp = popbuffer("*help*", popmode("view"))) == NULL)
 		return (FALSE);
 	if (addlinef(bp, "%s runs the command %s.", kname, name) == FALSE ||
 	    addline(bp, "") == FALSE)
@@ -299,7 +299,7 @@ wallchart(int f, int n)
 	int		 m;
 	struct buffer		*bp;
 
-	if ((bp = popbuffer("*help*", "view")) == NULL)
+	if ((bp = popbuffer("*help*", popmode("view"))) == NULL)
 		return (FALSE);
 	for (m = curbp->b_nmodes; m > 0; m--) {
 		if ((addlinef(bp, "Local keybindings for mode %s:",
@@ -373,7 +373,7 @@ apropos_command(int f, int n)
 	if (eread("apropos: ", string, sizeof(string), EFNUL | EFNEW) == NULL)
 		return (ABORT);
 	/* FALSE means we got a 0 character string, which is fine */
-	if ((bp = popbuffer("*help*", "view")) == NULL)
+	if ((bp = popbuffer("*help*", popmode("view"))) == NULL)
 		return (FALSE);
 
 	fnames = complete_function_list("");
@@ -433,82 +433,21 @@ popmode(const char *name)
 }
 
 /*
- * The window showing bp, if any.
- */
-static struct mgwin *
-bufwind(struct buffer *bp)
-{
-	struct mgwin	*wp;
-
-	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
-		if (wp->w_bufp == bp)
-			break;
-	return (wp);
-}
-
-/*
- * Show bp in a pop-up window.  A window split off for it is flagged
- * ephemeral, for popclose() to delete again.
- */
-static struct mgwin *
-popshow(struct buffer *bp)
-{
-	if (popbuftop(bp, WEPHEM) != TRUE)
-		return (NULL);
-	return (bufwind(bp));
-}
-
-/*
- * Close a pop-up: delete its window if it was split off for it,
- * keeping the rest of the layout, and drop the buffer.  Dot goes back
- * to the window *help* was asked from.
+ * Close a help pop-up, back in the window it was asked from.
  */
 static int
-popclose(struct buffer *bp)
+helpclose(struct buffer *bp)
 {
-	struct mgwin	*wp, *owp;
+	struct mgwin	*from = popfrom;
 
-	wp = bufwind(bp);
-	owp = curwp == wp ? popfrom : curwp;
 	popfrom = NULL;
-	if (wp != NULL && (wp->w_flag & WEPHEM) && wheadp->w_wndp != NULL) {
-		curwp = wp;
-		curbp = wp->w_bufp;
-		(void)delwind(FFRAND, 1);
-	}
-	/* a reused window gets another buffer from killbuffer */
-	if (killbuffer(bp) != TRUE)
-		return (FALSE);
-	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
-		if (wp == owp) {
-			curwp = wp;
-			curbp = wp->w_bufp;
-		}
-	return (TRUE);
+	return (popclose(bp, from));
 }
 
 static int
 popquit(int f, int n)
 {
-	return (popclose(curbp));
-}
-
-/*
- * The read-only pop-up buffer name, emptied for new text, in mode.
- */
-static struct buffer *
-popbuffer(const char *name, const char *mode)
-{
-	struct buffer	*bp;
-
-	bp = bfind(name, TRUE);
-	if (bclear(bp) != TRUE)
-		return (NULL);
-	bp->b_flag |= BFREADONLY;
-	bp->b_modes[0] = name_mode("fundamental");
-	bp->b_modes[1] = popmode(mode);
-	bp->b_nmodes = 1;
-	return (bp);
+	return (helpclose(curbp));
 }
 
 /*
@@ -538,10 +477,10 @@ quickhelp(int f, int n)
 
 	/* If already displayed, toggle off */
 	if ((bp = bfind("*quick*", FALSE)) != NULL)
-		return (popclose(bp));
+		return (helpclose(bp));
 
 	/* Create new */
-	if ((bp = popbuffer("*quick*", "quick")) == NULL)
+	if ((bp = popbuffer("*quick*", popmode("quick"))) == NULL)
 		return (FALSE);
 
 	addline(bp, "FILE             BUFFER          WINDOW           MARK/KILL       MISC");

@@ -1041,6 +1041,78 @@ popbuftop(struct buffer *bp, int flags)
 }
 
 /*
+ * The window showing bp, if any.
+ */
+struct mgwin *
+bufwind(struct buffer *bp)
+{
+	struct mgwin	*wp;
+
+	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
+		if (wp->w_bufp == bp)
+			break;
+	return (wp);
+}
+
+/*
+ * The read-only pop-up buffer name, emptied for new text, in mode.
+ */
+struct buffer *
+popbuffer(const char *name, struct maps_s *mode)
+{
+	struct buffer	*bp;
+
+	bp = bfind(name, TRUE);
+	if (bclear(bp) != TRUE)
+		return (NULL);
+	bp->b_flag |= BFREADONLY;
+	bp->b_modes[0] = name_mode("fundamental");
+	bp->b_modes[1] = mode;
+	bp->b_nmodes = 1;
+	return (bp);
+}
+
+/*
+ * Show bp in a pop-up window.  A window split off for it is flagged
+ * ephemeral, for popclose() to delete again.
+ */
+struct mgwin *
+popshow(struct buffer *bp)
+{
+	if (popbuftop(bp, WEPHEM) != TRUE)
+		return (NULL);
+	return (bufwind(bp));
+}
+
+/*
+ * Close a pop-up: delete its window if it was split off for it,
+ * keeping the rest of the layout, and drop the buffer.  Dot goes back
+ * to from, the window the pop-up was asked from.
+ */
+int
+popclose(struct buffer *bp, struct mgwin *from)
+{
+	struct mgwin	*wp, *owp;
+
+	wp = bufwind(bp);
+	owp = curwp == wp ? from : curwp;
+	if (wp != NULL && (wp->w_flag & WEPHEM) && wheadp->w_wndp != NULL) {
+		curwp = wp;
+		curbp = wp->w_bufp;
+		(void)delwind(FFRAND, 1);
+	}
+	/* a reused window gets another buffer from killbuffer */
+	if (killbuffer(bp) != TRUE)
+		return (FALSE);
+	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
+		if (wp == owp) {
+			curwp = wp;
+			curbp = wp->w_bufp;
+		}
+	return (TRUE);
+}
+
+/*
  * Return the working directory for the current buffer, terminated
  * with a '/'. First, try to extract it from the current buffer's
  * filename. If that fails, use global cwd.
