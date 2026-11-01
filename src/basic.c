@@ -559,6 +559,26 @@ swapmark(int f, int n)
 }
 
 /*
+ * Read a number for a command from the prompt, or take its argument.
+ */
+static int
+getnum(int f, int *n, const char *prompt)
+{
+	char	 buf[32], *bufp;
+	const char *err;
+
+	if (f & FFARG)
+		return (TRUE);
+	if ((bufp = eread("%s ", buf, sizeof(buf), EFNUL | EFNEW | EFCR,
+	    prompt)) == NULL || bufp[0] == '\0')
+		return (ABORT);
+	*n = (int)strtonum(buf, INT_MIN, INT_MAX, &err);
+	if (err)
+		return (dobeep_msgs(prompt, err));
+	return (TRUE);
+}
+
+/*
  * Go to a specific line, mostly for
  * looking up errors in C programs, which give the
  * error a line number. If an argument is present, then
@@ -568,20 +588,11 @@ swapmark(int f, int n)
 int
 gotoline(int f, int n)
 {
-	char   buf[32], *bufp;
-	const char *err;
+	int	 s;
 
-	if (!(f & FFARG)) {
-		if ((bufp = eread("Goto line: ", buf, sizeof(buf),
-		    EFNUL | EFNEW | EFCR)) == NULL)
-			return (ABORT);
-		if (bufp[0] == '\0')
-			return (ABORT);
-		n = (int)strtonum(buf, INT_MIN, INT_MAX, &err);
-		if (err)
-			return(dobeep_msgs("Line number", err));
-	}
-	return(setlineno(n));
+	if ((s = getnum(f, &n, "Goto line:")) != TRUE)
+		return (s);
+	return (setlineno(n));
 }
 
 /*
@@ -619,26 +630,6 @@ setlineno(int n)
 	curwp->w_dotp = clp;
 	curwp->w_doto = 0;
 	curwp->w_rflag |= WFMOVE;
-	return (TRUE);
-}
-
-/*
- * Read a number for a command from the prompt, or take its argument.
- */
-static int
-getnum(int f, int *n, const char *prompt)
-{
-	char	 buf[32], *bufp;
-	const char *err;
-
-	if (f & FFARG)
-		return (TRUE);
-	if ((bufp = eread("%s ", buf, sizeof(buf), EFNUL | EFNEW | EFCR,
-	    prompt)) == NULL || bufp[0] == '\0')
-		return (ABORT);
-	*n = (int)strtonum(buf, INT_MIN, INT_MAX, &err);
-	if (err)
-		return (dobeep_msgs(prompt, err));
 	return (TRUE);
 }
 
