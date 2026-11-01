@@ -43,6 +43,8 @@ static int	is_find(int);
 static void	is_prompt(int, int, int);
 static void	is_dspl(char *, int);
 static int	eq(int, int, int);
+static int	matchpat(struct line *, int, int *, int *);
+static void	showmatches(int);
 
 static struct srchcom	cmds[NSRCH];
 static int	cip;
@@ -196,6 +198,10 @@ isearch(int dir)
 	is_prompt(dir, TRUE, success);
 
 	for (;;) {
+		if (pptr < 0)
+			searchhl(NULL, NULL, 0, 0);
+		else
+			showmatches(success ? dir : SRCH_NOPR);
 		update(CMODE);
 
 		switch (c = getkey(FALSE)) {
@@ -583,6 +589,7 @@ queryrepl(int f, int n)
 	 */
 	while (forwsrch() == TRUE) {
 retry:
+		showmatches(SRCH_FORW);
 		update(CMODE);
 		switch (getkey(FALSE)) {
 		case 'y':
@@ -816,6 +823,51 @@ eq(int bc, int pc, int xcase)
 	if (ISUPPER(pc))
 		return (bc == TOLOWER(pc));
 	return (FALSE);
+}
+
+/*
+ * The first match of pat on lp at or after byte o, for the search
+ * highlighting.  A pattern spanning lines is never found here.
+ */
+static int
+matchpat(struct line *lp, int o, int *so, int *eo)
+{
+	int	 i, plen, xcase = 0;
+
+	plen = strlen(pat);
+	for (i = 0; i < plen; i++)
+		if (ISUPPER(CHARMASK(pat[i])))
+			xcase = 1;
+	for (; plen > 0 && o + plen <= llength(lp); o++) {
+		for (i = 0; i < plen && eq(lgetc(lp, o + i), pat[i], xcase); i++)
+			;
+		if (i == plen) {
+			*so = o;
+			*eo = o + plen;
+			return (TRUE);
+		}
+	}
+	return (FALSE);
+}
+
+/*
+ * Highlight the matches of pat, the one dot is at as the current
+ * match: dot is at its end after a forward search, at its start
+ * after a backward one.  Any other dir highlights no current match.
+ */
+static void
+showmatches(int dir)
+{
+	struct line	*lp = curwp->w_dotp;
+	int		 o, so = 0, eo = 0;
+
+	o = curwp->w_doto;
+	if (dir == SRCH_FORW)
+		o -= strlen(pat);
+	if ((dir != SRCH_FORW && dir != SRCH_BACK) || o < 0 ||
+	    matchpat(lp, o, &so, &eo) == FALSE || so != o)
+		lp = NULL;
+	searchhl(matchpat, lp, so, eo);
 }
 
 /*

@@ -605,6 +605,9 @@ int		 timetoggle(int, int);
 int		 timeupdate(void);
 int		 visualmark(int, int);
 int		 fontlock(int, int);
+typedef int	(*matchfn)(struct line *, int, int *, int *);
+void		 searchhl(matchfn, struct line *, int, int);
+int		 searchhltoggle(int, int);
 int		 linerows(struct line *, struct mgwin *);
 struct line	*winrowline(struct mgwin *, int);
 int		 winshows(struct mgwin *, struct line *);
@@ -679,6 +682,7 @@ void		 keyseqname(char *, size_t, const KCHAR *, int);
 #define SYN_PREPROC	6
 #define SYN_HEADING	7
 #define SYN_QUOTE	8
+#define SYN_MATCH	9	/* search match, display only	*/
 
 struct syntax;
 #ifdef ENABLE_SYNTAX

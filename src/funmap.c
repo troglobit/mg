@@ -273,6 +273,7 @@ static struct funmap functnames[] = {
 	{searchagain, "search-again", 0, NULL},
 	{backsearch, "search-backward", 0, NULL},
 	{forwsearch, "search-forward", 0, NULL},
+	{searchhltoggle, "search-highlight-mode", 0, NULL},
 	{ask_selfinsert, "self-insert-char", 1, NULL},
 	{selfinsert, "self-insert-command", 1, NULL},		/* startup only */
 	{sentencespace, "sentence-end-double-space", 0, NULL},

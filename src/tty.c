@@ -419,8 +419,8 @@ ttcolor(int color)
  * Set the terminal rendition for a syntax class, and reverse video
  * for the region.  Everything is reset first, so the caller only
  * reports transitions.  Terminals without color get the reverse
- * video only.  The reset clears standout too, so the ttcolor()
- * state is invalidated.
+ * video only, and search matches underlined.  The reset clears
+ * standout too, so the ttcolor() state is invalidated.
  */
 void
 ttattr(int class, int rev)
@@ -447,6 +447,17 @@ ttattr(int class, int rev)
 	    set_a_foreground != NULL && max_colors >= 8)
 		putpad(tparm(set_a_foreground, color[class], 0, 0, 0, 0, 0, 0,
 		    0, 0), 1);
+	if (class == SYN_MATCH) {
+		/* black on cyan, like the lazy highlight in Emacs */
+		if (set_a_foreground != NULL && set_a_background != NULL &&
+		    max_colors >= 8) {
+			putpad(tparm(set_a_foreground, 0, 0, 0, 0, 0, 0, 0,
+			    0, 0), 1);
+			putpad(tparm(set_a_background, 6, 0, 0, 0, 0, 0, 0,
+			    0, 0), 1);
+		} else if (enter_underline_mode != NULL)
+			putpad(enter_underline_mode, 1);
+	}
 	if (class == SYN_HEADING && enter_bold_mode != NULL)
 		putpad(enter_bold_mode, 1);
 	if (rev && enter_standout_mode != NULL)

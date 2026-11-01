@@ -42,6 +42,7 @@ int	casefoldsearch = TRUE;		/* does search ignore case?	    */
 
 static int	 re_doreplace(RSIZE, char *);
 static int	 re_forwsrch(void);
+static int	 re_matchline(struct line *, int, int *, int *);
 static int	 re_backsrch(void);
 static int	 re_readpattern(char *);
 static int	 killmatches(int);
@@ -155,6 +156,8 @@ re_queryrepl(int f, int n)
 	 */
 	while (re_forwsrch() == TRUE) {
 retry:
+		searchhl(re_matchline, curwp->w_dotp, regex_match[0].rm_so,
+		    regex_match[0].rm_eo);
 		update(CMODE);
 		switch (getkey(FALSE)) {
 		case ' ':
@@ -384,6 +387,26 @@ re_forwsrch(void)
 		}
 	}
 	return (FALSE);
+}
+
+/*
+ * The first match of the regex on lp at or after byte o, for the
+ * search highlighting.  It uses its own match array and leaves
+ * regex_match to the replacement.
+ */
+static int
+re_matchline(struct line *lp, int o, int *so, int *eo)
+{
+	regmatch_t	 m[1];
+
+	m[0].rm_so = o;
+	m[0].rm_eo = llength(lp);
+	if (regexec(&regex_buff, ltext(lp) ? ltext(lp) : "", 1, m,
+	    REG_STARTEND | (o != 0 ? REG_NOTBOL : 0)) != 0)
+		return (FALSE);
+	*so = m[0].rm_so;
+	*eo = m[0].rm_eo;
+	return (TRUE);
 }
 
 /*

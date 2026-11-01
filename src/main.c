@@ -360,6 +360,7 @@ notnum:
 			do_redraw(0, 0, TRUE);
 			winch_flag = 0;
 		}
+		searchhl(NULL, NULL, 0, 0);
 		update(CMODE);
 		lastflag = thisflag;
 		thisflag = 0;

@@ -1628,6 +1628,18 @@ Get a search string from the user, and search for it
 starting at dot.
 If found, dot gets moved to just after the matched
 characters, if not found, print a message.
+.It Ic search-highlight-mode
+Toggle search match highlighting, enabled by default.
+While
+.Ic isearch-forward ,
+.Ic isearch-backward ,
+.Ic query-replace
+or
+.Ic query-replace-regexp
+runs, the current match is shown in reverse video and the other
+matches in view in black on cyan, or underlined on terminals without
+color.
+A match that spans lines is not highlighted.
 .It Ic self-insert-command
 Insert a character.
 .It Ic sentence-end-double-space

@@ -87,6 +87,7 @@ extern TERMINAL *cur_term;
 
 #define exit_attribute_mode  "\033[0m"
 #define set_a_foreground     "\033[3%dm"
+#define set_a_background     "\033[4%dm"
 #define enter_bold_mode      "\033[1m"
 #define enter_underline_mode "\033[4m"
 #define max_colors           8

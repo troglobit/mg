@@ -113,6 +113,7 @@ int		 timesh  = FALSE;
 
 static int	 visual_mark = TRUE;	/* draw region after set-mark	*/
 static int	 font_lock = TRUE;	/* syntax highlighting		*/
+static int	 search_hl = TRUE;	/* highlight search matches	*/
 
 static int	 vtattr = 0;		/* attributes of current byte	*/
 
@@ -399,6 +400,23 @@ static struct {
 	int	 rect, c1, c2, tabw;
 } hl;
 
+/*
+ * Search matches shown while isearch or query-replace runs, in the
+ * window searched: the current match, on lp between so and eo, and
+ * the others in view.  find() gives the next match on a line at or
+ * after a byte offset.  Set with searchhl().
+ */
+#define MATCH_OTHER	1
+#define MATCH_CUR	2
+static struct {
+	matchfn		 find;
+	struct mgwin	*wp;
+	struct line	*lp;
+	int		 so, eo;
+	char		*attr;
+	int		 attrsz;
+} vmatch;
+
 /* Is macro recording enabled? */
 extern int macrodef;
 
@@ -461,6 +479,99 @@ fontlock(int f, int n)
 	return (TRUE);
 }
 #endif
+
+int
+searchhltoggle(int f, int n)
+{
+	if (f & FFARG)
+		search_hl = n > 0;
+	else
+		search_hl = !search_hl;
+	ewprintf("Search highlight mode %sabled", search_hl ? "en" : "dis");
+
+	sgarbf = TRUE;
+
+	return (TRUE);
+}
+
+/*
+ * Show the matches find() gives in the current window, the one on
+ * lp between so and eo as the current match, if lp is not NULL.  A
+ * NULL find clears them; the main loop does so before each command.
+ */
+void
+searchhl(matchfn find, struct line *lp, int so, int eo)
+{
+	struct mgwin	*wp;
+
+	if (!search_hl)
+		find = NULL;
+	if (find == NULL && vmatch.find == NULL)
+		return;
+	/* vmatch.wp may be gone, only touch the windows still shown */
+	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
+		if (wp == vmatch.wp || (find != NULL && wp == curwp))
+			wp->w_rflag |= WFFULL;
+	vmatch.find = find;
+	vmatch.wp = find != NULL ? curwp : NULL;
+	vmatch.lp = lp;
+	vmatch.so = so;
+	vmatch.eo = eo;
+}
+
+/*
+ * Mark the search matches on lp, when wp shows them: MATCH_OTHER on
+ * the bytes of each match, MATCH_CUR on the current one.  Returns
+ * the array, or NULL when the line has none.
+ */
+static char *
+matchline(struct line *lp, struct mgwin *wp)
+{
+	char	*attr;
+	int	 any, o, so, eo;
+
+	if (vmatch.find == NULL || wp != vmatch.wp || llength(lp) == 0)
+		return (NULL);
+	if (llength(lp) > vmatch.attrsz) {
+		if ((attr = realloc(vmatch.attr, llength(lp))) == NULL)
+			return (NULL);
+		vmatch.attr = attr;
+		vmatch.attrsz = llength(lp);
+	}
+	attr = vmatch.attr;
+	memset(attr, 0, llength(lp));
+	any = 0;
+	for (o = 0; o < llength(lp) && vmatch.find(lp, o, &so, &eo);
+	    o = eo > so ? eo : so + 1) {
+		if (eo > so) {
+			memset(attr + so, MATCH_OTHER, eo - so);
+			any = 1;
+		}
+	}
+	if (lp == vmatch.lp && vmatch.so < vmatch.eo &&
+	    vmatch.eo <= llength(lp)) {
+		memset(attr + vmatch.so, MATCH_CUR, vmatch.eo - vmatch.so);
+		any = 1;
+	}
+	return (any ? attr : NULL);
+}
+
+/*
+ * The cell attributes of byte i of a line: reverse video alone for
+ * the current search match, the match colours for the others, else
+ * the syntax class, with reverse video inside the region [s, e).
+ */
+static int
+cellattr(int i, int s, int e, const char *syn, const char *match)
+{
+	int	 a = (i >= s && i < e) ? VREV : 0;
+
+	if (match != NULL && match[i] == MATCH_CUR)
+		return (VREV);
+	if (match != NULL && match[i] == MATCH_OTHER)
+		return (a | SYN_MATCH << VSYNSHIFT);
+	return (a | (syn != NULL ? syn[i] << VSYNSHIFT : 0));
+}
 
 /*
  * Prepare syntax highlighting for the window being rendered.
@@ -861,13 +972,13 @@ vtputcp(int cp)
 void
 vtputl(struct line *lp, struct mgwin *wp, int s, int e)
 {
-	char	*attr;
+	char	*attr, *match;
 	int	 c, cp, i, len;
 
 	attr = synline(lp);
+	match = matchline(lp, wp);
 	for (i = 0; i < llength(lp); ++i) {
-		vtattr = ((i >= s && i < e) ? VREV : 0) |
-		    (attr != NULL ? attr[i] << VSYNSHIFT : 0);
+		vtattr = cellattr(i, s, e, attr, match);
 		c = lgetc(lp, i);
 		if (c >= 0x80 && (cp = utf8_get(lp, i, &len)) != -1) {
 			vtputcp(cp);
@@ -928,13 +1039,13 @@ vtpute(int c, struct mgwin *wp)
 void
 vtputel(struct line *lp, struct mgwin *wp, int s, int e)
 {
-	char	*attr;
+	char	*attr, *match;
 	int	 c, cp, i, len;
 
 	attr = synline(lp);
+	match = matchline(lp, wp);
 	for (i = 0; i < llength(lp); ++i) {
-		vtattr = ((i >= s && i < e) ? VREV : 0) |
-		    (attr != NULL ? attr[i] << VSYNSHIFT : 0);
+		vtattr = cellattr(i, s, e, attr, match);
 		c = lgetc(lp, i);
 		if (c >= 0x80 && (cp = utf8_get(lp, i, &len)) != -1) {
 			vtputcp(cp);
