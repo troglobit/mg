@@ -509,6 +509,10 @@ kill-word
 forward-sentence
 .It M-f, C-right
 forward-word
+.It M-g TAB
+move-to-column
+.It M-g c
+goto-char
 .It M-g g, M-g M-g
 goto-line
 .It M-h
@@ -1247,6 +1251,10 @@ When enabled,
 defaults to opening files (and executing commands like compile and grep)
 relative to the global working directory.
 When disabled, a working directory is set for each buffer.
+.It Ic goto-char
+Go to a position in the buffer, counted from 1 as in GNU Emacs.
+If an argument is present, then
+it is the position, else prompt for one.
 .It Ic goto-line
 Go to a specific line.
 If an argument is present, then
@@ -1459,6 +1467,11 @@ key.
 Disabled by default so that 8-bit characters can be typed.
 Terminals that send Meta as an escape prefix are unaffected by this
 setting.
+.It Ic move-to-column
+Move dot to column
+.Va n
+of the line, counted from 0, or to the end of a shorter line.
+If no argument is present, prompt for the column.
 .It Ic move-to-window-line
 Move dot to the start of the line on window row
 .Va n ,

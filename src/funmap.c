@@ -176,6 +176,7 @@ static struct funmap functnames[] = {
 #ifdef ENABLE_COMPILE_GREP
 	{globalwdtoggle, "global-wd-mode", 0, NULL},
 #endif
+	{gotochar, "goto-char", 1, NULL},
 	{gotoline, "goto-line", 1, NULL},
 #ifdef ENABLE_HELP
 	{help_help, "help-help", 0, NULL},
@@ -216,6 +217,7 @@ static struct funmap functnames[] = {
 	{markpara, "mark-paragraph", 1, NULL},
 	{markbuffer, "mark-whole-buffer", 0, NULL},
 	{do_meta, "meta-key-mode", 0, NULL},	/* better name, anyone? */
+	{movetocol, "move-to-column", 1, NULL},
 	{movetowinline, "move-to-window-line", 1, NULL},
 	{movetowinlinetb, "move-to-window-line-top-bottom", 1, NULL},
 	{negative_argument, "negative-argument", 1, NULL},

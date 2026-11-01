@@ -770,6 +770,8 @@ int		 setmark(int, int);
 int		 clearmark(int, int);
 int		 swapmark(int, int);
 int		 gotoline(int, int);
+int		 gotochar(int, int);
+int		 movetocol(int, int);
 int		 setlineno(int);
 
 /* comment.c X */

@@ -621,3 +621,70 @@ setlineno(int n)
 	curwp->w_rflag |= WFMOVE;
 	return (TRUE);
 }
+
+/*
+ * Read a number for a command from the prompt, or take its argument.
+ */
+static int
+getnum(int f, int *n, const char *prompt)
+{
+	char	 buf[32], *bufp;
+	const char *err;
+
+	if (f & FFARG)
+		return (TRUE);
+	if ((bufp = eread("%s ", buf, sizeof(buf), EFNUL | EFNEW | EFCR,
+	    prompt)) == NULL || bufp[0] == '\0')
+		return (ABORT);
+	*n = (int)strtonum(buf, INT_MIN, INT_MAX, &err);
+	if (err)
+		return (dobeep_msgs(prompt, err));
+	return (TRUE);
+}
+
+/*
+ * Go to position n of the buffer, counting from 1 as GNU Emacs does,
+ * one more than the point what-cursor-position shows.  Bound to M-g c.
+ */
+int
+gotochar(int f, int n)
+{
+	struct line	*lp;
+	int		 s, line = 1;
+
+	if ((s = getnum(f, &n, "Goto char:")) != TRUE)
+		return (s);
+	n = n > 0 ? n - 1 : 0;
+	lp = bfirstlp(curbp);
+	while (n > llength(lp) && lforw(lp) != curbp->b_headp) {
+		n -= llength(lp) + 1;	/* and the newline */
+		lp = lforw(lp);
+		line++;
+	}
+	if (n > llength(lp))
+		n = llength(lp);
+	while (n > 0 && utf8_mode && utf8_iscont(lgetc(lp, n)))
+		n--;
+	curwp->w_dotp = lp;
+	curwp->w_doto = n;
+	curwp->w_dotline = line;
+	curwp->w_rflag |= WFMOVE;
+	return (TRUE);
+}
+
+/*
+ * Move to column n of the line, counting from 0, or as near as the
+ * line allows.  Bound to M-g TAB.
+ */
+int
+movetocol(int f, int n)
+{
+	int	 s;
+
+	if ((s = getnum(f, &n, "Move to column:")) != TRUE)
+		return (s);
+	curwp->w_doto = colbyte(curwp->w_dotp, n < 0 ? 0 : n,
+	    curbp->b_tabw, NULL);
+	curwp->w_rflag |= WFMOVE;
+	return (TRUE);
+}

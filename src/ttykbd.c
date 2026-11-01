@@ -300,9 +300,11 @@ ttykeymapinit(void)
 	bindcx("next-buffer", key_right);
 	bindcx("next-buffer", key_cright);
 	bindcx("next-buffer", "\eOc");
-	/* The goto-line prefix from newer GNU Emacs; C-x g remains */
+	/* The M-g prefix from newer GNU Emacs; C-x g remains for goto-line */
 	dobindkey(fundamental_map, "goto-line", "\egg");
 	dobindkey(fundamental_map, "goto-line", "\eg\eg");
+	dobindkey(fundamental_map, "goto-char", "\egc");
+	dobindkey(fundamental_map, "move-to-column", "\eg\t");
 
 	/* Shift and an arrow key mark text, like in GNU Emacs */
 	funmap_add(shiftleft, "shift-backward-char", 0);
