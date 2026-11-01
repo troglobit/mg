@@ -43,6 +43,7 @@ static int	is_find(int);
 static void	is_prompt(int, int, int);
 static void	is_dspl(char *, int);
 static int	eq(int, int, int);
+static int	patxcase(void);
 static int	matchpat(struct line *, int, int *, int *);
 static void	showmatches(int);
 
@@ -177,7 +178,6 @@ isearch(int dir)
 	int		 pptr;
 	int		 firstc;
 	int		 xcase;
-	int		 i;
 	char		 opat[NPAT];
 	int		 cdotline;	/* Saved line number */
 
@@ -326,10 +326,7 @@ isearch(int dir)
 			}
 
 			/* if the search is case insensitive, add to pattern using lowercase */
-			xcase = 0;
-			for (i = 0; pat[i]; i++)
-				if (ISUPPER(CHARMASK(pat[i])))
-					xcase = 1;
+			xcase = patxcase();
 
 			while (cbo < llength(clp)) {
 				c = lgetc(clp, cbo++);
@@ -683,16 +680,14 @@ int
 forwsrch(void)
 {
 	struct line	*clp, *tlp;
-	int	 cbo, tbo, c, i, xcase = 0;
+	int	 cbo, tbo, c, xcase;
 	char	*pp;
 	int	 nline;
 
 	clp = curwp->w_dotp;
 	cbo = curwp->w_doto;
 	nline = curwp->w_dotline;
-	for (i = 0; pat[i]; i++)
-		if (ISUPPER(CHARMASK(pat[i])))
-			xcase = 1;
+	xcase = patxcase();
 	for (;;) {
 		if (cbo == llength(clp)) {
 			if ((clp = lforw(clp)) == curbp->b_headp)
@@ -743,7 +738,7 @@ int
 backsrch(void)
 {
 	struct line	*clp, *tlp;
-	int	 cbo, tbo, c, i, xcase = 0;
+	int	 cbo, tbo, c, xcase;
 	char	*epp, *pp;
 	int	 nline, pline;
 
@@ -751,9 +746,7 @@ backsrch(void)
 	clp = curwp->w_dotp;
 	cbo = curwp->w_doto;
 	nline = curwp->w_dotline;
-	for (i = 0; pat[i]; i++)
-		if (ISUPPER(CHARMASK(pat[i])))
-			xcase = 1;
+	xcase = patxcase();
 	for (;;) {
 		if (cbo == 0) {
 			clp = lback(clp);
@@ -800,6 +793,21 @@ fail:		;
 }
 
 /*
+ * Whether the pattern has an upper case letter, which makes the search
+ * case sensitive.
+ */
+static int
+patxcase(void)
+{
+	char	*p;
+
+	for (p = pat; *p != '\0'; p++)
+		if (ISUPPER(CHARMASK(*p)))
+			return (TRUE);
+	return (FALSE);
+}
+
+/*
  * Compare two characters.  The "bc" comes from the buffer.  It has its case
  * folded out. The "pc" is from the pattern.
  */
@@ -826,12 +834,10 @@ eq(int bc, int pc, int xcase)
 static int
 matchpat(struct line *lp, int o, int *so, int *eo)
 {
-	int	 i, plen, xcase = 0;
+	int	 i, plen, xcase;
 
 	plen = strlen(pat);
-	for (i = 0; i < plen; i++)
-		if (ISUPPER(CHARMASK(pat[i])))
-			xcase = 1;
+	xcase = patxcase();
 	for (; plen > 0 && o + plen <= llength(lp); o++) {
 		for (i = 0; i < plen && eq(lgetc(lp, o + i), pat[i], xcase); i++)
 			;
