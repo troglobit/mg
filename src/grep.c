@@ -171,6 +171,7 @@ compile_mode(const char *name, const char *command)
 	FILE	*fpipe;
 	char	*buf = NULL;
 	size_t	 len = 0;
+	ssize_t	 llen;
 	int	 ret, n, status;
 	char	 cwd[NFILEN], qcmd[NFILEN];
 	char	 timestr[NTIME];
@@ -208,9 +209,9 @@ compile_mode(const char *name, const char *command)
 		return (NULL);
 	}
 
-	while (getline(&buf, &len, fpipe) != -1) {
-		if (buf[len - 1] == *bp->b_nlchr)
-			buf[len - 1] = '\0';
+	while ((llen = getline(&buf, &len, fpipe)) != -1) {
+		if (llen > 0 && buf[llen - 1] == *bp->b_nlchr)
+			buf[llen - 1] = '\0';
 		addline(bp, buf);
 	}
 	if (buf)
