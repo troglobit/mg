@@ -96,7 +96,8 @@ static PF cCsc[] = {
 	rescan,			/* q */
 	rescan, 		/* r */
 	cssymbol,		/* s */
-	csfindtext		/* t */
+	csfindtext,		/* t */
+	poptag			/* u */
 };
 
 static PF cCsI[] = {
@@ -112,7 +113,7 @@ static struct KEYMAPE (2) cCsmap = {
 			'I', 'I', cCsI, NULL
 		},
 		{
-			'a', 't', cCsc, NULL
+			'a', 'u', cCsc, NULL
 		}
 	}
 };
