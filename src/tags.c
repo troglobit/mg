@@ -1162,7 +1162,7 @@ atbow(void)
 int
 curtoken(int f, int n, char *token)
 {
-	struct line *odotp;
+	struct line *odotp, *lp;
 	int odoto, tdoto, odotline, size, r;
 	char c;
 	
@@ -1184,24 +1184,25 @@ curtoken(int f, int n, char *token)
 	if (!atbow())
 		if ((r = backword(f, n)) == FALSE)
 			goto cleanup;
-		
-	tdoto = curwp->w_doto;
 
 	if ((r = forwword(f, n)) == FALSE)
 		goto cleanup;
-	
-	/* strip away leading whitespace if any like emacs. */
-	while (ltext(curwp->w_dotp) && 
-	    isspace(lgetc(curwp->w_dotp, tdoto)))
-		tdoto++;
 
-	size = curwp->w_doto - tdoto;
-	if (size <= 0 || size >= MAX_TOKEN || 
-	    ltext(curwp->w_dotp) == NULL) {
+	/*
+	 * Back to the start of the word just passed, leaving out what
+	 * came before it on the line, like a comment start.
+	 */
+	lp = curwp->w_dotp;
+	tdoto = curwp->w_doto;
+	if ((r = backword(FFRAND, 1)) == FALSE)
+		goto cleanup;
+
+	size = tdoto - curwp->w_doto;
+	if (curwp->w_dotp != lp || size <= 0 || size >= MAX_TOKEN) {
 		r = FALSE;
 		goto cleanup;
-	}    
-	strncpy(token, ltext(curwp->w_dotp) + tdoto, size);
+	}
+	strncpy(token, ltext(lp) + curwp->w_doto, size);
 	token[size] = '\0';
 	r = TRUE;
 	
