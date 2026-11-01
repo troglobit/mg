@@ -829,6 +829,7 @@ int		 csnextmatch(int, int);
 int		 csprevfile(int, int);
 int		 csprevmatch(int, int);
 int		 cscreatelist(int, int);
+int		 cssetdir(int, int);
 
 /* extend.c X */
 int		 insert(int, int);

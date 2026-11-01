@@ -77,6 +77,8 @@ struct KEYMAPE (2) helpmap = {
 
 #ifdef CSCOPE
 static PF cCsc[] = {
+	cssetdir,		/* a */
+	rescan,			/* b */
 	cscallerfuncs,		/* c */
 	csdefinition,		/* d */
 	csegrep,		/* e */
@@ -103,7 +105,7 @@ static struct KEYMAPE (1) cCsmap = {
 	rescan,
 	{
 		{
-			'c', 't', cCsc, NULL
+			'a', 't', cCsc, NULL
 		}
 	}
 };

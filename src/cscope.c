@@ -50,6 +50,8 @@ struct csrecord {
 };
 
 static TAILQ_HEAD(csrecords, csrecord) csrecords = TAILQ_HEAD_INITIALIZER(csrecords);
+static char             csinitdir[NFILEN];	/* where to look, if set */
+static char             csdir[NFILEN];		/* of the database searched */
 static struct csrecord *addentryr;
 static struct csrecord *currecord;
 static struct csmatch  *curmatch;
@@ -68,6 +70,7 @@ static const char      *csprompt[] = {
 
 static int  addentry(struct buffer *, char *);
 static int  csclose(FILE *, pid_t);
+static int  csdbdir(char *, size_t);
 static void csflush(void);
 static FILE *csopen(const char *, char *const [], pid_t *);
 static int  do_cscope(int);
@@ -147,6 +150,65 @@ int
 csfindinc(int f, int n)
 {
 	return (do_cscope(CSINCLUDES));
+}
+
+/*
+ * Where to look for the cscope database, cscope.out, instead of the
+ * directory of the buffer and up.  Bound to C-c s a.
+ */
+int
+cssetdir(int f, int n)
+{
+	char dir[NFILEN], *bufp, *adjf;
+
+	if (getbufcwd(dir, sizeof(dir)) == FALSE)
+		dir[0] = '\0';
+	bufp = eread("Cscope initial directory (empty for the buffer's): ",
+	    dir, sizeof(dir), EFNEW | EFCR | EFDEF | EFNUL);
+	if (bufp == NULL)
+		return (ABORT);
+	if (bufp[0] == '\0') {
+		csinitdir[0] = '\0';
+		return (TRUE);
+	}
+	if ((adjf = adjustname(bufp, TRUE)) == NULL)
+		return (FALSE);
+	if (fisdir(adjf) != TRUE)
+		return (dobeep_msgs(adjf, "Not a directory"));
+	(void)strlcpy(csinitdir, adjf, sizeof(csinitdir));
+	return (TRUE);
+}
+
+/*
+ * Put the directory of the cscope database in dir: the nearest one with
+ * a cscope.out, going up from the initial directory or the buffer's.
+ */
+static int
+csdbdir(char *dir, size_t n)
+{
+	char path[NFILEN], *p;
+	size_t len;
+
+	if (csinitdir[0] != '\0')
+		(void)strlcpy(dir, csinitdir, n);
+	else if (getbufcwd(dir, n) == FALSE)
+		return (FALSE);
+	/* the root is the empty string here */
+	while ((len = strlen(dir)) > 0 && dir[len - 1] == '/')
+		dir[len - 1] = '\0';
+	for (;;) {
+		(void)snprintf(path, sizeof(path), "%s/cscope.out", dir);
+		if (access(path, R_OK) == 0)
+			break;
+		if (dir[0] == '\0')
+			return (FALSE);
+		if ((p = strrchr(dir, '/')) == NULL)
+			return (FALSE);
+		*p = '\0';
+	}
+	if (dir[0] == '\0')
+		(void)strlcpy(dir, "/", n);
+	return (TRUE);
 }
 
 /*
@@ -366,10 +428,9 @@ do_cscope(int i)
 {
 	struct buffer *bp;
 	FILE *fpipe;
-	char pattern[MAX_TOKEN], query[3], title[BUFSIZ];
-	char *argv[] = { "cscope", "-L", query, pattern, NULL };
-	char *p, *buf;
-	int clen, nores = 0;
+	char pattern[MAX_TOKEN], query[3], title[BUFSIZ], path[NFILEN];
+	char *argv[8], *p, *buf;
+	int clen, nores = 0, ac = 0;
 	size_t sz;
 	ssize_t len;
 	pid_t pid;
@@ -393,10 +454,28 @@ do_cscope(int i)
 		return (secure_denied());
 	if (csexists("cscope") == FALSE)
 		return(dobeep_msg("no such file or directory, cscope"));
+	if (csdbdir(csdir, sizeof(csdir)) == FALSE)
+		return(dobeep_msg("No cscope database here or above"));
 
+	/*
+	 * Search in the directory of the database, with the options it
+	 * was built with, so cscope updates it rather than rebuild it:
+	 * -q for an inverted index, -R unless it has a list of files.
+	 */
 	csflush();
+	argv[ac++] = "cscope";
+	(void)snprintf(path, sizeof(path), "%s/cscope.in.out", csdir);
+	if (access(path, F_OK) == 0)
+		argv[ac++] = "-q";
+	(void)snprintf(path, sizeof(path), "%s/cscope.files", csdir);
+	if (access(path, F_OK) == -1)
+		argv[ac++] = "-R";
 	(void)snprintf(query, sizeof(query), "-%d", i);
-	if ((fpipe = csopen(NULL, argv, &pid)) == NULL)
+	argv[ac++] = "-L";
+	argv[ac++] = query;
+	argv[ac++] = pattern;
+	argv[ac] = NULL;
+	if ((fpipe = csopen(csdir, argv, &pid)) == NULL)
 		return(dobeep_msg("problem opening pipe"));
 
 	bp = bfind("*cscope*", TRUE);
@@ -460,9 +539,15 @@ addentry(struct buffer *bp, char *csline)
 		if ((r = malloc(sizeof(struct csrecord))) == NULL)
 			return (FALSE);
 		addentryr = r;
-		if ((r->filename = strndup(t.fname, NFILEN)) == NULL)
+		/* names are relative to the database */
+		if (t.fname[0] == '/')
+			r->filename = strndup(t.fname, NFILEN);
+		else if (asprintf(&r->filename, "%s/%s", csdir, t.fname) == -1)
+			r->filename = NULL;
+		if (r->filename == NULL)
 			goto cleanup;
-		addentryfn = r->filename;
+		/* the name as cscope gives it, for the next line */
+		addentryfn = r->filename + strlen(r->filename) - strlen(t.fname);
 		TAILQ_INIT(&r->matches);
 		if ((m = malloc(sizeof(struct csmatch))) == NULL)
 			goto cleanup;

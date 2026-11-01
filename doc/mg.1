@@ -199,6 +199,13 @@ However,
 requires cscope and cscope-indexer executables to be present in
 .Ev $PATH
 for it to work.
+The database,
+.Pa cscope.out ,
+is the nearest one in the directory of the buffer or above it, or
+above the directory set with
+.Ic cscope-set-initial-directory .
+cscope runs in that directory, with the options the database was
+built with, so it updates the database as files change.
 .Sh GZIP
 .Nm
 is capable of opening gzipped text files, e.g.
@@ -234,6 +241,8 @@ set-mark-command
 beginning-of-line
 .It C-b, Left
 backward-char
+.It C-c s a
+cscope-set-initial-directory
 .It C-c s c
 cscope-find-functions-calling-this-function
 .It C-c s d
@@ -836,6 +845,10 @@ Navigate to the next file.
 Navigate to the previous file.
 .It Ic cscope-create-list-of-files-to-index
 Create cscope's List and Index in the given directory.
+.It Ic cscope-set-initial-directory
+Look for the cscope database from the given directory up, instead of
+from that of the buffer.
+Empty input goes back to the directory of the buffer.
 .It Ic define-key
 Prompts the user for a named keymap (mode),
 a key, and an
