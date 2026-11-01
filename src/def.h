@@ -972,6 +972,8 @@ int		 zap(int, int);
 
 /* spawn.c X */
 int		 spawncli(int, int);
+FILE		*runopen(const char *, char *const [], pid_t *);
+int		 runclose(FILE *, pid_t);
 
 /* ttykbd.c X */
 void		 ttykeymapinit(void);
