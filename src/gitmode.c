@@ -331,10 +331,11 @@ static int	 git_amend;
 
 /*
  * Show the staged changes, the diff the commit will make, in a window
- * of their own next to the message: to the right when the terminal
- * has room for both at 80 columns, else below.  An amend shows the
- * whole of the amended commit, against the parent, or the empty tree
- * under a root commit.  Run again after staging more.
+ * of their own next to the message, split off like a pop-up: to the
+ * right when there is room for both at 80 columns, else above or
+ * below.  An amend shows the whole of the amended commit, against the
+ * parent, or the empty tree under a root commit.  Run again after
+ * staging more.
  */
 static int
 git_showdiff(int f, int n)
@@ -345,7 +346,6 @@ git_showdiff(int f, int n)
 	char	*line = NULL;
 	size_t	 cap = 0;
 	ssize_t	 len;
-	int	 s;
 
 	if (secure)
 		return (secure_denied());
@@ -385,10 +385,9 @@ git_showdiff(int f, int n)
 	curbp = obp;
 
 	if (bp->b_nwnd == 0) {
-		s = ncol >= 2 * 80 ? splitwindh(FFRAND, 1) : splitwind(FFRAND, 1);
-		if (s != TRUE)
+		if ((wp = splitpop(WNONE)) == NULL)
 			return (FALSE);
-		(void)showbuffer(bp, curwp->w_wndp, WFFULL);
+		(void)showbuffer(bp, wp, WFFULL);
 	} else
 		/* the windows on it still point at the lines bclear() freed */
 		for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
