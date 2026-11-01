@@ -821,6 +821,25 @@ mbcommand(PF funct, int c)
 	return (TRUE);
 }
 
+/*
+ * Bring the windows up to date while a prompt waits for a key.  The
+ * main loop skips its redraw when keys are already waiting, and a
+ * command may change the windows just before it asks for something,
+ * so the screen behind the prompt can be stale.
+ */
+static void
+mbwindows(void)
+{
+	int	 row = ttrow, col = ttcol, hue = tthue;
+
+	if (charswaiting())
+		return;
+	update(CMODE);
+	ttmove(row, col);	/* update leaves cursor in arbitrary place */
+	ttcolor(hue);
+	ttflush();
+}
+
 static char *
 veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 {
@@ -896,6 +915,7 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 #endif
 	ttflush();
 	for (;;) {
+		mbwindows();
 		c = getkey(FALSE);
 #ifdef ENABLE_IDO
 		if (mb.ido && (y = mbidokey(&c, flag, &cwin)) != MBPASS)

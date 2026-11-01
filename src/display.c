@@ -1261,13 +1261,20 @@ update(int modelinecolor)
 
 	if (sgarbf != FALSE) {	/* Screen is garbage.	 */
 		sgarbf = FALSE;	/* Erase-page clears.	 */
-		epresf = FALSE;	/* The message area.	 */
 		tttop = HUGE;	/* Forget where you set. */
 		ttbot = HUGE;	/* scroll region.	 */
 		tthue = CNONE;	/* Color unknown.	 */
-		ttmove(0, 0);
-		tteeop();
+		if (epresf != TRUE) {
+			epresf = FALSE;	/* The message area.	 */
+			ttmove(0, 0);
+			tteeop();
+		}
 		for (i = 0; i < nrow - 1; ++i) {
+			/* a prompt or message on the echo line stays */
+			if (epresf == TRUE) {
+				ttmove(i, 0);
+				tteeol();
+			}
 			uline(i, vscreen[i], &blanks);
 			ucopy(vscreen[i], pscreen[i]);
 		}
