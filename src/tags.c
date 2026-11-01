@@ -49,6 +49,7 @@ static int               showtag(struct ctag *, int);
 static char              *strip(char *, size_t);
 static void              unloadtags(void);
 static int               xrefgoto(int, int);
+static int               xrefgotoquit(int, int);
 static int               xreflist(struct ctag **, int, const char *);
 static int               xrefnext(int, int);
 static int               xrefprev(int, int);
@@ -95,7 +96,8 @@ static int	 nseen;
 
 /*
  * The *xref* list of the definitions of a tag, one line for each in
- * xref[]: n and p show one, RET goes there and q closes the list.
+ * xref[]: n and p show one, RET goes there, TAB too and closes the
+ * list, and q only closes it.
  * Going to one pushes where the list was asked from on the tag stack.
  */
 static struct ctag	**xref;
@@ -108,7 +110,11 @@ static int		 lastidx;
 static struct mgwin	*xreffrom;	/* the window the list was asked from */
 static struct tagpos	*xrefpos;	/* where, until pushed		*/
 
-static PF xref_cm[] = {
+static PF xref_ci[] = {
+	xrefgotoquit,		/* ^I */
+	rescan,			/* ^J */
+	rescan,			/* ^K */
+	rescan,			/* ^L */
 	xrefgoto		/* ^M */
 };
 
@@ -124,7 +130,7 @@ static struct KEYMAPE (2) xrefmap = {
 	2,
 	rescan,
 	{
-		{ CCHR('M'), CCHR('M'), xref_cm, NULL },
+		{ CCHR('I'), CCHR('M'), xref_ci, NULL },
 		{ 'n', 'q', xref_nq, NULL }
 	}
 };
@@ -525,8 +531,8 @@ xreflist(struct ctag **v, int n, const char *tok)
 		return (FALSE);
 	curwp = wp;
 	curbp = bp;
-	ewprintf("%d definitions of %s: n/p to show, RET to go, q to quit",
-	    n, tok);
+	ewprintf("%d definitions of %s: n/p show, RET go, TAB go and close, "
+	    "q close", n, tok);
 	return (TRUE);
 }
 
@@ -585,6 +591,17 @@ static int
 xrefgoto(int f, int n)
 {
 	return (xrefshow(TRUE));
+}
+
+/* TAB in *xref*: go to the definition on this line and close the list. */
+static int
+xrefgotoquit(int f, int n)
+{
+	struct buffer *bp = curbp;
+
+	if (xrefshow(TRUE) != TRUE)
+		return (FALSE);
+	return (popclose(bp, curwp));
 }
 
 /* n in *xref*: show the next definition. */
