@@ -44,14 +44,7 @@ static struct KEYMAPE (1) shmodemap = {
 static int
 sh_indent(int f, int n)
 {
-	int	 s;
-
-	/* one undo record for the delete and insert of whitespace */
-	undo_boundary_enable(FFRAND, 0);
-	s = indent(FFARG, prevlineindent(NULL));
-	undo_boundary_enable(FFRAND, 1);
-
-	return (s);
+	return (setindent(prevlineindent(NULL)));
 }
 
 /*

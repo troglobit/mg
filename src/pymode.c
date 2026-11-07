@@ -88,26 +88,10 @@ py_target(void)
 	return (col);
 }
 
-/*
- * Indent the current line to the given column, as one undo record
- * for the delete and insert of whitespace.
- */
-static int
-py_setindent(int col)
-{
-	int	 s;
-
-	undo_boundary_enable(FFRAND, 0);
-	s = indent(FFARG, col);
-	undo_boundary_enable(FFRAND, 1);
-
-	return (s);
-}
-
 static int
 py_indent(int f, int n)
 {
-	return (py_setindent(py_target()));
+	return (setindent(py_target()));
 }
 
 /*
@@ -130,7 +114,7 @@ py_tab(int f, int n)
 		target = ((col - 1) / curbp->b_tabw) * curbp->b_tabw;
 	else
 		target = py_target();
-	return (py_setindent(target));
+	return (setindent(target));
 }
 
 static int

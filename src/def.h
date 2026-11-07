@@ -808,6 +808,7 @@ int		 wscleanup(int, int);
 int		 deltrailwhite(int, int);
 int		 lfindent(int, int);
 int		 indent(int, int);
+int		 setindent(int);
 int		 lineindent(const struct line *, int *);
 int		 prevlineindent(struct line **);
 int		 forwdel(int, int);

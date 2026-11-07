@@ -620,6 +620,22 @@ indent(int f, int n)
 	return (TRUE);
 }
 
+/*
+ * Indent the current line to the given column, as one undo record
+ * for the delete and insert of whitespace.
+ */
+int
+setindent(int col)
+{
+	int	 s;
+
+	undo_boundary_enable(FFRAND, 0);
+	s = indent(FFARG, col);
+	undo_boundary_enable(FFRAND, 1);
+
+	return (s);
+}
+
 
 /*
  * Number of bytes taken by the n characters after byte offset o on
