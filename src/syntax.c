@@ -1413,6 +1413,26 @@ json_parse(const struct line *lp, int incom, char *attr)
 #endif
 
 /*
+ * The SYN_* class of byte o of lp by the buffer's rules; past the
+ * end of the line, of the text that would follow it: SYN_COMMENT in
+ * an open comment, SYN_STRING in an open string.
+ */
+int
+syn_class(struct buffer *bp, struct line *lp, int o)
+{
+	const struct syntax	*sy;
+	char	 attr[llength(lp) + 1];
+	int	 st;
+
+	if ((sy = syntax_lookup(bp)) == NULL)
+		return (SYN_NONE);
+	st = syn_parse(sy, lp, syn_state(sy, bp, lp), attr);
+	if (o < llength(lp))
+		return (attr[o]);
+	return (st == 1 ? SYN_COMMENT : st >= 2 ? SYN_STRING : SYN_NONE);
+}
+
+/*
  * The multiline comment state at the start of line stop, found by
  * scanning the buffer from the top.
  */

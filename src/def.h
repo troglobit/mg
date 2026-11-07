@@ -717,6 +717,7 @@ int		 syn_parse(const struct syntax *, const struct line *,
 int		 syn_state(const struct syntax *, struct buffer *,
 		     struct line *);
 int		 syn_verbatim(struct buffer *, struct line *, int *);
+int		 syn_class(struct buffer *, struct line *, int);
 void		 syn_annotate(const struct syntax *);
 #else
 /* without the engine, no buffer has syntax rules */
@@ -724,6 +725,7 @@ void		 syn_annotate(const struct syntax *);
 #define syn_multiline(bp)		0
 #define syn_verbatim(bp, lp, st)	((void)(st), 0)
 #define syn_state(sy, bp, lp)		0
+#define syn_class(bp, lp, o)		SYN_NONE
 #define syn_annotate(sy)		do { } while (0)
 #define syn_parse(sy, lp, st, attr)	0
 #endif
