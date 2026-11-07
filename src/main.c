@@ -171,12 +171,16 @@ main(int argc, char **argv)
 		extern void pymode_init(void);
 		extern void autorevert_init(void);
 		extern void vc_init(void);
+		extern void epmode_init(void);
 
 #ifdef ENABLE_AUTOREVERT
 		autorevert_init();
 #endif
 #ifdef ENABLE_DIRED
 		dired_init();
+#endif
+#ifdef ENABLE_EPMODE
+		epmode_init();
 #endif
 #ifdef ENABLE_COMPILE_GREP
 		grep_init();

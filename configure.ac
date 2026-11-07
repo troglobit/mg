@@ -119,6 +119,7 @@ AS_IF([test "x$enable_all" = "xno"],
 	enable_autoexec="no"
 	enable_autorevert="no"
 	enable_cmode="no"
+	enable_epmode="no"
 	enable_compile="no"
 	enable_cscope="no"
 	enable_ctags="no"
@@ -148,6 +149,9 @@ AS_IF([test "x$enable_autorevert" != "xno"], enable_autorevert="yes"
 
 AS_IF([test "x$enable_cmode" != "xno"], enable_cmode="yes"
 	AC_DEFINE(ENABLE_CMODE, 1, [Enable C programming mode, OpenBSD KNF]))
+
+AS_IF([test "x$enable_epmode" != "xno"], enable_epmode="yes"
+	AC_DEFINE(ENABLE_EPMODE, 1, [Enable electric-pair mode]))
 
 AS_IF([test "x$enable_compile" != "xno"], enable_compile="yes"
 	AC_DEFINE(ENABLE_COMPILE_GREP, 1, [Enable C compile mode, M-x compile]))
@@ -222,6 +226,7 @@ AM_CONDITIONAL(SYNTAX,   [test "x$enable_syntax"   = "xyes"])
 AM_CONDITIONAL(AUTOEXEC, [test "x$enable_autoexec" = "xyes"])
 AM_CONDITIONAL(AUTOREVERT, [test "x$enable_autorevert" = "xyes"])
 AM_CONDITIONAL(CMODE,    [test "x$enable_cmode"    = "xyes"])
+AM_CONDITIONAL(EPMODE,   [test "x$enable_epmode"   = "xyes"])
 AM_CONDITIONAL(COMPILE,  [test "x$enable_compile"  = "xyes"])
 AM_CONDITIONAL(CSCOPE,   [test "x$enable_cscope"   = "xyes"])
 AM_CONDITIONAL(CTAGS,    [test "x$enable_ctags"    = "xyes"])
@@ -268,6 +273,7 @@ cat <<EOF
   autoexec.......: $enable_autoexec
   autorevert.....: $enable_autorevert
   cmode..........: $enable_cmode
+  epmode.........: $enable_epmode
   compile mode...: $enable_compile
   cscope.........: $enable_cscope
   ctags..........: $enable_ctags
