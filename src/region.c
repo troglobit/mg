@@ -535,16 +535,7 @@ region_put_data(const char *buf, int len)
 	}
 }
 
-/*
- * Where dot and mark are, by line number and offset, so a command
- * that moves them, or rewrites the lines they are on, can put them
- * back as far as the lines still reach.
- */
-struct regionpos {
-	int	 dotline, doto, markline, marko;
-};
-
-static void
+void
 savepos(struct regionpos *p)
 {
 	p->dotline = curwp->w_dotline;
@@ -553,7 +544,7 @@ savepos(struct regionpos *p)
 	p->marko = curwp->w_marko;
 }
 
-static void
+void
 restorepos(const struct regionpos *p)
 {
 	if (curwp->w_markp != NULL) {

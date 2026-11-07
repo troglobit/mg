@@ -226,6 +226,15 @@ struct region {
 	RSIZE		 r_size;	/* Length in characters.	 */
 };
 
+/*
+ * Where dot and mark are, by line number and offset, so a command
+ * that moves them, or rewrites the lines they are on, can put them
+ * back as far as the lines still reach.
+ */
+struct regionpos {
+	int	 dotline, doto, markline, marko;
+};
+
 
 /*
  * All text is kept in circularly linked
@@ -916,6 +925,8 @@ int		 transposeword(int, int);
 /* region.c X */
 int		 regionlines(int (*)(int, int));
 int		 linesregion(struct region *);
+void		 savepos(struct regionpos *);
+void		 restorepos(const struct regionpos *);
 int		 editable(void);
 int		 sortlines(int, int);
 int		 reverseregion(int, int);
