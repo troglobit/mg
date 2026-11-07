@@ -8,6 +8,8 @@ All relevant changes to the project are documented in this file.
 
 ### Changes
 
+- New `go-mode`: Go highlighting and indent, `C-c C-f` runs gofmt,
+  `C-c C-b`, `C-c C-v`, `C-c C-t` and `C-c C-r` build, vet, test and run
 - `next-error` finds indented `file:line:` locations, like those of
   `go test`
 

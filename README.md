@@ -151,6 +151,7 @@ files listed, and can be turned on by hand with its `M-x` command:
 | `conf`     | `conf-mode`         | `*.conf`, `*.ini`, `*.toml`, systemd units, `fstab`, `ssh_config`, `.gitconfig`, ... |
 | `diff`     | `diff-mode`         | `*.diff`, `*.patch`, `*.rej`                                                         |
 | `git`      | `git-commit-mode`   | `COMMIT_EDITMSG`, `MERGE_MSG`, `TAG_EDITMSG`, `git-rebase-todo`, ...                 |
+| `go`       | `go-mode`           | `*.go`                                                                               |
 | `json`     | `json-mode`         | `*.json`, `*.jsonc`                                                                  |
 | `m4`       | `m4-mode`           | `configure.ac`, `configure.in`, `*.m4`                                               |
 | `make`     | `makefile-mode`     | `Makefile`, `Makefile.am`, `Makefile.in`, `*.mk`, ...                                |
@@ -250,10 +251,13 @@ New features include, but are not limited to:
 * UTF-8 support: multibyte characters can be typed, displayed, and edited
   in UTF-8 locales, with double-width CJK taking two columns
 * Syntax highlighting in buffers with a language mode, `c`, `cmake`,
-  `conf`, `diff`, `git-commit`, `m4`, `makefile`, `markdown`, `python`,
-  `shell-script`, and `yaml`, toggled with `M-x font-lock-mode`.  The mode
-  follows the file name, or the `#!` line, and sets the buffer up for it:
-  hard tabs for makefiles, spaces for python and YAML
+  `conf`, `diff`, `git-commit`, `go`, `m4`, `makefile`, `markdown`,
+  `python`, `shell-script`, and `yaml`, toggled with `M-x font-lock-mode`.
+  The mode follows the file name, or the `#!` line, and sets the buffer
+  up for it: hard tabs for makefiles and Go, spaces for python and YAML
+* `go-mode` runs the go tools: `C-c C-f` gofmt on the buffer, `C-c C-b`,
+  `C-c C-v`, `C-c C-t` and `C-c C-r` build, vet, test and run, with the
+  output in `*compile*` where `next-error` steps through the errors
 * `M-;` comments code out and back in, `comment-dwim`, with the comment
   syntax of the buffer's mode
 * Line wrap with `M-x line-wrap-mode`: a line too long for the window
@@ -287,7 +291,7 @@ New features include, but are not limited to:
 * Side by side windows with `C-x 3`, `split-window-horizontally`
 * Window movement with `M-arrow keys`, resize with `M-S-arrow keys`, and
   `C-x +` to balance them
-* Smart Tab indent in: `c`, `python`, and `shell-script` modes
+* Smart Tab indent in: `c`, `go`, `python`, and `shell-script` modes
 * A modeline naming the major mode, with `(row,col)` and
   `display-time-mode`
 * A secure mode, `-S`, and a single-file mode, `-s`, for use as the

@@ -1342,6 +1342,78 @@ When enabled,
 defaults to opening files (and executing commands like compile and grep)
 relative to the global working directory.
 When disabled, a working directory is set for each buffer.
+.It Ic go-build
+Run
+.Nm go Cm build Ar ./...
+from the root of the module, the directory with the go.mod above the
+file, in a
+.Pa *compile*
+window where
+.Ic next-error
+steps through the errors.
+The modified buffers are saved first, after a prompt for each.
+With an argument the command can be edited before it runs.
+Bound to C-c C-b in
+.Ic go-mode .
+.It Ic go-fmt
+Run gofmt over the buffer and put its changes in place, as one undo
+record.
+The lines gofmt leaves alone are not touched, so dot and the mark
+keep their place.
+When gofmt finds a syntax error, dot moves to the first one and the
+echo line shows it.
+Bound to C-c C-f in
+.Ic go-mode .
+.It Ic go-mode
+Toggle Go mode, which selects the Go rules for syntax highlighting:
+comments, strings including the raw kind in backquotes, keywords,
+types and built-in functions.
+Enabling it also sets the tab width to eight and turns off
+.Ic no-tab-mode ,
+since gofmt indents with tabs.
+TAB indents the line like the previous non-blank line, one level
+deeper after a line that leaves a bracket open or ends in the colon
+of a label, one level back when the line closes a bracket or is a
+case, or every line in the region when the mark is active.
+Pressing TAB again adds a level, for the continuation of a
+statement.
+RET keeps the indentation, and a closing brace or the colon of a
+case moves the line out a level, except inside a string or a
+comment.
+The go tools are bound on C-c: C-c C-f
+.Ic go-fmt ,
+C-c C-b
+.Ic go-build ,
+C-c C-v
+.Ic go-vet ,
+C-c C-t
+.Ic go-test
+and C-c C-r
+.Ic go-run .
+Files named *.go get the mode automatically.
+.It Ic go-run
+Run
+.Nm go Cm run Ar \&.
+in the directory of the file, its package, with the output in a
+.Pa *compile*
+window.
+Its standard input is /dev/null, so a program that reads it does not
+hang.
+Like
+.Ic go-build
+otherwise.
+.It Ic go-test
+Run
+.Nm go Cm test Ar \&.
+in the directory of the file, its package, like
+.Ic go-build
+otherwise.
+.It Ic go-vet
+Run
+.Nm go Cm vet Ar ./...
+from the root of the module, like
+.Ic go-build
+otherwise.
 .It Ic goto-char
 Go to a position in the buffer, counted from 1 as in GNU Emacs.
 If an argument is present, then

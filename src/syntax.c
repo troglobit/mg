@@ -80,6 +80,24 @@ static const char *py_keywords[] = {
 };
 #endif
 
+#ifdef MODE_GO
+static const char *go_keywords[] = {
+	"break", "case", "chan", "const", "continue", "default", "defer",
+	"else", "fallthrough", "for", "func", "go", "goto", "if", "import",
+	"interface", "map", "package", "range", "return", "select",
+	"struct", "switch", "type", "var",
+	"false", "iota", "nil", "true",
+	"any|", "bool|", "byte|", "complex64|", "complex128|", "error|",
+	"float32|", "float64|", "int|", "int8|", "int16|", "int32|",
+	"int64|", "rune|", "string|", "uint|", "uint8|", "uint16|",
+	"uint32|", "uint64|", "uintptr|",
+	"append|", "cap|", "clear|", "close|", "complex|", "copy|",
+	"delete|", "imag|", "len|", "make|", "max|", "min|", "new|",
+	"panic|", "print|", "println|", "real|", "recover|",
+	NULL
+};
+#endif
+
 #ifdef MODE_M4
 static const char *m4_keywords[] = {
 	/* m4 itself */
@@ -182,6 +200,7 @@ struct syntax {
 	int		  sy_atword;	/* @decorator words		*/
 	int		  sy_atsubst;	/* @VAR@ configure substitutions */
 	const char	 *sy_mstr[2];	/* multiline string delimiters	*/
+	int		  sy_rawstr;	/* no escapes in those strings	*/
 	/* the start of a line; may not open cross-line state */
 	int		(*sy_lead)(const struct line *, char *);
 	/* the keyword machinery does not fit all languages */
@@ -216,6 +235,11 @@ static const struct syntax syntab[] = {
 	{ .sy_mode = "cmake", .sy_keywords = cmake_keywords,
 	    .sy_slcomm = { "#" }, .sy_mcs = "#[[", .sy_mce = "]]",
 	    .sy_dollar = "{", .sy_cstart = "#" },
+#endif
+#ifdef MODE_GO
+	{ .sy_mode = "go", .sy_keywords = go_keywords, .sy_slcomm = { "//" },
+	    .sy_mcs = "/*", .sy_mce = "*/", .sy_mstr = { "`" }, .sy_rawstr = 1,
+	    .sy_cstart = "//" },
 #endif
 #ifdef MODE_PYTHON
 	{ .sy_mode = "python", .sy_keywords = py_keywords, .sy_slcomm = { "#" },
@@ -416,7 +440,7 @@ syn_parse(const struct syntax *sy, const struct line *lp, int incom,
 		}
 		if (incom >= 2) {
 			/* in a multiline string, state is delimiter + 2 */
-			if (c == '\\' && i + 1 < len) {
+			if (c == '\\' && i + 1 < len && !sy->sy_rawstr) {
 				setattr(attr, i, SYN_STRING);
 				setattr(attr, i + 1, SYN_STRING);
 				i += 2;

@@ -160,6 +160,7 @@ main(int argc, char **argv)
 		extern void confmode_init(void);
 		extern void diffmode_init(void);
 		extern void gitmode_init(void);
+		extern void gomode_init(void);
 		extern void textmode_init(void);
 		extern void yamlmode_init(void);
 		extern void jsonmode_init(void);
@@ -195,6 +196,9 @@ main(int argc, char **argv)
 #endif
 #ifdef MODE_GIT
 		gitmode_init();
+#endif
+#ifdef MODE_GO
+		gomode_init();
 #endif
 #ifdef MODE_TEXT
 		textmode_init();
