@@ -23,7 +23,8 @@ static int	 compile_goto_error(int, int);
 int		 next_error(int, int);
 static int	 grep(int, int);
 static int	 gid(int, int);
-static struct buffer	*compile_mode(const char *, const char *);
+static struct buffer	*compile_mode(const char *, const char *,
+			     const char *);
 void grep_init(void);
 
 /* the lines compile_mode() puts before the output: cd, command, blank */
@@ -79,7 +80,7 @@ grep(int f, int n)
 	if (strlcat(cprompt, " /dev/null", sizeof(cprompt)) >= sizeof(cprompt))
 		return (FALSE);
 
-	if ((bp = compile_mode("*grep*", cprompt)) == NULL)
+	if ((bp = compile_mode("*grep*", cprompt, NULL)) == NULL)
 		return (FALSE);
 	if ((wp = popbuf(bp, WNONE)) == NULL)
 		return (FALSE);
@@ -92,8 +93,6 @@ int
 compile(int f, int n)
 {
 	char	 cprompt[NFILEN], *bufp;
-	struct buffer	*bp;
-	struct mgwin	*wp;
 
 	(void)strlcpy(cprompt, compile_last_command, sizeof(cprompt));
 	if ((bufp = eread("Compile command: ", cprompt, NFILEN,
@@ -101,11 +100,26 @@ compile(int f, int n)
 		return (ABORT);
 	else if (bufp[0] == '\0')
 		return (FALSE);
-	if (savebuffers(f, n) == ABORT)
-		return (ABORT);
 	(void)strlcpy(compile_last_command, bufp, sizeof(compile_last_command));
 
-	if ((bp = compile_mode("*compile*", cprompt)) == NULL)
+	return (compile_command(f, bufp, NULL));
+}
+
+/*
+ * Save the modified buffers, asking unless f says not to, run
+ * command in directory dir, the buffer's own when NULL, and show
+ * its output in *compile*, where next-error steps through the
+ * errors.
+ */
+int
+compile_command(int f, const char *command, const char *dir)
+{
+	struct buffer	*bp;
+	struct mgwin	*wp;
+
+	if (savebuffers(f, 1) == ABORT)
+		return (ABORT);
+	if ((bp = compile_mode("*compile*", command, dir)) == NULL)
 		return (FALSE);
 	if ((wp = popbuf(bp, WNONE)) == NULL)
 		return (FALSE);
@@ -163,7 +177,7 @@ gid(int f, int n)
 	if (len < 0 || len >= (int)sizeof(command))
 		return (FALSE);
 
-	if ((bp = compile_mode("*gid*", command)) == NULL)
+	if ((bp = compile_mode("*gid*", command, NULL)) == NULL)
 		return (FALSE);
 	if ((wp = popbuf(bp, WNONE)) == NULL)
 		return (FALSE);
@@ -172,8 +186,12 @@ gid(int f, int n)
 	return (TRUE);
 }
 
+/*
+ * Run command in directory dir, the current buffer's when NULL, and
+ * collect its output in the buffer name, in compile mode.
+ */
 struct buffer *
-compile_mode(const char *name, const char *command)
+compile_mode(const char *name, const char *command, const char *dir)
 {
 	struct buffer	*bp;
 	FILE	*fpipe;
@@ -198,7 +216,9 @@ compile_mode(const char *name, const char *command)
 	if (bclear(bp) != TRUE)
 		return (NULL);
 
-	if (getbufcwd(bp->b_cwd, sizeof(bp->b_cwd)) != TRUE)
+	if (dir != NULL)
+		(void)strlcpy(bp->b_cwd, dir, sizeof(bp->b_cwd));
+	else if (getbufcwd(bp->b_cwd, sizeof(bp->b_cwd)) != TRUE)
 		return (NULL);
 	addlinef(bp, "cd %s", bp->b_cwd);
 	addline(bp, qcmd);

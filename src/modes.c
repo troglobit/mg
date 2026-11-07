@@ -178,6 +178,17 @@ changemode(int f, int n, char *newmode)
 	return (TRUE);
 }
 
+#ifndef ENABLE_COMPILE_GREP
+/*
+ * What a mode's build and test commands run into without grep.c.
+ */
+int
+compile_command(int f, const char *command, const char *dir)
+{
+	return (dobeep_msg("Built without compile mode"));
+}
+#endif
+
 int
 indentmode(int f, int n)
 {

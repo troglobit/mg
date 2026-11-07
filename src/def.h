@@ -1082,6 +1082,7 @@ int		 compile(int, int);
 #else
 static inline int globalwd(void) { return FALSE; }
 #endif
+int		 compile_command(int, const char *, const char *);
 
 /* vc.c X */
 #ifdef ENABLE_VC
