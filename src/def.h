@@ -993,6 +993,7 @@ int		 zap(int, int);
 int		 spawncli(int, int);
 #define RUN_STDERR	0x01	/* runopen() passes on errors too */
 FILE		*runopen(const char *, char *const [], pid_t *, int);
+FILE		*runopenin(const char *, char *const [], pid_t *, int, int);
 int		 runclose(FILE *, pid_t);
 int		 runbuf(const char *, char *const [], struct buffer *);
 

@@ -58,11 +58,13 @@ spawncli(int f, int n)
 /*
  * Run argv in dir, or here when NULL, without a shell, and return its
  * standard output to read, with its errors too when flags has
- * RUN_STDERR.  It gets /dev/null for input, and for errors not read,
- * which would otherwise mess up the screen.  Close with runclose().
+ * RUN_STDERR.  It reads infd, or /dev/null when that is -1, which
+ * also takes the errors not read, since they would mess up the
+ * screen.  Close with runclose().
  */
 FILE *
-runopen(const char *dir, char *const argv[], pid_t *pid, int flags)
+runopenin(const char *dir, char *const argv[], pid_t *pid, int flags,
+    int infd)
 {
 	FILE *fp;
 	int p[2], fd;
@@ -79,13 +81,19 @@ runopen(const char *dir, char *const argv[], pid_t *pid, int flags)
 		if (dup2(p[1], STDOUT_FILENO) == -1)
 			_exit(1);
 		close(p[1]);
-		if ((fd = open("/dev/null", O_RDWR)) != -1) {
-			(void)dup2(fd, STDIN_FILENO);
-			(void)dup2(flags & RUN_STDERR ? STDOUT_FILENO : fd,
-			    STDERR_FILENO);
-			if (fd > STDERR_FILENO)
-				close(fd);
-		}
+		fd = open("/dev/null", O_RDWR);
+		if (infd == -1)
+			infd = fd;
+		if (infd != -1)
+			(void)dup2(infd, STDIN_FILENO);
+		if (flags & RUN_STDERR)
+			(void)dup2(STDOUT_FILENO, STDERR_FILENO);
+		else if (fd != -1)
+			(void)dup2(fd, STDERR_FILENO);
+		if (fd > STDERR_FILENO)
+			close(fd);
+		if (infd > STDERR_FILENO)
+			close(infd);
 		if (dir != NULL && chdir(dir) == -1)
 			_exit(1);
 		execvp(argv[0], argv);
@@ -97,6 +105,12 @@ runopen(const char *dir, char *const argv[], pid_t *pid, int flags)
 		(void)waitpid(*pid, NULL, 0);
 	}
 	return (fp);
+}
+
+FILE *
+runopen(const char *dir, char *const argv[], pid_t *pid, int flags)
+{
+	return (runopenin(dir, argv, pid, flags, -1));
 }
 
 /*
