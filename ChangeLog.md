@@ -3,6 +3,14 @@ Change Log
 
 All relevant changes to the project are documented in this file.
 
+[UNRELEASED][]
+--------------
+
+### Changes
+
+- `next-error` finds indented `file:line:` locations, like those of
+  `go test`
+
 [v4.6][] - 2026-11-01
 ---------------------
 
@@ -745,6 +753,7 @@ set as Mg3a.
 	functions.  Some simply marked as "don't care"
   - Fix missing initialization of stack variables
 
+[UNRELEASED]: https://github.com/troglobit/mg/compare/v4.6...HEAD
 [v4.6]:       https://github.com/troglobit/mg/compare/v4.5...v4.6
 [v4.5]:       https://github.com/troglobit/mg/compare/v4.4...v4.5
 [v4.4]:       https://github.com/troglobit/mg/compare/v4.3...v4.4

@@ -278,7 +278,8 @@ compile_mode(const char *name, const char *command, const char *dir)
 
 /*
  * Whether lp, a line of a compile buffer, is a location: "file:line:"
- * with the file relative to the buffer's directory.
+ * with the file relative to the buffer's directory, indented or not,
+ * as go test indents its lines.
  */
 static int
 compile_loc(struct line *lp, char *path, size_t len, int *lineno)
@@ -289,7 +290,7 @@ compile_loc(struct line *lp, char *path, size_t len, int *lineno)
 
 	if ((line = linetostr(lp)) == NULL)
 		return (FALSE);
-	p = line;
+	p = line + strspn(line, " \t");
 	if ((fname = strsep(&p, ":")) == NULL || *fname == '\0')
 		goto out;
 	if ((ln = strsep(&p, ":")) == NULL || *ln == '\0')
