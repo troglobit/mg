@@ -11,5 +11,5 @@ clean-local:
 	-rm -f $(builddir)/tutorial.gz
 
 tutorial.gz: tutorial.md
-	gzip -c $< >$(builddir)/$@
+	gzip -c $? >$(builddir)/$@
 endif
