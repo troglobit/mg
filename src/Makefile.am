@@ -43,6 +43,9 @@ endif
 if CMODE
 mg_SOURCES     += cmode.c
 endif
+if EPMODE
+mg_SOURCES     += electric.c
+endif
 if COMPILE
 mg_SOURCES     += grep.c
 endif
