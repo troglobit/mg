@@ -128,21 +128,28 @@ static struct KEYMAPE (3) cCsmap = {
 static PF cCs[] = {
 	NULL			/* s */
 };
+#endif /* CSCOPE */
 
-struct KEYMAPE (2) ccmap = {
+/* C-c, extended by project_init() */
+static struct KEYMAPE (2) ccmap = {
+#ifdef CSCOPE
 	2,
+#else
+	1,
+#endif
 	2,
 	rescan,
 	{
 		{
 			CCHR('@'), CCHR('@'), (PF[]){ rescan }, NULL
 		},
+#ifdef CSCOPE
 		{
 			's', 's', cCs, (KEYMAP *) & cCsmap
 		}
+#endif
 	}
 };
-#endif /* CSCOPE */
 
 static PF cXrEw[] = {
 	copyrect		/* w */
@@ -589,15 +596,9 @@ static struct KEYMAPE (8) fundmap = {
 	8,
 	selfinsert,
 	{
-#ifdef CSCOPE
 		{
 			CCHR('@'), CCHR('G'), fund_at, (KEYMAP *) & ccmap
 		},
-#else
-		{
-			CCHR('@'), CCHR('G'), fund_at, NULL
-		},
-#endif
 		{
 			CCHR('H'), CCHR('H'), fund_h, HELP_PREFIX
 		},

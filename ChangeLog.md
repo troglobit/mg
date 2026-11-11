@@ -21,6 +21,8 @@ All relevant changes to the project are documented in this file.
 - `compile` and `grep` run in the background, the output shown as it
   comes, like `auto-revert-tail-mode`
 - `C-c C-b` runs `compile` in `c-mode`, like build in `go-mode`
+- Project commands on `C-c p`: `C-c p c` compiles from the project root,
+  a git checkout or Go module
 
 [v4.6][] - 2026-11-01
 ---------------------

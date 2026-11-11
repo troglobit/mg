@@ -1119,6 +1119,7 @@ static inline void compile_kill(struct buffer *bp) { }
 static inline void compile_killall(void) { }
 #endif
 int		 compile_command(int, const char *, const char *);
+int		 compile_prompt(int, const char *);
 
 /* vc.c X */
 #ifdef ENABLE_VC

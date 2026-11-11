@@ -172,6 +172,7 @@ main(int argc, char **argv)
 		extern void pymode_init(void);
 		extern void autorevert_init(void);
 		extern void vc_init(void);
+		extern void project_init(void);
 
 #ifdef ENABLE_AUTOREVERT
 		autorevert_init();
@@ -184,6 +185,9 @@ main(int argc, char **argv)
 #endif
 #ifdef ENABLE_VC
 		vc_init();
+#endif
+#ifdef ENABLE_PROJECT
+		project_init();
 #endif
 #ifdef ENABLE_CMODE
 		cmode_init();

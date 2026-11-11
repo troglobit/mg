@@ -187,6 +187,12 @@ compile_command(int f, const char *command, const char *dir)
 {
 	return (dobeep_msg("Built without compile mode"));
 }
+
+int
+compile_prompt(int f, const char *dir)
+{
+	return (dobeep_msg("Built without compile mode"));
+}
 #endif
 
 int

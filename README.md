@@ -130,6 +130,7 @@ with the official Mg.  By default, all below features are enabled:
     --disable-dired      Disable directory editor
     --disable-help       Disable C-h help, quick help and tutorial
     --disable-ido        Disable ido-mode, substring matching at prompts
+    --disable-project    Disable C-c p project commands
     --disable-regexp     Disable full regexp search
     --disable-syntax     Disable syntax highlighting and comment-dwim
     --disable-togglenl   Disable toggle-newline-prompt extension (not in OpenBSD)
@@ -258,6 +259,8 @@ New features include, but are not limited to:
 * `go-mode` runs the go tools: `C-c C-f` gofmt on the buffer, `C-c C-b`,
   `C-c C-v`, `C-c C-t` and `C-c C-r` build, vet, test and run, with the
   output in `*compile*` where `next-error` steps through the errors
+* Project commands on `C-c p`: `C-c p c` runs `compile` from the root
+  of the project, the nearest directory up with a `.git` or a `go.mod`
 * `M-;` comments code out and back in, `comment-dwim`, with the comment
   syntax of the buffer's mode
 * Line wrap with `M-x line-wrap-mode`: a line too long for the window

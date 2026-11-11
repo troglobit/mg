@@ -54,6 +54,7 @@ AC_ARG_ENABLE(ctags,    AS_HELP_STRING([--disable-ctags],    [Disable ctags(1) s
 AC_ARG_ENABLE(dired,    AS_HELP_STRING([--disable-dired],    [Disable directory editor]))
 AC_ARG_ENABLE(help,     AS_HELP_STRING([--disable-help],     [Disable C-h help, quick help and tutorial]))
 AC_ARG_ENABLE(ido,      AS_HELP_STRING([--disable-ido],      [Disable ido-mode, substring matching at prompts]))
+AC_ARG_ENABLE(project,  AS_HELP_STRING([--disable-project],  [Disable C-c p project commands]))
 AC_ARG_ENABLE(regexp,   AS_HELP_STRING([--disable-regexp],   [Disable full regexp search]))
 AC_ARG_ENABLE(syntax,   AS_HELP_STRING([--disable-syntax],   [Disable syntax highlighting and comment-dwim]))
 AC_ARG_ENABLE(togglenl, AS_HELP_STRING([--disable-togglenl], [Disable toggle-newline-prompt extension]))
@@ -125,6 +126,7 @@ AS_IF([test "x$enable_all" = "xno"],
 	enable_dired="no"
 	enable_help="no"
 	enable_ido="no"
+	enable_project="no"
 	enable_regexp="no"
 	enable_togglenl="no"
 	enable_syntax="no"
@@ -173,6 +175,9 @@ AS_IF([test "x$enable_help" != "xno"], enable_help="yes"
 
 AS_IF([test "x$enable_regexp" != "xno"], enable_regexp="yes"
 	AC_DEFINE(REGEX, 1, [Enable regexp search support]))
+
+AS_IF([test "x$enable_project" != "xno"], enable_project="yes"
+	AC_DEFINE(ENABLE_PROJECT, 1, [Enable C-c p project commands]))
 
 AS_IF([test "x$enable_vc" != "xno"], enable_vc="yes"
 	AC_DEFINE(ENABLE_VC, 1, [Enable C-x v version control, for git]))
@@ -228,6 +233,7 @@ AM_CONDITIONAL(CTAGS,    [test "x$enable_ctags"    = "xyes"])
 AM_CONDITIONAL(DIRED,    [test "x$enable_dired"    = "xyes"])
 AM_CONDITIONAL(HELP,     [test "x$enable_help"     = "xyes"])
 AM_CONDITIONAL(IDO,      [test "x$enable_ido"      = "xyes"])
+AM_CONDITIONAL(PROJECT,  [test "x$enable_project"  = "xyes"])
 AM_CONDITIONAL(TINY,     [test "x$enable_tiny"     = "xyes"])
 AM_CONDITIONAL(VC,       [test "x$enable_vc"       = "xyes"])
 AM_CONDITIONAL(MGLOG,    [test "x$with_mglog"     != "xno"])
@@ -274,6 +280,7 @@ cat <<EOF
   dired..........: $enable_dired
   help...........: $enable_help
   ido-mode.......: $enable_ido
+  project........: $enable_project
   regexp.........: $enable_regexp
   syntax.........: $enable_syntax
   file modes.....: ${modes:-no}

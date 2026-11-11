@@ -61,6 +61,9 @@ endif
 if VC
 mg_SOURCES     += vc.c
 endif
+if PROJECT
+mg_SOURCES     += project.c
+endif
 if IDO
 mg_SOURCES     += ido.c
 endif

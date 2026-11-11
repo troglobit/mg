@@ -301,6 +301,14 @@ when the file is as committed on branch main, and
 once it has changes.
 It is updated when the file is read or saved, and by the commands
 above that change it.
+.Sh PROJECTS
+The project of a buffer is the nearest directory up from its own with a
+\&.git or a go.mod: a git checkout or a Go module.
+Its commands are on C-c p:
+.Bl -tag -width xxxxxxx -offset indent -compact
+.It C-c p c
+.Ic project-compile
+.El
 .Sh GZIP
 .Nm
 is capable of opening gzipped text files, e.g.
@@ -336,6 +344,8 @@ set-mark-command
 beginning-of-line
 .It C-b, Left
 backward-char
+.It C-c p c
+project-compile
 .It C-c s =
 cscope-find-assignments-to-this-symbol
 .It C-c s I
@@ -1768,6 +1778,12 @@ last.
 Return to position where
 .Ic find-tag
 was previously invoked.
+.It Ic project-compile
+Run
+.Ic compile
+from the root of the project, see
+.Sx PROJECTS .
+Bound to C-c p c.
 .It Ic push-shell
 Suspend
 .Nm

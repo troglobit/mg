@@ -110,6 +110,13 @@ grep(int f, int n)
 int
 compile(int f, int n)
 {
+	return (compile_prompt(f, NULL));
+}
+
+/* Prompt for a compile command and run it in dir. */
+int
+compile_prompt(int f, const char *dir)
+{
 	char	 cprompt[NFILEN], *bufp;
 
 	(void)strlcpy(cprompt, compile_last_command, sizeof(cprompt));
@@ -120,7 +127,7 @@ compile(int f, int n)
 		return (FALSE);
 	(void)strlcpy(compile_last_command, bufp, sizeof(compile_last_command));
 
-	return (compile_command(f, bufp, NULL));
+	return (compile_command(f, bufp, dir));
 }
 
 /*
