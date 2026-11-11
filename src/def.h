@@ -189,7 +189,7 @@ typedef int	(*PF)(int, int);	/* generally useful type */
 #define EFFUNC	0x0001		/* Autocomplete functions.	 */
 #define EFBUF	0x0002		/* Autocomplete buffers.	 */
 #define EFFILE	0x0004		/* " files (maybe someday)	 */
-#define EFTAG	0x0080		/* Autocomplete tags.		 */
+#define EFLIST	0x0080		/* Autocomplete a list, eread_list() */
 #define EFAUTO	0x0087		/* Some autocompletion on	 */
 #define EFNEW	0x0008		/* New prompt.			 */
 #define EFCR	0x0010		/* Echo CR at end; last read.	 */
@@ -647,6 +647,8 @@ int		 useshortanswers(int, int);
 void		 ewprintf(const char *fmt, ...);
 char		*eread(const char *, char *, size_t, int, ...)
 				__attribute__((__format__ (printf, 1, 5)));
+void		 eread_list(struct list *(*)(const char *));
+struct list	*eread_listed(const char *);
 int		 getxtra(struct list *, struct list *, int, int);
 void		 free_file_list(struct list *);
 

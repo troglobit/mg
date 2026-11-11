@@ -246,13 +246,14 @@ findtag1(int f, int n, int other)
 		if ((ret = tagsvisit(f, n)) != TRUE)
 			return (ret);
 
+	eread_list(complete_tag_list);
 	if (curtoken(f, n, dtok) == FALSE) {
 		dtok[0] = '\0';
 		bufp = eread("Find tag: ", utok, MAX_TOKEN,
-		    EFNUL | EFNEW | EFTAG);
+		    EFNUL | EFNEW | EFLIST);
 	} else
 		bufp = eread("Find tag (default %s): ", utok, MAX_TOKEN,
-		    EFNUL | EFNEW | EFTAG, dtok);
+		    EFNUL | EFNEW | EFLIST, dtok);
 
 	if (bufp == NULL)
 		return (ABORT);

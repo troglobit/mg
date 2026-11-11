@@ -83,10 +83,8 @@ ido_gather(void)
 		lh = complete_function_list("");
 	else if (ido.flag & EFFILE)
 		lh = make_file_list(ido.dir);
-#ifdef ENABLE_CTAGS
-	else if (ido.flag & EFTAG)
-		lh = complete_tag_list("");
-#endif
+	else if (ido.flag & EFLIST)
+		lh = eread_listed("");
 	for (lp = lh; lp != NULL; lp = lp->l_next)
 		n++;
 	if (ido.flag & EFBUF)

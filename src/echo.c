@@ -192,6 +192,26 @@ useshortanswers(int f, int n)
 	return (TRUE);
 }
 
+/* What EFLIST completes from, see eread_list(). */
+static struct list	*(*listfn)(const char *);
+
+/*
+ * Have an eread() with EFLIST complete from what fn returns, the names
+ * starting with the prefix it is given, freed with free_file_list().
+ */
+void
+eread_list(struct list *(*fn)(const char *))
+{
+	listfn = fn;
+}
+
+/* The names an EFLIST prompt completes, see eread_list(). */
+struct list *
+eread_listed(const char *prefix)
+{
+	return (listfn != NULL ? listfn(prefix) : NULL);
+}
+
 /*
  * This is the general "read input from the echo line" routine.  The basic
  * idea is that the prompt string "prompt" is written to the echo line, and
@@ -1053,6 +1073,7 @@ done:
 #ifdef ENABLE_IDO
 	ido_stop();
 #endif
+	listfn = NULL;
 	if (cwin == TRUE) {
 		/* blow away cpltion window */
 		bp = bfind("*Completions*", TRUE);
@@ -1070,6 +1091,7 @@ memfail:
 #ifdef ENABLE_IDO
 	ido_stop();
 #endif
+	listfn = NULL;
 	if (mb.dynbuf)
 		free(mb.buf);
 	dobeep();
@@ -1103,11 +1125,9 @@ complt(int flags, int c, char *buf, size_t nbuf, int cpos, int *nx)
 	} else if ((flags & EFFILE) != 0) {
 		buf[cpos] = '\0';
 		wholelist = lh = make_file_list(buf);
-#ifdef ENABLE_CTAGS
-	} else if ((flags & EFTAG) != 0) {
+	} else if ((flags & EFLIST) != 0) {
 		buf[cpos] = '\0';
-		wholelist = lh = complete_tag_list(buf);
-#endif
+		wholelist = lh = eread_listed(buf);
 	} else
 		panic("broken complt call: flags");
 
@@ -1219,11 +1239,9 @@ complt_list(int flags, char *buf, int cpos)
 		cp = strrchr(buf, '/');
 		if (cp)
 			preflen = cp - buf + 1;
-#ifdef ENABLE_CTAGS
-	} else if ((flags & EFTAG) != 0) {
+	} else if ((flags & EFLIST) != 0) {
 		buf[cpos] = '\0';
-		wholelist = lh = complete_tag_list(buf);
-#endif
+		wholelist = lh = eread_listed(buf);
 	} else
 		panic("broken complt call: flags");
 
