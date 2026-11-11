@@ -352,7 +352,7 @@ notnum:
 	}
 
 	if (nfiles > 2)
-		listbuffers(0, 1);
+		(void)showbuflist();
 
 	update(CMODE);
 

@@ -405,6 +405,7 @@ static int listbuf_ncol;
 static int	listbuf_goto_buffer(int f, int n);
 static int	listbuf_goto_buffer_one(int f, int n);
 static int	listbuf_goto_buffer_helper(int f, int n, int only);
+static struct buffer *listbuf(void);
 
 static PF listbuf_pf[] = {
 	listbuf_goto_buffer
@@ -412,7 +413,6 @@ static PF listbuf_pf[] = {
 static PF listbuf_one[] = {
 	listbuf_goto_buffer_one
 };
-
 
 static struct KEYMAPE (2) listbufmap = {
 	2,
@@ -438,25 +438,61 @@ static struct KEYMAPE (2) listbufmap = {
 int
 listbuffers(int f, int n)
 {
-	static int		 initialized = 0;
-	struct buffer		*bp;
-	struct mgwin		*wp;
+	struct buffer	*bp;
+	struct line	*lp;
+	int		 line;
 
-	if (!initialized) {
-		if (maps_add((KEYMAP *)&listbufmap, "buffer-list") != TRUE)
-			return (FALSE);
-		initialized = 1;
-	}
+	if ((bp = listbuf()) == NULL)
+		return (FALSE);
+	/* where makelist() put dot, which popselect() moves to the top */
+	lp = bp->b_dotp;
+	line = bp->b_dotline;
+	if (popselect(bp) != TRUE)
+		return (FALSE);
+	curwp->w_dotp = lp;
+	curwp->w_doto = bp->b_doto = 4;
+	curwp->w_dotline = line;
+	curwp->w_rflag |= WFMOVE;
+	return (TRUE);
+}
 
-	if ((bp = makelist()) == NULL || (wp = popbuf(bp, WNONE)) == NULL)
+/*
+ * Show the list of buffers, in another window, without going there, as
+ * at start up with several files.
+ */
+int
+showbuflist(void)
+{
+	struct buffer	*bp;
+	struct mgwin	*wp;
+
+	if ((bp = listbuf()) == NULL || (wp = popbuf(bp, WNONE)) == NULL)
 		return (FALSE);
 	wp->w_dotp = bp->b_dotp; /* fix up if window already on screen */
 	wp->w_doto = bp->b_doto;
-	bp->b_modes[0] = name_mode("fundamental");
-	bp->b_modes[1] = name_mode("buffer-list");
-	bp->b_nmodes = 1;
-
 	return (TRUE);
+}
+
+/*
+ * The *Buffer List*, made anew, in its mode over that of a pop-up, for
+ * q to close it.
+ */
+static struct buffer *
+listbuf(void)
+{
+	static int		 initialized = 0;
+	struct buffer		*bp;
+
+	if (!initialized) {
+		if (maps_add((KEYMAP *)&listbufmap, "buffer-list") != TRUE)
+			return (NULL);
+		initialized = 1;
+	}
+	if ((bp = makelist()) == NULL)
+		return (NULL);
+	bp->b_modes[2] = name_mode("buffer-list");
+	bp->b_nmodes = 2;
+	return (bp);
 }
 
 /*
@@ -471,14 +507,11 @@ makelist(void)
 {
 	int		w = ncol / 2;
 	struct buffer	*bp, *blp;
-	struct line	*lp;
+	struct line	*lp, *cur = NULL;
+	int		 curline = 1;
 
-	if ((blp = bfind("*Buffer List*", TRUE)) == NULL)
+	if ((blp = popbuffer("*Buffer List*", popmode("view"))) == NULL)
 		return (NULL);
-	if (bclear(blp) != TRUE)
-		return (NULL);
-	blp->b_flag &= ~BFCHG;		/* Blow away old.	 */
-	blp->b_flag |= BFREADONLY;
 
 	listbuf_ncol = ncol;		/* cache ncol for listbuf_goto_buffer */
 
@@ -512,10 +545,15 @@ makelist(void)
 		    w - 7,		/* seven chars already written */
 		    bp->b_fname) == FALSE)
 			return (NULL);
+		if (bp == curbp) {
+			cur = blastlp(blp);
+			curline = blp->b_lines;
+		}
 	}
-	blp->b_dotp = bfirstlp(blp);		/* put dot at beginning of
-						 * buffer */
+	/* dot on the current buffer */
+	blp->b_dotp = cur != NULL ? cur : bfirstlp(blp);
 	blp->b_doto = 0;
+	blp->b_dotline = curline;
 	return (blp);				/* All done		 */
 }
 
@@ -531,11 +569,14 @@ listbuf_goto_buffer_one(int f, int n)
 	return (listbuf_goto_buffer_helper(f, n, 1));
 }
 
+/*
+ * RET in the buffer list: close it, and show the buffer on the line in
+ * the window it was asked from, the only one with only.
+ */
 static int
 listbuf_goto_buffer_helper(int f, int n, int only)
 {
 	struct buffer	*bp;
-	struct mgwin	*wp;
 	char		*line = NULL;
 	int		 i, ret = FALSE;
 
@@ -561,12 +602,16 @@ listbuf_goto_buffer_helper(int f, int n, int only)
 	}
 	if (bp == NULL)
 		goto cleanup;
+	if (bp == curbp) {
+		ret = dobeep_msg("That is the list itself");
+		goto cleanup;
+	}
 
-	if ((wp = popbuf(bp, WNONE)) == NULL)
+	if (popdone(curbp) != TRUE)
 		goto cleanup;
 	curbp = bp;
-	curwp = wp;
-	bfront(bp);
+	if (showbuffer(bp, curwp, WFFRAME | WFFULL) != TRUE)
+		goto cleanup;
 
 	if (only)
 		ret = (onlywind(FFRAND, 1));

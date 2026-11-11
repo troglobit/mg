@@ -590,6 +590,7 @@ int		 killcurbuf(int, int);
 int		 renamebuf(int, int);
 int		 savebuffers(int, int);
 int		 listbuffers(int, int);
+int		 showbuflist(void);
 int		 addlinef(struct buffer *, char *, ...);
 int		 bufappend(struct buffer *, const char *, size_t);
 void		 bufeob(struct buffer *);

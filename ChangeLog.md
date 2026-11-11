@@ -25,6 +25,8 @@ All relevant changes to the project are documented in this file.
   a git checkout or Go module, `C-c p f` finds a file in it, `C-c p g`
   greps it, `C-c p b` switches between its buffers and `C-c p k` kills
   them, `C-c p D` and `C-c p !` run dired and a shell command at its root
+- `C-x C-b` selects the list, on the current buffer; picking a buffer or
+  `q` closes it
 
 [v4.6][] - 2026-11-01
 ---------------------
