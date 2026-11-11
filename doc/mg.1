@@ -310,6 +310,8 @@ Its commands are on C-c p:
 .Ic project-compile
 .It C-c p f
 .Ic project-find-file
+.It C-c p g
+.Ic project-find-regexp
 .El
 .Sh GZIP
 .Nm
@@ -350,6 +352,8 @@ backward-char
 project-compile
 .It C-c p f
 project-find-file
+.It C-c p g
+project-find-regexp
 .It C-c s =
 cscope-find-assignments-to-this-symbol
 .It C-c s I
@@ -1792,6 +1796,13 @@ Bound to C-c p c.
 Visit a file of the project, its name completed from the files git
 lists, or from every file below the root outside git.
 Bound to C-c p f.
+.It Ic project-find-regexp
+Search the files of the project for a regexp, with git grep, or grep
+outside git, and list the matches in
+.Pa *grep*
+for
+.Ic next-error .
+Bound to C-c p g.
 .It Ic push-shell
 Suspend
 .Nm

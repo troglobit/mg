@@ -135,11 +135,66 @@ project_find_file(int f, int n)
 	return (visitfile(adjf));
 }
 
+/*
+ * s quoted for the shell in buf, between single quotes.  Returns FALSE
+ * when it does not fit.
+ */
+static int
+shquote(char *buf, size_t len, const char *s)
+{
+	size_t	 i = 0;
+
+	buf[i++] = '\'';
+	for (; *s != '\0'; s++) {
+		/* room for an escaped quote, the closing one and the NUL */
+		if (i + 6 > len)
+			return (FALSE);
+		if (*s == '\'') {
+			/* close, an escaped quote, open again */
+			memcpy(buf + i, "'\\''", 4);
+			i += 4;
+		} else
+			buf[i++] = *s;
+	}
+	buf[i++] = '\'';
+	buf[i] = '\0';
+	return (TRUE);
+}
+
+/*
+ * Search the files of the project for a regexp, with git grep, or
+ * grep outside git, listing the matches in *grep* for next-error.
+ */
+static int
+project_find_regexp(int f, int n)
+{
+	char	 root[NFILEN], top[NFILEN], re[NFILEN], q[NFILEN * 2];
+	char	 cmd[NFILEN * 2 + 32], *bufp;
+	int	 usegit;
+
+	if (project_root(root, sizeof(root)) != TRUE)
+		return (FALSE);
+	if ((bufp = eread("Find regexp: ", re, sizeof(re),
+	    EFNEW | EFCR)) == NULL)
+		return (ABORT);
+	if (bufp[0] == '\0')
+		return (FALSE);
+	if (shquote(q, sizeof(q), bufp) != TRUE)
+		return (dobeep_msg("Regexp too long"));
+	usegit = findup(root, (const char *const[]){ ".git", NULL }, top,
+	    sizeof(top)) != NULL;
+	(void)snprintf(cmd, sizeof(cmd), "%s -e %s%s", usegit ?
+	    "git grep -n -I --untracked" : "grep -rnI", q, usegit ? "" : " .");
+	return (compile_run("*grep*", cmd, root));
+}
+
 void
 project_init(void)
 {
 	funmap_add(project_compile, "project-compile", 0);
 	funmap_add(project_find_file, "project-find-file", 0);
+	funmap_add(project_find_regexp, "project-find-regexp", 0);
 	dobindkey(fundamental_map, "project-compile", "^Cpc");
 	dobindkey(fundamental_map, "project-find-file", "^Cpf");
+	dobindkey(fundamental_map, "project-find-regexp", "^Cpg");
 }

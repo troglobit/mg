@@ -52,7 +52,6 @@ static struct job {
 	pid_t		 pid;
 } jobs[COMPILE_JOBS];
 
-static int	 compile_show(struct buffer *);
 static struct job *compile_job(struct buffer *);
 
 static int	 compile_quit(int, int);
@@ -91,7 +90,6 @@ static int
 grep(int f, int n)
 {
 	char	 cprompt[NFILEN], *bufp;
-	struct buffer	*bp;
 
 	(void)strlcpy(cprompt, "grep -n ", sizeof(cprompt));
 	if ((bufp = eread("Run grep: ", cprompt, NFILEN,
@@ -102,9 +100,7 @@ grep(int f, int n)
 	if (strlcat(cprompt, " /dev/null", sizeof(cprompt)) >= sizeof(cprompt))
 		return (FALSE);
 
-	if ((bp = compile_mode("*grep*", cprompt, NULL)) == NULL)
-		return (FALSE);
-	return (compile_show(bp));
+	return (compile_run("*grep*", cprompt, NULL));
 }
 
 int
@@ -139,22 +135,22 @@ compile_prompt(int f, const char *dir)
 int
 compile_command(int f, const char *command, const char *dir)
 {
-	struct buffer	*bp;
-
 	if (savebuffers(f, 1) == ABORT)
 		return (ABORT);
-	if ((bp = compile_mode("*compile*", command, dir)) == NULL)
-		return (FALSE);
-	return (compile_show(bp));
+	return (compile_run("*compile*", command, dir));
 }
 
 /*
- * Pop up bp and select it, its window following the output from the
- * end.
+ * Run command in dir into the buffer name, see compile_mode(), and pop
+ * it up selected, its window following the output from the end.
  */
-static int
-compile_show(struct buffer *bp)
+int
+compile_run(const char *name, const char *command, const char *dir)
 {
+	struct buffer	*bp;
+
+	if ((bp = compile_mode(name, command, dir)) == NULL)
+		return (FALSE);
 	if (popselect(bp) != TRUE)
 		return (FALSE);
 	wineob(curwp);
@@ -168,7 +164,6 @@ gid(int f, int n)
 	char	 command[NFILEN];
 	char	 cprompt[NFILEN], *bufp;
 	int	c;
-	struct buffer	*bp;
 	int	 i, j, len;
 
 	/* catch ([^\s(){}]+)[\s(){}]* */
@@ -208,9 +203,7 @@ gid(int f, int n)
 	if (len < 0 || len >= (int)sizeof(command))
 		return (FALSE);
 
-	if ((bp = compile_mode("*gid*", command, NULL)) == NULL)
-		return (FALSE);
-	return (compile_show(bp));
+	return (compile_run("*gid*", command, NULL));
 }
 
 /*
