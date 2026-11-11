@@ -7,6 +7,7 @@
  */
 
 #include <err.h>
+#include <fcntl.h>
 #include <limits.h>
 #include <locale.h>
 #include <signal.h>
@@ -47,6 +48,7 @@ char		 pat[NPAT];			/* pattern		*/
 
 static void	 edinit(struct buffer *);
 static void	 pty_init(void);
+static void	 tty_use(const char *);
 extern void	 closetags(void);
 
 static __dead void
@@ -54,8 +56,8 @@ usage(int code)
 {
 	FILE	*fp = code ? stderr : stdout;
 
-	fprintf(fp, "Usage: %s [-hnqRsSv] [-b file] [-f mode] [-u file] "
-	    "[+line[:col]] [file ...]\n", PACKAGE_TARNAME);
+	fprintf(fp, "Usage: %s [-hnqRsSv] [-b file] [-f mode] [-t tty] [-u file]\n"
+	    "          [+line[:col]] [file ...]\n", PACKAGE_TARNAME);
 	if (code) {
 		fprintf(fp, "Try '%s -h' for more information.\n",
 		    PACKAGE_TARNAME);
@@ -72,6 +74,8 @@ usage(int code)
 	    "  -R           Open the files read-only\n"
 	    "  -s           Single-file mode: only the files named here can be opened\n"
 	    "  -S           Secure mode: commands that start a program are refused\n"
+	    "  -t tty       Use the terminal tty, like /dev/pts/3, for screen and\n"
+	    "               keys, for debugging mg in gdb\n"
 	    "  -u file      Read file as the startup file, instead of ~/.mg\n"
 	    "  -v           Show the version and exit\n"
 	    "  +line[:col]  Go to line, and column, in the file after it; a\n"
@@ -103,6 +107,7 @@ main(int argc, char **argv)
 	int	 	 o, i, nfiles;
 	int	  	 nobackups = 0;
 	int		 noinit = 0;
+	char		*ttydev = NULL;
 	struct buffer	*bp = NULL;
 	struct mgwin	*wp, *selwp;
 
@@ -114,7 +119,7 @@ main(int argc, char **argv)
 	if (getenv("MGSECURE") != NULL)
 		secure = 1;
 
-	while ((o = getopt(argc, argv, "hnqRsSvb:f:u:")) != -1)
+	while ((o = getopt(argc, argv, "hnqRsSvb:f:t:u:")) != -1)
 		switch (o) {
 		case 'b':
 			batch = 1;
@@ -148,6 +153,9 @@ main(int argc, char **argv)
 		case 'h':
 			usage(0);
 			break;
+		case 't':
+			ttydev = optarg;
+			break;
 		case 'u':
 			conffile = optarg;
 			break;
@@ -165,6 +173,10 @@ main(int argc, char **argv)
 		errx(1, "-b and -u are not allowed with -s or -S");
 	if (noinit && conffile != NULL)
 		errx(1, "-q and -u are mutually exclusive");
+	if (ttydev != NULL && batch)
+		errx(1, "-b and -t are mutually exclusive");
+	if (ttydev != NULL)
+		tty_use(ttydev);
 	if (batch) {
 		pty_init();
 		conffile = batchfile;
@@ -469,6 +481,28 @@ edinit(struct buffer *bp)
 	wp->w_linep = wp->w_dotp = bp->b_headp;
 	wp->w_ntrows = nrow - 2;		/* 2 = mode, echo.	 */
 	wp->w_rflag = WFMODE | WFFULL;		/* Full.		 */
+}
+
+/*
+ * Use the terminal dev, for -t, instead of the one mg was started in,
+ * which keeps its errors.
+ */
+static void
+tty_use(const char *dev)
+{
+	int	 fd;
+
+	/* not to wait for the carrier of a serial line */
+	if ((fd = open(dev, O_RDWR | O_NOCTTY | O_NONBLOCK)) == -1)
+		err(1, "%s", dev);
+	if (!isatty(fd))
+		errx(1, "%s: not a terminal", dev);
+	if (fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) & ~O_NONBLOCK) == -1)
+		err(1, "%s", dev);
+	if (dup2(fd, STDIN_FILENO) == -1 || dup2(fd, STDOUT_FILENO) == -1)
+		err(1, "%s", dev);
+	if (fd > STDOUT_FILENO)
+		close(fd);
 }
 
 /*

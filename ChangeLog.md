@@ -30,6 +30,7 @@ All relevant changes to the project are documented in this file.
 - `mg -h` shows a help text: the options, the environment, and the keys
   to start with
 - `mg -q` starts without reading `~/.mg`, and `mg -v` shows the version
+- `mg -t /dev/pts/N` uses another terminal, for debugging mg in gdb
 
 ### Fixes
 

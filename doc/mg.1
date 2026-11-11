@@ -12,6 +12,7 @@
 .Op Fl hnqRsSv
 .Op Fl b Ar file
 .Op Fl f Ar mode
+.Op Fl t Ar tty
 .Op Fl u Ar file
 .Op + Ns Ar line Ns Oo : Ns Ar column Oc
 .Op Ar
@@ -102,6 +103,31 @@ are refused.
 Files ending in
 .Pa .gz
 are opened as-is instead of being decompressed.
+.It Fl t Ar tty
+Use the terminal
+.Ar tty
+for the screen and the keys, instead of the one
+.Nm
+was started in.
+Standard error stays on the original terminal.
+This is for debugging
+.Nm
+itself: in another terminal, find its name with
+.Xr tty 1
+and leave it to
+.Nm
+with
+.Ql sleep 100000 ,
+then run
+.Ql gdb --args mg -t /dev/pts/3 file
+here.
+Set
+.Ev TERM
+for that terminal if it differs from this one.
+A resize of it is picked up by
+.Ic redraw-display .
+Not with
+.Fl b .
 .It Fl u Ar file
 Use
 .Ar file
