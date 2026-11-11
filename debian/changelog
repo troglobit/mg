@@ -1,3 +1,23 @@
+mg2a (4.7) unstable; urgency=medium
+
+  * New go-mode: highlighting, indent, gofmt, and go build, vet, test
+    and run from the editor
+  * compile and grep run in the background, with the output colored
+    and shown as it comes, and q closes the list
+  * Project commands on C-c p: compile, find file, grep, buffers,
+    dired and shell command at the project root, see mg(1)
+  * C-x C-b selects the buffer list, RET or q closes it
+  * C-x TAB, indent-rigidly: shift the region with the arrow keys
+  * C-c C-b runs compile in c-mode, and next-error finds indented
+    file:line: locations, like those of go test
+  * conf-mode for *.cf files and config files with no telling name
+  * New options: -q skips ~/.mg, -v shows the version, -t uses another
+    terminal, and -h shows a help text
+  * Fix single-file mode, -s: dired, make-directory and backups could
+    reach files not named on the command line
+
+ -- Joachim Wiberg <troglobit@gmail.com>  Wed, 11 Nov 2026 21:00:00 +0100
+
 mg2a (4.6) unstable; urgency=medium
 
   * Version control for git on C-x v, as in GNU Emacs, see mg(1).

@@ -231,6 +231,7 @@ goes something like this:
 * Oct 15, 2026: Mg v4.4, auto-revert and tail mode, sentence commands
 * Oct 21, 2026: Mg v4.5, rectangles, registers, git commit and patch support
 * Nov  1, 2026: Mg v4.6, git version control, Emacs tags, xref and cscope
+* Nov 11, 2026: Mg v4.7, go-mode, project commands, background compile
 
 See the source distribution for the list of [AUTHORS][].
 
@@ -259,6 +260,8 @@ New features include, but are not limited to:
 * `go-mode` runs the go tools: `C-c C-f` gofmt on the buffer, `C-c C-b`,
   `C-c C-v`, `C-c C-t` and `C-c C-r` build, vet, test and run, with the
   output in `*compile*` where `next-error` steps through the errors
+* `compile` and `grep` run in the background, with the output colored
+  and shown as it comes, and `q` closes the list
 * Project commands on `C-c p`: `C-c p c` runs `compile` from the root
   of the project, the nearest directory up with a `.git` or a `go.mod`,
   `C-c p f` finds a file in it, `C-c p g` greps it, `C-c p b` switches
