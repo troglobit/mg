@@ -180,6 +180,9 @@ static int	 json_parse(const struct line *, int, char *);
 static int	 log_parse(const struct line *, int, char *);
 static int	 annotate_parse(const struct line *, int, char *);
 #endif
+#ifdef ENABLE_COMPILE_GREP
+static int	 compile_parse(const struct line *, int, char *);
+#endif
 
 struct syntax {
 	const char	 *sy_mode;	/* buffer mode this applies to	*/
@@ -271,6 +274,9 @@ static const struct syntax syntab[] = {
 #ifdef ENABLE_VC
 	{ .sy_mode = "log-view", .sy_parse = log_parse },
 	{ .sy_mode = "vc-annotate", .sy_parse = annotate_parse },
+#endif
+#ifdef ENABLE_COMPILE_GREP
+	{ .sy_mode = "compile", .sy_parse = compile_parse },
 #endif
 	{ NULL }
 };
@@ -866,6 +872,41 @@ annotate_parse(const struct line *lp, int state, char *attr)
 	text.l_used = text.l_size = len - j;
 	return (syn_parse(annotated, &text, state,
 	    attr != NULL ? attr + j : NULL));
+}
+#endif
+
+#ifdef ENABLE_COMPILE_GREP
+/*
+ * The output in a compile buffer: the directory and the command at
+ * the top, state counting them, the file and line of a location and
+ * the error or warning after it, and how the command ended.
+ */
+static int
+compile_parse(const struct line *lp, int state, char *attr)
+{
+	int	 fs, fe, ne, i, n, len = llength(lp);
+
+	if (state < COMPILE_HEAD - 1) {
+		setattrs(attr, 0, len, SYN_COMMENT);
+		return (state + 1);
+	}
+	if (matchat(lp, 0, "Command finished ") != 0)
+		setattrs(attr, 0, len, SYN_TYPE);
+	else if (matchat(lp, 0, "Command exited ") != 0 ||
+	    matchat(lp, 0, "Subshell killed ") != 0)
+		setattrs(attr, 0, len, SYN_NUMBER);
+	else if (compile_span(lp, &fs, &fe, &ne)) {
+		setattrs(attr, fs, fe - fs, SYN_PREPROC);
+		setattrs(attr, fe + 1, ne - fe - 1, SYN_TYPE);
+		for (i = ne + 1; i < len && isblank(lgetc(lp, i)); i++)
+			;
+		if ((n = matchat(lp, i, "fatal error")) != 0 ||
+		    (n = matchat(lp, i, "error")) != 0)
+			setattrs(attr, i, n, SYN_NUMBER);
+		else if ((n = matchat(lp, i, "warning")) != 0)
+			setattrs(attr, i, n, SYN_KEYWORD);
+	}
+	return (state);
 }
 #endif
 

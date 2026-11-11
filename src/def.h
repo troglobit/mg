@@ -1088,6 +1088,8 @@ int		 cc_indent(int, int);
 int		 cc_lfindent(int, int);
 
 /* grep.c X */
+/* the lines compile_mode() puts before the output: cd, command, blank */
+#define COMPILE_HEAD	3
 #ifdef ENABLE_COMPILE_GREP
 int		 next_error(int, int);
 int		 previous_error(int, int);
@@ -1095,6 +1097,7 @@ void		 next_error_buf(struct buffer *);
 int		 globalwd(void);
 int		 globalwdtoggle(int, int);
 int		 compile(int, int);
+int		 compile_span(const struct line *, int *, int *, int *);
 #else
 static inline int globalwd(void) { return FALSE; }
 #endif

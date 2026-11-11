@@ -27,9 +27,6 @@ static struct buffer	*compile_mode(const char *, const char *,
 			     const char *);
 void grep_init(void);
 
-/* the lines compile_mode() puts before the output: cd, command, blank */
-#define COMPILE_HEAD	3
-
 static char compile_last_command[NFILEN] = "make ";
 
 /*
@@ -270,36 +267,56 @@ compile_mode(const char *name, const char *command, const char *dir)
 /*
  * Whether lp, a line of a compile buffer, is a location: "file:line:"
  * with the file relative to the buffer's directory, indented or not,
- * as go test indents its lines.
+ * as go test indents its lines.  The file is from *fs to *fe, the
+ * line number, with a ":column" after it, up to *ne.
+ */
+int
+compile_span(const struct line *lp, int *fs, int *fe, int *ne)
+{
+	int	 i, len = llength(lp);
+
+	for (i = 0; i < len && isblank(lgetc(lp, i)); i++)
+		;
+	for (*fs = i; i < len && lgetc(lp, i) != ':'; i++)
+		;
+	if (i == *fs || i + 1 >= len || !isdigit(lgetc(lp, i + 1)))
+		return (FALSE);
+	*fe = i;
+	for (i++; i < len && isdigit(lgetc(lp, i)); i++)
+		;
+	if (i < len && lgetc(lp, i) != ':')
+		return (FALSE);
+	if (i + 1 < len && isdigit(lgetc(lp, i + 1)))
+		for (i++; i < len && isdigit(lgetc(lp, i)); i++)
+			;
+	*ne = i;
+	return (TRUE);
+}
+
+/*
+ * The file and line number of the location on lp, see compile_span(),
+ * the file made a path.
  */
 static int
 compile_loc(struct line *lp, char *path, size_t len, int *lineno)
 {
-	char	*line, *p, *fname, *ln, *adjf;
-	const char *errstr;
-	int	 s = FALSE;
+	char	 fname[NFILEN], *adjf;
+	int	 fs, fe, ne, i;
 
-	if ((line = linetostr(lp)) == NULL)
+	if (!compile_span(lp, &fs, &fe, &ne) || fe - fs >= (int)sizeof(fname))
 		return (FALSE);
-	p = line + strspn(line, " \t");
-	if ((fname = strsep(&p, ":")) == NULL || *fname == '\0')
-		goto out;
-	if ((ln = strsep(&p, ":")) == NULL || *ln == '\0')
-		goto out;
-	*lineno = (int)strtonum(ln, INT_MIN, INT_MAX, &errstr);
-	if (errstr)
-		goto out;
-	if (fname[0] != '/') {
-		if (getbufcwd(path, len) == FALSE ||
-		    strlcat(path, fname, len) >= len)
-			goto out;
-	} else if ((adjf = adjustname(fname, TRUE)) == NULL ||
-	    strlcpy(path, adjf, len) >= len)
-		goto out;
-	s = TRUE;
-out:
-	free(line);
-	return (s);
+	memcpy(fname, ltext(lp) + fs, fe - fs);
+	fname[fe - fs] = '\0';
+	for (*lineno = 0, i = fe + 1; i < ne && isdigit(lgetc(lp, i)); i++) {
+		if (*lineno > INT_MAX / 10 - 1)
+			return (FALSE);
+		*lineno = *lineno * 10 + lgetc(lp, i) - '0';
+	}
+	if (fname[0] != '/')
+		return (getbufcwd(path, len) == TRUE &&
+		    strlcat(path, fname, len) < len);
+	return ((adjf = adjustname(fname, TRUE)) != NULL &&
+	    strlcpy(path, adjf, len) < len);
 }
 
 /*

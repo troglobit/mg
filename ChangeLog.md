@@ -16,6 +16,8 @@ All relevant changes to the project are documented in this file.
   start with a `[section]` or `key = value`, like `~/.irssi/config`
 - `q` closes the `*compile*`, `*grep*` and `*gid*` windows, and
   `next-error` goes on from the list
+- Colors in `*compile*` and `*grep*`: file and line of each location,
+  errors, warnings, and how the command ended
 
 [v4.6][] - 2026-11-01
 ---------------------
