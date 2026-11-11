@@ -689,10 +689,12 @@ buffsave(struct buffer *bp)
 int
 makebkfile(int f, int n)
 {
-	if (f & FFARG)
-		makebackup = n > 0;
-	else
-		makebackup = !makebackup;
+	int	 on = (f & FFARG) ? n > 0 : !makebackup;
+
+	/* a backup is written without the checks of -s */
+	if (on && singlefile)
+		return (dobeep_msg("Backups are off in single-file mode"));
+	makebackup = on;
 	ewprintf("Backup files %sabled", makebackup ? "en" : "dis");
 	return (TRUE);
 }

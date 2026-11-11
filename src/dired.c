@@ -439,6 +439,10 @@ d_expunge(int f, int n)
 				curwp->w_dotline = tmp;
 				return (FALSE);
 			case FALSE:
+				if (!secure_allowed(fname)) {
+					curwp->w_dotline = tmp;
+					return (FALSE);
+				}
 				if (unlink(fname) == -1) {
 					(void)xbasename(sname, fname, NFILEN);
 					dobeep();
@@ -448,6 +452,10 @@ d_expunge(int f, int n)
 				}
 				break;
 			case TRUE:
+				if (!secure_allowed(fname)) {
+					curwp->w_dotline = tmp;
+					return (FALSE);
+				}
 				if (rmdir(fname) == -1) {
 					(void)xbasename(sname, fname, NFILEN);
 					dobeep();
@@ -584,6 +592,8 @@ d_rename(int f, int n)
 		ewprintf("Cannot move to same file: %s", frname);
 		return (TRUE);
 	}
+	if (!secure_allowed(frname) || !secure_allowed(topath))
+		return (FALSE);
 	ret = (rename(frname, topath) >= 0) ? TRUE : FALSE;
 	if (ret != TRUE)
 		return (ret);

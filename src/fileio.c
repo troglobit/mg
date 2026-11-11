@@ -508,6 +508,8 @@ copy(char *frname, char *toname)
 	struct	stat orig;
 	ssize_t	sr;
 
+	if (!secure_allowed(frname) || !secure_allowed(toname))
+		return (FALSE);
 	if ((ifd = open(frname, O_RDONLY)) == -1)
 		return (FALSE);
 	if (fstat(ifd, &orig) == -1) {
@@ -877,6 +879,8 @@ backuptohomedir(int f, int n)
 	const char	*c = _PATH_MG_DIR;
 	char		*p;
 
+	if (singlefile)
+		return (dobeep_msg("Backups are off in single-file mode"));
 	if (bkupdir == NULL) {
 		p = adjustname(c, TRUE);
 		if (p == NULL)

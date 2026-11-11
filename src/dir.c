@@ -116,7 +116,7 @@ do_makedir(char *path)
 	mode_t		 dir_mode, f_mode, oumask;
 	char		*slash;
 
-	if ((path = adjustname(path, TRUE)) == NULL)
+	if ((path = adjustname(path, TRUE)) == NULL || !secure_allowed(path))
 		return (FALSE);
 
 	/* Remove trailing slashes */

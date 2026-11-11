@@ -28,6 +28,13 @@ All relevant changes to the project are documented in this file.
 - `C-x C-b` selects the list, on the current buffer; picking a buffer or
   `q` closes it
 
+### Fixes
+
+- Single-file mode, `-s`: `make-directory` could make one anywhere,
+  `make-backup-files` turn backups back on, written past the checks, and
+  without `-S`, dired on a directory named on the command line could
+  copy, rename and delete other files
+
 [v4.6][] - 2026-11-01
 ---------------------
 
