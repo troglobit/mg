@@ -27,6 +27,8 @@ All relevant changes to the project are documented in this file.
   them, `C-c p D` and `C-c p !` run dired and a shell command at its root
 - `C-x C-b` selects the list, on the current buffer; picking a buffer or
   `q` closes it
+- `C-x TAB`, `indent-rigidly`: shift the region with the arrow keys, or
+  by tab stops with TAB and Shift-arrows
 - `mg -h` shows a help text: the options, the environment, and the keys
   to start with
 - `mg -q` starts without reading `~/.mg`, and `mg -v` shows the version

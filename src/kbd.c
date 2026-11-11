@@ -243,11 +243,20 @@ doin(void)
 	    getkey(TRUE)), &curmap)) == NULL)
 		/* nothing */;
 
+	return (dokey(funct, curmap));
+}
+
+/*
+ * Run funct, the command of the keys last read into key, found in
+ * map, as the command loop does.
+ */
+int
+dokey(PF funct, KEYMAP *map)
+{
 #ifdef  MGLOG
-	if (!mglog(funct, curmap))
+	if (!mglog(funct, map))
 		ewprintf("Problem with logging");
 #endif
-
 	if (macrodef && macrocount < MAXMACRO)
 		macro[macrocount++].m_funct = funct;
 

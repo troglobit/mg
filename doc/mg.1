@@ -493,6 +493,8 @@ list-buffers
 save-buffers-kill-emacs
 .It C-x C-f
 find-file
+.It C-x C-i, C-x TAB
+indent-rigidly
 .It C-x C-j
 dired-jump
 .It C-x C-g
@@ -1521,6 +1523,17 @@ and // to the root, and C-d with nothing typed opens the directory in
 dired.
 .It Ic help-help
 Prompts for one of (a)propos, (b)indings, des(c)ribe key briefly.
+.It Ic indent-rigidly
+Indent the lines of the region together, with the keys that follow:
+the left and right arrows move them a column, and Shift with those
+arrows, TAB and Shift-TAB move them to the next or previous tab stop.
+The lines keep their shape, so they stop when one reaches the first
+column, and blank lines are left alone.
+Each step is undone on its own.
+Any other key ends it and is run as usual.
+With an argument, move the lines that many columns and return.
+A keyboard macro records the columns moved.
+Bound to C-x TAB.
 .It Ic insert
 Insert a string, mainly for use from macros.
 .It Ic insert-buffer

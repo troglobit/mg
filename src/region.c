@@ -15,6 +15,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <paths.h>
 #include <poll.h>
 #include <signal.h>
@@ -24,6 +25,10 @@
 #include <unistd.h>
 
 #include "def.h"
+#include "funmap.h"
+#include "kbd.h"
+#include "key.h"
+#include "macro.h"
 
 #define TIMEOUT 10000
 
@@ -633,6 +638,152 @@ regionlines(int (*fn)(int, int))
 	}
 	restorepos(&pos);
 	return (s);
+}
+
+/* indent-rigidly: the columns each line of the region moves. */
+static int	rigid_delta;
+
+static int
+rigid_shift(int f, int n)
+{
+	int	 i, col = lineindent(curwp->w_dotp, &i);
+
+	/* a blank line stays as it is */
+	if (i == llength(curwp->w_dotp))
+		return (TRUE);
+	return (indent(FFARG, col + rigid_delta));
+}
+
+/*
+ * Where offset o of lp is now that its indentation, old bytes long
+ * before, was redone: with the text after it, or still inside it, and
+ * the start of the line stays that.
+ */
+static int
+rigid_off(const struct line *lp, int o, int old)
+{
+	int	 new;
+
+	if (o == 0)
+		return (0);
+	(void)lineindent(lp, &new);
+	if (o >= old)
+		o += new - old;
+	else if (o > new)
+		o = new;
+	return (o > llength(lp) ? llength(lp) : o);
+}
+
+/*
+ * Move the lines of the region delta columns, or with tab to the tab
+ * stop in that direction, as one undo record.  They keep their shape:
+ * none goes left of the first column, so the region stops there.  Dot
+ * and mark stay on their text.  rigid_delta says how far they went.
+ */
+static int
+rigid(int delta, int tab)
+{
+	struct region	 r;
+	struct line	*lp;
+	int	 i, n, s, bon, col, min = INT_MAX, w = curbp->b_tabw;
+	int	 di, mi;
+
+	rigid_delta = 0;
+	if (curwp->w_markp == NULL)
+		return (dobeep_msg("No mark set in this window"));
+	for (n = linesregion(&r), lp = r.r_linep; n > 0; n--, lp = lforw(lp)) {
+		col = lineindent(lp, &i);
+		if (i < llength(lp) && col < min)
+			min = col;
+	}
+	if (min == INT_MAX)
+		return (TRUE);
+	if (tab)
+		delta = (delta > 0 ? ntabstop(min, w) : (min - 1) / w * w) -
+		    min;
+	if (min + delta < 0)
+		delta = -min;
+	if ((rigid_delta = delta) == 0)
+		return (TRUE);
+
+	(void)lineindent(curwp->w_dotp, &di);
+	(void)lineindent(curwp->w_markp, &mi);
+	bon = undo_boundary_enable(FFRAND, 0);
+	s = regionlines(rigid_shift);
+	undo_boundary_enable(FFRAND, bon);
+	/* regionlines() kept the offsets, which the indentation moved */
+	curwp->w_doto = rigid_off(curwp->w_dotp, curwp->w_doto, di);
+	curwp->w_marko = rigid_off(curwp->w_markp, curwp->w_marko, mi);
+	return (s);
+}
+
+/*
+ * Indent the lines of the region together.  With an argument, by that
+ * many columns.  Else by the keys that follow: the arrows left and
+ * right move them a column, Shift with the arrows, TAB and Shift-TAB a
+ * tab stop of the buffer, and any other key ends it and is run.
+ */
+int
+indentrigidly(int f, int n)
+{
+	PF	 fp, left, right;
+	int	 s, m, backtab, total = 0, act = curwp->w_markact;
+
+	if (curwp->w_markp == NULL)
+		return (dobeep_msg("No mark set in this window"));
+	if ((s = editable()) != TRUE)
+		return (s);
+	if (f & FFARG)
+		return (rigid(n, FALSE));
+	/* a macro has no keys to follow, see below */
+	if (inmacro)
+		return (TRUE);
+
+	left = name_function("shift-backward-char");
+	right = name_function("shift-forward-char");
+	for (;;) {
+		ewprintf("Indent region with arrows, Shift-arrows or TAB");
+		update(CMODE);
+		key.k_count = 0;
+		do
+			key.k_chars[key.k_count++] = getkey(FALSE);
+		while ((fp = keyfunc(key.k_chars, key.k_count, &m)) == NULL &&
+		    key.k_count < MAXKEY);
+		backtab = key.k_count == 3 && key.k_chars[0] == CCHR('[') &&
+		    key.k_chars[1] == '[' && key.k_chars[2] == 'Z';
+		if (fp == NULL)
+			break;
+		if (fp == backchar)
+			s = rigid(-1, FALSE);
+		else if (fp == forwchar)
+			s = rigid(1, FALSE);
+		else if (fp == left || backtab)
+			s = rigid(-1, TRUE);
+		else if (fp == right ||
+		    (key.k_count == 1 && key.k_chars[0] == CCHR('I')))
+			s = rigid(1, TRUE);
+		else
+			break;
+		if (s != TRUE)
+			return (s);
+		total += rigid_delta;
+		/* an edit drops the selection, keep it to go on with */
+		if (act && !curwp->w_markact) {
+			curwp->w_markact = TRUE;
+			curwp->w_rflag |= WFFULL;
+		}
+	}
+	eerase();
+	/* a macro replays the columns moved, as the argument */
+	if (macrodef && total != 0 && macrocount > 0 &&
+	    macrocount < MAXMACRO - 1 &&
+	    macro[macrocount - 1].m_funct == indentrigidly) {
+		macro[macrocount - 1].m_funct = universal_argument;
+		macro[macrocount++].m_count = total;
+		macro[macrocount++].m_funct = indentrigidly;
+	}
+	return (dokey(fp != NULL ? fp : rescan,
+	    curbp->b_modes[m >= 0 ? m : 0]->p_map));
 }
 
 /*

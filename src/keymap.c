@@ -266,7 +266,8 @@ static PF cXcB[] = {
 	ctrlg			/* ^G */
 };
 
-static PF cXcJ[] = {
+static PF cXcI[] = {
+	indentrigidly,		/* ^I */
 #ifdef ENABLE_DIRED
 	dired_jump,		/* ^J */
 #else
@@ -365,7 +366,7 @@ struct KEYMAPE (8) cXmap = {
 			CCHR('B'), CCHR('G'), cXcB, NULL
 		},
 		{
-			CCHR('J'), CCHR('X'), cXcJ, NULL
+			CCHR('I'), CCHR('X'), cXcI, NULL
 		},
 		{
 			' ', ' ', cXspc, NULL

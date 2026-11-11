@@ -275,6 +275,9 @@ New features include, but are not limited to:
 * Ido mode: the `M-x`, buffer and file prompts match what you type as a
   substring and show the matches on the echo line, the arrow keys step
   through them, and file prompts walk directories
+* `C-x TAB` indents the marked lines together, `indent-rigidly`: a
+  column at a time with the arrow keys, or a tab stop with TAB and
+  Shift + arrow keys
 * `sort-lines`, `transpose-lines`, `tabify`, `whitespace-cleanup`,
   `rename-buffer`, and the names GNU Emacs uses today, like
   `kill-ring-save`, in `M-x`

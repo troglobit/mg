@@ -938,6 +938,7 @@ int		 transposeword(int, int);
 
 /* region.c X */
 int		 regionlines(int (*)(int, int));
+int		 indentrigidly(int, int);
 int		 linesregion(struct region *);
 void		 savepos(struct regionpos *);
 void		 restorepos(const struct regionpos *);

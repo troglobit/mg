@@ -182,6 +182,7 @@ static struct funmap functnames[] = {
 	{help_help, "help-help", 0, NULL},
 #endif
 	{indent, "indent-current-line", 0, NULL},
+	{indentrigidly, "indent-rigidly", 1, NULL},
 #ifdef ENABLE_IDO
 	{idomode, "ido-mode", 0, NULL},
 #endif
