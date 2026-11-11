@@ -1479,3 +1479,75 @@ findbuffer(char *fn)
 	bp = bfind(bname, TRUE);
 	return (bp);
 }
+
+/*
+ * Add the n bytes of buf to the end of bp, a newline in them ending a
+ * line, as tail -f shows a file that grows.  Each window with dot at
+ * the end of the buffer follows the new end.  Returns FALSE when out
+ * of memory.
+ */
+int
+bufappend(struct buffer *bp, const char *buf, size_t n)
+{
+	struct mgwin	*wp;
+	struct line	*olast, *last;
+	const char	*nl;
+	size_t		 i, s;
+	int		 olen, len, size, ok = FALSE;
+
+	olast = last = blastlp(bp);
+	olen = llength(olast);
+	if (last == bp->b_headp) {
+		/* nothing read yet, b_lines already counts this line */
+		if ((last = lalloc(0)) == NULL)
+			return (FALSE);
+		lappend(bp, last);
+		bp->b_lines--;
+	}
+
+	for (s = 0; s <= n; s = i + 1) {
+		nl = memchr(&buf[s], *bp->b_nlchr, n - s);
+		i = nl ? (size_t)(nl - buf) : n;
+		len = i - s;
+		if (len > 0) {
+			/* grow by doubling, a log line may span many reads */
+			size = last->l_size;
+			if (size < llength(last) + len)
+				size *= 2;
+			if (size < llength(last) + len)
+				size = llength(last) + len;
+			if (lrealloc(last, size) == FALSE)
+				goto out;
+			memcpy(ltext(last) + llength(last), &buf[s], len);
+			last->l_used += len;
+		}
+		if (nl == NULL)
+			break;
+		if ((last = lalloc(0)) == NULL)
+			goto out;
+		lappend(bp, last);
+	}
+	ok = TRUE;
+out:
+	for (wp = wheadp; wp != NULL; wp = wp->w_wndp) {
+		if (wp->w_bufp != bp)
+			continue;
+		if (wp->w_dotp == olast && wp->w_doto >= olen)
+			wineob(wp);
+		wp->w_rflag |= WFFULL | WFMODE;
+	}
+	if (bp->b_nwnd == 0 && bp->b_dotp == olast && bp->b_doto >= olen)
+		bufeob(bp);
+	return (ok);
+}
+
+/*
+ * Put the dot bp keeps for when it is shown again at its end.
+ */
+void
+bufeob(struct buffer *bp)
+{
+	bp->b_dotp = blastlp(bp);
+	bp->b_doto = llength(bp->b_dotp);
+	bp->b_dotline = bp->b_lines;
+}

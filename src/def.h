@@ -588,6 +588,8 @@ int		 renamebuf(int, int);
 int		 savebuffers(int, int);
 int		 listbuffers(int, int);
 int		 addlinef(struct buffer *, char *, ...);
+int		 bufappend(struct buffer *, const char *, size_t);
+void		 bufeob(struct buffer *);
 #define	 addline(bp, text)	addlinef(bp, "%s", text)
 int		 anycb(int);
 int		 bclear(struct buffer *);
