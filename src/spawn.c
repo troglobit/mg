@@ -69,6 +69,10 @@ runopenin(const char *dir, char *const argv[], pid_t *pid, int flags,
 	FILE *fp;
 	int p[2], fd;
 
+	if (secure) {
+		(void)secure_denied();
+		return (NULL);
+	}
 	if (pipe(p) == -1)
 		return (NULL);
 	switch ((*pid = fork())) {
