@@ -262,7 +262,8 @@ New features include, but are not limited to:
 * Project commands on `C-c p`: `C-c p c` runs `compile` from the root
   of the project, the nearest directory up with a `.git` or a `go.mod`,
   `C-c p f` finds a file in it, `C-c p g` greps it, `C-c p b` switches
-  between its buffers and `C-c p k` kills them
+  between its buffers and `C-c p k` kills them, and `C-c p D` and
+  `C-c p !` run dired and a shell command at its root
 * `M-;` comments code out and back in, `comment-dwim`, with the comment
   syntax of the buffer's mode
 * Line wrap with `M-x line-wrap-mode`: a line too long for the window

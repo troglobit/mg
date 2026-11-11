@@ -72,7 +72,7 @@ static	int	preadin(int);
 static	void	pwriteout(int, char **, int *);
 static	int	setsize(struct region *, RSIZE);
 static	int	shellcmdoutput(char * const, char * const, int,
-		    struct buffer *);
+		    struct buffer *, const char *);
 
 /*
  * Kill the region.  Ask "getregion" to figure out the bounds of the region.
@@ -1186,7 +1186,7 @@ piperegion(int f, int n)
 		kdelete();
 	}
 
-	return (shellcmdoutput(cmd, text, len, bp));
+	return (shellcmdoutput(cmd, text, len, bp, NULL));
 }
 
 /*
@@ -1195,6 +1195,16 @@ piperegion(int f, int n)
 /*ARGSUSED */
 int
 shellcommand(int f, int n)
+{
+	return (shellprompt(n, NULL));
+}
+
+/*
+ * Prompt for a shell command and run it in dir, the current directory
+ * when NULL, its output put in the buffer when n > 1.
+ */
+int
+shellprompt(int n, const char *dir)
 {
 	struct buffer *bp = NULL;
 	char *cmd, cmdbuf[NFILEN];
@@ -1206,12 +1216,12 @@ shellcommand(int f, int n)
 	    EFNEW | EFCR)) == NULL || (cmd[0] == '\0'))
 		return (ABORT);
 
-	return (shellcmdoutput(cmd, NULL, 0, bp));
+	return (shellcmdoutput(cmd, NULL, 0, bp, dir));
 }
 
-int
+static int
 shellcmdoutput(char* const cmd, char* const text, int len,
-    struct buffer *bp)
+    struct buffer *bp, const char *dir)
 {
 	struct mgwin *wp;
 	struct line *tlp;
@@ -1253,7 +1263,7 @@ shellcmdoutput(char* const cmd, char* const text, int len,
 	else
 		argv[0] = shellp;
 
-	ret = pipeio(shellp, argv, text, len, bp);
+	ret = pipeio(dir, shellp, argv, text, len, bp);
 	if (ret == TRUE) {
 		eerase();
 		if (special && lforw(bp->b_headp) == bp->b_headp)
@@ -1278,8 +1288,8 @@ shellcmdoutput(char* const cmd, char* const text, int len,
  * Parent writes len chars from text to socket.
  */
 int
-pipeio(const char* const path, char* const argv[], char* const text, int len,
-    struct buffer *outbp)
+pipeio(const char *dir, const char* const path, char* const argv[],
+    char* const text, int len, struct buffer *outbp)
 {
 	int s[2], ret;
 	pid_t pid;
@@ -1305,6 +1315,8 @@ pipeio(const char* const path, char* const argv[], char* const text, int len,
 		if (dup2(s[1], STDOUT_FILENO) == -1)
 			_exit(1);
 		if (dup2(s[1], STDERR_FILENO) == -1)
+			_exit(1);
+		if (dir != NULL && chdir(dir) == -1)
 			_exit(1);
 
 		execv(path, argv);

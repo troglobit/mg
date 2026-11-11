@@ -24,7 +24,7 @@ All relevant changes to the project are documented in this file.
 - Project commands on `C-c p`: `C-c p c` compiles from the project root,
   a git checkout or Go module, `C-c p f` finds a file in it, `C-c p g`
   greps it, `C-c p b` switches between its buffers and `C-c p k` kills
-  them
+  them, `C-c p D` and `C-c p !` run dired and a shell command at its root
 
 [v4.6][] - 2026-11-01
 ---------------------

@@ -983,8 +983,9 @@ char		*regiontext(int *);
 int		 markbuffer(int, int);
 int		 piperegion(int, int);
 int		 shellcommand(int, int);
-int		 pipeio(const char * const, char * const[], char * const, int,
-		     struct buffer *);
+int		 shellprompt(int, const char *);
+int		 pipeio(const char *, const char * const, char * const[],
+		     char * const, int, struct buffer *);
 
 /* search.c X */
 int		 forwsearch(int, int);

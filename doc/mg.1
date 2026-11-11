@@ -306,6 +306,10 @@ The project of a buffer is the nearest directory up from its own with a
 \&.git or a go.mod: a git checkout or a Go module.
 Its commands are on C-c p:
 .Bl -tag -width xxxxxxx -offset indent -compact
+.It C-c p \&!
+.Ic project-shell-command
+.It C-c p D
+.Ic project-dired
 .It C-c p b
 .Ic project-switch-to-buffer
 .It C-c p c
@@ -352,6 +356,10 @@ set-mark-command
 beginning-of-line
 .It C-b, Left
 backward-char
+.It C-c p \&!
+project-shell-command
+.It C-c p D
+project-dired
 .It C-c p b
 project-switch-to-buffer
 .It C-c p c
@@ -1800,6 +1808,9 @@ Run
 from the root of the project, see
 .Sx PROJECTS .
 Bound to C-c p c.
+.It Ic project-dired
+Edit the root of the project in dired.
+Bound to C-c p D.
 .It Ic project-find-file
 Visit a file of the project, its name completed from the files git
 lists, or from every file below the root outside git.
@@ -1817,6 +1828,11 @@ it as directory, like
 .Pa *compile* ,
 after asking once, and once more for each modified one.
 Bound to C-c p k.
+.It Ic project-shell-command
+Run
+.Ic shell-command
+in the root of the project.
+Bound to C-c p !.
 .It Ic project-switch-to-buffer
 Switch to another buffer of the project, its name completed from them.
 Bound to C-c p b.

@@ -1442,7 +1442,7 @@ diffbuffer(int f, int n)
 		return (FALSE);
 	}
 
-	ret = pipeio(DIFFTOOL, argv, text, len, bp);
+	ret = pipeio(NULL, DIFFTOOL, argv, text, len, bp);
 
 	if (ret == TRUE) {
 		eerase();

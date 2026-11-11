@@ -279,15 +279,41 @@ project_kill_buffers(int f, int n)
 	return (s == ABORT ? ABORT : TRUE);
 }
 
+/* Edit the root of the project in dired. */
+static int
+project_dired(int f, int n)
+{
+	char	 root[NFILEN];
+
+	if (project_root(root, sizeof(root)) != TRUE)
+		return (FALSE);
+	return (do_dired(root));
+}
+
+/* Run shell-command in the root of the project. */
+static int
+project_shell_command(int f, int n)
+{
+	char	 root[NFILEN];
+
+	if (project_root(root, sizeof(root)) != TRUE)
+		return (FALSE);
+	return (shellprompt(n, root));
+}
+
 void
 project_init(void)
 {
 	funmap_add(project_compile, "project-compile", 0);
+	funmap_add(project_dired, "project-dired", 0);
 	funmap_add(project_find_file, "project-find-file", 0);
 	funmap_add(project_find_regexp, "project-find-regexp", 0);
 	funmap_add(project_kill_buffers, "project-kill-buffers", 0);
+	funmap_add(project_shell_command, "project-shell-command", 0);
 	funmap_add(project_switch_to_buffer, "project-switch-to-buffer", 0);
 	dobindkey(fundamental_map, "project-compile", "^Cpc");
+	dobindkey(fundamental_map, "project-dired", "^CpD");
+	dobindkey(fundamental_map, "project-shell-command", "^Cp!");
 	dobindkey(fundamental_map, "project-find-file", "^Cpf");
 	dobindkey(fundamental_map, "project-find-regexp", "^Cpg");
 	dobindkey(fundamental_map, "project-kill-buffers", "^Cpk");
