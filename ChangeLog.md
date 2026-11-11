@@ -18,6 +18,8 @@ All relevant changes to the project are documented in this file.
   `next-error` goes on from the list
 - Colors in `*compile*` and `*grep*`: file and line of each location,
   errors, warnings, and how the command ended
+- `compile` and `grep` run in the background, the output shown as it
+  comes, like `auto-revert-tail-mode`
 
 [v4.6][] - 2026-11-01
 ---------------------

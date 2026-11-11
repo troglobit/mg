@@ -245,17 +245,27 @@ int
 ttwait(int msec)
 {
 	struct pollfd	pfd[1];
-	int		 n;
 
 	pfd[0].fd = 0;
 	pfd[0].events = POLLIN;
+	return (ttpoll(pfd, 1, msec) == 0);
+}
 
-	while ((n = poll(pfd, 1, msec)) == -1 && errno == EINTR) {
+/*
+ * Wait msec milliseconds, forever when -1, for one of the n
+ * descriptors in pfd to be ready, see poll(2).  Returns how many are,
+ * 0 at the timeout.
+ */
+int
+ttpoll(struct pollfd *pfd, int n, int msec)
+{
+	int	 r;
+
+	while ((r = poll(pfd, n, msec)) == -1 && errno == EINTR) {
 		if (winch_flag) {
 			redraw(0, 0);
 			winch_flag = 0;
 		}
 	}
-
-	return (n == 0);
+	return (r);
 }

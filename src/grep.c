@@ -6,7 +6,10 @@
 #include <sys/wait.h>
 
 #include <ctype.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <limits.h>
+#include <poll.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,6 +38,22 @@ static char compile_last_command[NFILEN] = "make ";
  * using it.
  */
 static struct buffer	*compile_buffer;
+
+/* The location next-error found last in compile_buffer. */
+static struct line	*compile_last;
+
+/*
+ * The commands running for compile buffers, their output added as it
+ * comes, see compile_output().
+ */
+static struct job {
+	struct buffer	*bp;
+	FILE		*fp;
+	pid_t		 pid;
+} jobs[COMPILE_JOBS];
+
+static int	 compile_show(struct buffer *);
+static struct job *compile_job(struct buffer *);
 
 static int	 compile_quit(int, int);
 
@@ -85,7 +104,7 @@ grep(int f, int n)
 
 	if ((bp = compile_mode("*grep*", cprompt, NULL)) == NULL)
 		return (FALSE);
-	return (popselect(bp));
+	return (compile_show(bp));
 }
 
 int
@@ -119,7 +138,20 @@ compile_command(int f, const char *command, const char *dir)
 		return (ABORT);
 	if ((bp = compile_mode("*compile*", command, dir)) == NULL)
 		return (FALSE);
-	return (popselect(bp));
+	return (compile_show(bp));
+}
+
+/*
+ * Pop up bp and select it, its window following the output from the
+ * end.
+ */
+static int
+compile_show(struct buffer *bp)
+{
+	if (popselect(bp) != TRUE)
+		return (FALSE);
+	wineob(curwp);
+	return (TRUE);
 }
 
 /* id-utils foo. */
@@ -171,36 +203,37 @@ gid(int f, int n)
 
 	if ((bp = compile_mode("*gid*", command, NULL)) == NULL)
 		return (FALSE);
-	return (popselect(bp));
+	return (compile_show(bp));
 }
 
 /*
- * Run command in directory dir, the current buffer's when NULL, and
- * collect its output in the buffer name, in compile mode.
+ * Run command in directory dir, the current buffer's when NULL, in the
+ * background, its output going to the buffer name, in compile mode, as
+ * it comes, see compile_output().
  */
-struct buffer *
+static struct buffer *
 compile_mode(const char *name, const char *command, const char *dir)
 {
 	struct buffer	*bp;
-	FILE	*fpipe;
-	char	*buf = NULL;
-	size_t	 len = 0;
-	ssize_t	 llen;
-	int	 ret, n, status;
-	char	 cwd[NFILEN], qcmd[NFILEN];
-	char	 timestr[NTIME];
-	time_t	 t;
+	struct job	*jp;
+	char	*argv[] = { "/bin/sh", "-c", NULL, NULL };
+	int	 fd;
 
 	if (secure) {
 		secure_denied();
 		return (NULL);
 	}
 
-	n = snprintf(qcmd, sizeof(qcmd), "%s 2>&1", command);
-	if (n < 0 || n >= (int)sizeof(qcmd))
-		return (NULL);
-
 	bp = bfind(name, TRUE);
+	if (compile_job(bp) != NULL) {
+		if (eyorn("A command is running, kill it") != TRUE)
+			return (NULL);
+		compile_kill(bp);
+	}
+	if ((jp = compile_job(NULL)) == NULL) {
+		(void)dobeep_msg("Too many commands running");
+		return (NULL);
+	}
 	if (bclear(bp) != TRUE)
 		return (NULL);
 
@@ -209,59 +242,163 @@ compile_mode(const char *name, const char *command, const char *dir)
 	else if (getbufcwd(bp->b_cwd, sizeof(bp->b_cwd)) != TRUE)
 		return (NULL);
 	addlinef(bp, "cd %s", bp->b_cwd);
-	addline(bp, qcmd);
+	addline(bp, command);
+	addline(bp, "");
+	/* the output goes on from this line */
 	addline(bp, "");
 
-	if (getcwd(cwd, sizeof(cwd)) == NULL)
-		panic("Can't get current directory!");
-	if (chdir(bp->b_cwd) == -1) {
-		dobeep();
-		ewprintf("Can't change dir to %s", bp->b_cwd);
-		return (NULL);
-	}
-	if ((fpipe = popen(qcmd, "r")) == NULL) {
-		dobeep();
-		ewprintf("Problem opening pipe");
-		return (NULL);
-	}
-
-	while ((llen = getline(&buf, &len, fpipe)) != -1) {
-		if (llen > 0 && buf[llen - 1] == *bp->b_nlchr)
-			buf[llen - 1] = '\0';
-		addline(bp, buf);
-	}
-	if (buf)
-		free(buf);
-	ret = pclose(fpipe);
-
-	t = time(NULL);
-	strftime(timestr, sizeof(timestr), "%a %b %e %T %Y", localtime(&t));
-	addline(bp, "");
-
-	if (WIFEXITED(ret)) {
-		status = WEXITSTATUS(ret);
-		if (status == 0)
-			addlinef(bp, "Command finished at %s", timestr);
-		else
-			addlinef(bp, "Command exited abnormally with code %d "
-			    "at %s", status, timestr);
-	} else
-		addlinef(bp, "Subshell killed by signal %d at %s",
-		    WTERMSIG(ret), timestr);
-
-	bp->b_dotp = bfirstlp(bp);
 	bp->b_modes[0] = name_mode("fundamental");
 	bp->b_modes[1] = name_mode("compile");
 	bp->b_nmodes = 1;
-
 	compile_buffer = bp;
+	compile_last = NULL;
 
-	if (chdir(cwd) == -1) {
-		dobeep();
-		ewprintf("Can't change dir back to %s", cwd);
+	argv[2] = (char *)command;
+	if ((jp->fp = runopen(bp->b_cwd, argv, &jp->pid,
+	    RUN_STDERR | RUN_GROUP)) == NULL) {
+		(void)dobeep_msg("Can't run the command");
 		return (NULL);
 	}
+	fd = fileno(jp->fp);
+	(void)fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK);
+	jp->bp = bp;
 	return (bp);
+}
+
+/* The command running for bp, or with bp NULL a free slot for one. */
+static struct job *
+compile_job(struct buffer *bp)
+{
+	struct job	*jp;
+
+	for (jp = jobs; jp < &jobs[COMPILE_JOBS]; jp++)
+		if (jp->bp == bp)
+			return (jp);
+	return (NULL);
+}
+
+/*
+ * Reap the command of jp, returning its wait status, which runclose()
+ * would not give, for the signal that killed it.
+ */
+static int
+compile_reap(struct job *jp)
+{
+	int	 status = 0;
+
+	(void)fclose(jp->fp);
+	while (waitpid(jp->pid, &status, 0) == -1 && errno == EINTR)
+		;
+	jp->bp = NULL;
+	return (status);
+}
+
+/*
+ * Stop the command running for bp, if any, as when bp is killed.
+ */
+void
+compile_kill(struct buffer *bp)
+{
+	struct job	*jp;
+	int	 i;
+
+	if (bp == NULL || (jp = compile_job(bp)) == NULL)
+		return;
+	(void)kill(-jp->pid, SIGTERM);
+	/* a moment to clean up, then for sure */
+	for (i = 0; i < 10 && waitpid(jp->pid, NULL, WNOHANG) == 0; i++)
+		(void)poll(NULL, 0, 50);
+	if (i == 10)
+		(void)kill(-jp->pid, SIGKILL);
+	(void)compile_reap(jp);
+}
+
+/* Stop the commands still running, as mg exits. */
+void
+compile_killall(void)
+{
+	struct job	*jp;
+
+	for (jp = jobs; jp < &jobs[COMPILE_JOBS]; jp++)
+		compile_kill(jp->bp);
+}
+
+/*
+ * The descriptors of the running commands, up to COMPILE_JOBS, for
+ * idle() to wait on.  Returns how many.
+ */
+int
+compile_fds(struct pollfd *pfd)
+{
+	struct job	*jp;
+	int	 i = 0;
+
+	for (jp = jobs; jp < &jobs[COMPILE_JOBS]; jp++) {
+		if (jp->bp == NULL)
+			continue;
+		pfd[i].fd = fileno(jp->fp);
+		pfd[i].events = POLLIN;
+		pfd[i++].revents = 0;
+	}
+	return (i);
+}
+
+/*
+ * Reap the command of jp, and add how it ended to its buffer, after a
+ * blank line.
+ */
+static void
+compile_done(struct job *jp)
+{
+	struct buffer	*bp = jp->bp;
+	char	 how[64], line[NFILEN], timestr[NTIME];
+	time_t	 t;
+	int	 status, n;
+
+	status = compile_reap(jp);
+	if (!WIFEXITED(status))
+		(void)snprintf(how, sizeof(how), "Subshell killed by signal %d",
+		    WTERMSIG(status));
+	else if (WEXITSTATUS(status) != 0)
+		(void)snprintf(how, sizeof(how), "Command exited abnormally "
+		    "with code %d", WEXITSTATUS(status));
+	else
+		(void)strlcpy(how, "Command finished", sizeof(how));
+	t = time(NULL);
+	strftime(timestr, sizeof(timestr), "%a %b %e %T %Y", localtime(&t));
+	n = snprintf(line, sizeof(line), "\n%s at %s", how, timestr);
+	if (llength(blastlp(bp)) > 0)
+		(void)bufappend(bp, "\n", 1);
+	(void)bufappend(bp, line, n);
+}
+
+/*
+ * Add what the running commands printed since to their buffers, see
+ * idle().  Returns TRUE if a buffer changed.
+ */
+int
+compile_output(void)
+{
+	struct job	*jp;
+	char	 buf[BUFSIZ];
+	ssize_t	 n;
+	int	 i, changed = FALSE;
+
+	for (jp = jobs; jp < &jobs[COMPILE_JOBS]; jp++) {
+		if (jp->bp == NULL)
+			continue;
+		/* a few reads at a time, for keys to get through a flood */
+		for (i = 0; i < 16 &&
+		    (n = read(fileno(jp->fp), buf, sizeof(buf))) > 0; i++) {
+			(void)bufappend(jp->bp, buf, n);
+			changed = TRUE;
+		}
+		if (n == 0 || (n == -1 && errno != EAGAIN && errno != EINTR)) {
+			compile_done(jp);
+			changed = TRUE;
+		}
+	}
+	return (changed);
 }
 
 /*
@@ -343,6 +480,7 @@ compile_find(struct line *lp, int dotline, int dir)
 	}
 	return (dobeep_msg(dir < 0 ? "No earlier hits" : "No more hits"));
 found:
+	compile_last = lp;
 	curwp->w_dotp = lp;
 	curwp->w_doto = 0;
 	curwp->w_dotline = dotline;
@@ -417,7 +555,8 @@ next_error(int f, int n)
 {
 	struct buffer	*bp;
 	struct mgwin	*wp;
-	int	 dir = n < 0 ? -1 : 1;
+	struct line	*lp;
+	int	 line, dir = n < 0 ? -1 : 1;
 
 	if ((bp = compile_buf()) == NULL)
 		return (dobeep_msg("No compilation active"));
@@ -429,8 +568,15 @@ next_error(int f, int n)
 		return (FALSE);
 	curwp = wp;
 	curbp = bp;
-	return (compile_find(dir < 0 ? lback(curwp->w_dotp) :
-	    lforw(curwp->w_dotp), curwp->w_dotline + dir, dir));
+	/* on from the location found last, if it is still there */
+	for (lp = bfirstlp(bp), line = 1;
+	    lp != bp->b_headp && lp != compile_last; lp = lforw(lp))
+		line++;
+	if (lp == bp->b_headp)
+		return (compile_find(dir < 0 ? lp : bfirstlp(bp),
+		    dir < 0 ? 0 : 1, dir));
+	return (compile_find(dir < 0 ? lback(lp) : lforw(lp), line + dir,
+	    dir));
 }
 
 /* Go to the location before the last one, see next_error(). */

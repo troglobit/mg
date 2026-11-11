@@ -6,6 +6,7 @@
  *	Terminal independent keyboard handling.
  */
 
+#include <poll.h>
 #include <signal.h>
 #include <stdio.h>
 #include <time.h>
@@ -88,23 +89,62 @@ ungetesc(void)
 }
 
 /*
- * Wait for a key.  Meanwhile reload files changed on disk, see
- * auto-revert-mode, and keep the display-time-mode clock current.
+ * Milliseconds until the next look at the files on disk, see
+ * auto-revert-mode, or at the display-time-mode clock, 0 for never.
+ */
+static int
+idlewait(void)
+{
+	int	 ms, clock;
+
+	ms = autorevert_wait();
+	clock = timesh ? (60 - time(NULL) % 60) * 1000 : 0;
+	if (clock != 0 && (ms == 0 || clock < ms))
+		ms = clock;
+	return (ms);
+}
+
+/*
+ * Wait for a key.  Meanwhile add the output of running commands to
+ * their buffers, see compile_output(), reload files changed on disk,
+ * see auto-revert-mode, and keep the display-time-mode clock current.
  */
 static void
 idle(void)
 {
-	int ms, clock, reverted;
+	struct pollfd	 pfd[1 + COMPILE_JOBS];
+	struct timespec	 start, now;
+	int	 ms, left, nfd, n, changed;
 
+	ms = idlewait();
+	(void)clock_gettime(CLOCK_MONOTONIC, &start);
 	for (;;) {
-		ms = autorevert_wait();
-		clock = timesh ? (60 - time(NULL) % 60) * 1000 : 0;
-		if (clock != 0 && (ms == 0 || clock < ms))
-			ms = clock;
-		if (ms == 0 || ttwait(ms) == FALSE)
+		pfd[0].fd = 0;
+		pfd[0].events = POLLIN;
+		pfd[0].revents = 0;
+		nfd = 1 + compile_fds(&pfd[1]);
+		if (ms == 0 && nfd == 1)
 			return;
-		reverted = autorevert_check();
-		if (timeupdate() || reverted)
+		/* output coming in does not put the look at files off */
+		left = -1;
+		if (ms != 0) {
+			(void)clock_gettime(CLOCK_MONOTONIC, &now);
+			left = ms - (now.tv_sec - start.tv_sec) * 1000 -
+			    (now.tv_nsec - start.tv_nsec) / 1000000;
+			if (left < 0)
+				left = 0;
+		}
+		n = ttpoll(pfd, nfd, left);
+		if (n == -1 || pfd[0].revents != 0)
+			return;
+		changed = n > 0 && compile_output();
+		if (left == 0 || n == 0) {
+			if (autorevert_check())
+				changed = TRUE;
+			ms = idlewait();
+			(void)clock_gettime(CLOCK_MONOTONIC, &start);
+		}
+		if (timeupdate() || changed)
 			update(CMODE);
 	}
 }

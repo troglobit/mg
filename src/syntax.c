@@ -890,6 +890,9 @@ compile_parse(const struct line *lp, int state, char *attr)
 		setattrs(attr, 0, len, SYN_COMMENT);
 		return (state + 1);
 	}
+	/* past the head the state stays, syn_state() need not look */
+	if (attr == NULL)
+		return (state);
 	if (matchat(lp, 0, "Command finished ") != 0)
 		setattrs(attr, 0, len, SYN_TYPE);
 	else if (matchat(lp, 0, "Command exited ") != 0 ||

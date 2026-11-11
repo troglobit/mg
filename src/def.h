@@ -480,7 +480,9 @@ int		 ttputc(int);
 int		 ttputcell(int);
 void		 ttflush(void);
 int		 ttgetc(void);
+struct pollfd;
 int		 ttwait(int);
+int		 ttpoll(struct pollfd *, int, int);
 int		 charswaiting(void);
 
 /* dir.c */
@@ -997,6 +999,7 @@ int		 zap(int, int);
 /* spawn.c X */
 int		 spawncli(int, int);
 #define RUN_STDERR	0x01	/* runopen() passes on errors too */
+#define RUN_GROUP	0x02	/* in a process group of its own */
 FILE		*runopen(const char *, char *const [], pid_t *, int);
 FILE		*runopenin(const char *, char *const [], pid_t *, int, int);
 int		 runclose(FILE *, pid_t);
@@ -1092,6 +1095,7 @@ int		 cc_lfindent(int, int);
 /* grep.c X */
 /* the lines compile_mode() puts before the output: cd, command, blank */
 #define COMPILE_HEAD	3
+#define COMPILE_JOBS	4	/* commands running at once */
 #ifdef ENABLE_COMPILE_GREP
 int		 next_error(int, int);
 int		 previous_error(int, int);
@@ -1100,8 +1104,16 @@ int		 globalwd(void);
 int		 globalwdtoggle(int, int);
 int		 compile(int, int);
 int		 compile_span(const struct line *, int *, int *, int *);
+int		 compile_fds(struct pollfd *);
+int		 compile_output(void);
+void		 compile_kill(struct buffer *);
+void		 compile_killall(void);
 #else
 static inline int globalwd(void) { return FALSE; }
+static inline int compile_fds(struct pollfd *pfd) { return 0; }
+static inline int compile_output(void) { return FALSE; }
+static inline void compile_kill(struct buffer *bp) { }
+static inline void compile_killall(void) { }
 #endif
 int		 compile_command(int, const char *, const char *);
 

@@ -1686,6 +1686,10 @@ closes its window, keeping the list for
 .Ic next-error .
 The list colors the file and line of each location, an error or
 warning after it, and how the command ended.
+The command runs in the background, its output shown as it comes,
+with the window following the end while dot is there.
+Running it again before it ends, killing its buffer, or leaving mg
+stops it.
 With a negative argument, go back instead, see
 .Ic previous-error .
 Bound to C-x `, M-g n and M-g M-n.

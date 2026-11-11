@@ -96,10 +96,15 @@ runopenin(const char *dir, char *const argv[], pid_t *pid, int flags,
 			close(infd);
 		if (dir != NULL && chdir(dir) == -1)
 			_exit(1);
+		if (flags & RUN_GROUP)
+			(void)setpgid(0, 0);
 		execvp(argv[0], argv);
 		_exit(127);
 	}
 	close(p[1]);
+	/* also here, for a kill of the group right away to find it */
+	if (flags & RUN_GROUP)
+		(void)setpgid(*pid, *pid);
 	if ((fp = fdopen(p[0], "r")) == NULL) {
 		close(p[0]);
 		(void)waitpid(*pid, NULL, 0);

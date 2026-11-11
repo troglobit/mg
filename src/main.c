@@ -459,6 +459,7 @@ quit(int f, int n)
 		return (FALSE);
 	if (s == FALSE
 	    || eyesno("Modified buffers exist; really exit") == TRUE) {
+		compile_killall();
 		vttidy();
 #ifdef ENABLE_CTAGS
 		closetags();
