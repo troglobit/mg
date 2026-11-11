@@ -36,11 +36,11 @@ static PF cmode_brace[] = {
 	cc_brace,	/* } */
 };
 
-static PF cmode_cCP[] = {
+static PF cmode_compile[] = {
 #ifdef ENABLE_COMPILE_GREP
-	compile,		/* C-c P */
+	compile,		/* C-c C-b, C-c P */
 #else
-	rescan,			/* C-c P */
+	rescan,			/* C-c C-b, C-c P */
 #endif
 };
 
@@ -62,12 +62,13 @@ static PF cmode_spec[] = {
 	cc_char,	/* : */
 };
 
-static struct KEYMAPE (1) cmode_cmap = {
-	1,
-	1,
+static struct KEYMAPE (2) cmode_cmap = {
+	2,
+	2,
 	rescan,
 	{
-		{ 'P', 'P', cmode_cCP, NULL }
+		{ CCHR('B'), CCHR('B'), cmode_compile, NULL },
+		{ 'P', 'P', cmode_compile, NULL }
 	}
 };
 
