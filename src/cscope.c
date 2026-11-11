@@ -240,7 +240,7 @@ csargs(const char *dir, char **argv, int build)
 int
 csindex(int f, int n)
 {
-	char dir[NFILEN], found[NFILEN], path[NFILEN], *bufp, *adjf, *p;
+	char dir[NFILEN], found[NFILEN], *bufp, *adjf;
 	char *argv[6], buf[BUFSIZ];
 	FILE *fp;
 	pid_t pid;
@@ -249,17 +249,9 @@ csindex(int f, int n)
 	if (csdbdir(dir, sizeof(dir)) == FALSE) {
 		if (getbufcwd(dir, sizeof(dir)) == FALSE)
 			dir[0] = '\0';
-		(void)strlcpy(found, dir, sizeof(found));
-		for (;;) {
-			if (snprintf(path, sizeof(path), "%s/.git", found) <
-			    (int)sizeof(path) && access(path, F_OK) == 0) {
-				(void)strlcpy(dir, found, sizeof(dir));
-				break;
-			}
-			if ((p = strrchr(found, '/')) == NULL || p == found)
-				break;
-			*p = '\0';
-		}
+		if (findup(dir, (const char *const[]){ ".git", NULL }, found,
+		    sizeof(found)) != NULL)
+			(void)strlcpy(dir, found, sizeof(dir));
 	}
 	bufp = eread("Index files in directory: ", dir, sizeof(dir),
 	    EFNEW | EFCR | EFDEF);

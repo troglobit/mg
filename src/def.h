@@ -664,6 +664,7 @@ char		*adjustname(const char *, int);
 FILE		*startupfile(char *, char *, char *, size_t);
 int		 copy(char *, char *);
 struct list	*make_file_list(char *);
+const char	*findup(const char *, const char *const [], char *, size_t);
 #ifndef fisdir
 int		 fisdir(const char *);
 #endif

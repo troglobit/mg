@@ -363,28 +363,24 @@ static int
 vchead(const char *path, char *head, size_t len)
 {
 	struct stat	 st;
-	char	 dir[NFILEN], git[NFILEN], line[NFILEN], *p;
+	char	 from[NFILEN], dir[NFILEN], git[NFILEN], line[NFILEN], *p;
 
-	(void)strlcpy(dir, path, sizeof(dir));
-	for (;;) {
-		if ((p = strrchr(dir, '/')) == NULL)
-			return (FALSE);
-		*p = '\0';
-		if (stat(dir[0] != '\0' ? dir : "/", &st) == -1 ||
-		    st.st_uid != getuid())
-			return (FALSE);
-		if (snprintf(git, sizeof(git), "%s/.git", dir) >= (int)sizeof(git))
-			return (FALSE);
-		if (stat(git, &st) == 0)
-			break;
-	}
+	(void)strlcpy(from, path, sizeof(from));
+	if ((p = strrchr(from, '/')) == NULL)
+		return (FALSE);
+	p[1] = '\0';
+	if (findup(from, (const char *const[]){ ".git", NULL }, dir,
+	    sizeof(dir)) == NULL ||
+	    snprintf(git, sizeof(git), "%s.git", dir) >= (int)sizeof(git) ||
+	    stat(git, &st) == -1)
+		return (FALSE);
 	if (S_ISREG(st.st_mode)) {
 		if (!vcline(git, line, sizeof(line)) ||
 		    strncmp(line, "gitdir: ", 8) != 0)
 			return (FALSE);
 		if (line[8] == '/')
 			(void)strlcpy(git, line + 8, sizeof(git));
-		else if (snprintf(git, sizeof(git), "%s/%s", dir, line + 8) >=
+		else if (snprintf(git, sizeof(git), "%s%s", dir, line + 8) >=
 		    (int)sizeof(git))
 			return (FALSE);
 	} else if (!S_ISDIR(st.st_mode))

@@ -679,6 +679,46 @@ make_file_list(char *buf)
 	return (last);
 }
 
+/*
+ * The name in names, a NULL terminated list, that the nearest directory
+ * going up from dir has, that directory put in root with a trailing
+ * '/', like b_cwd.  NULL when no directory has one.  Like git, the
+ * search stops at a directory owned by someone else.
+ */
+const char *
+findup(const char *dir, const char *const names[], char *root, size_t len)
+{
+	struct stat	 sb;
+	size_t	 n;
+	int	 i;
+
+	if (strlcpy(root, dir, len) >= len)
+		return (NULL);
+	n = strlen(root);
+	if (n == 0 || root[n - 1] != '/') {
+		if (strlcat(root, "/", len) >= len)
+			return (NULL);
+		n++;
+	}
+	for (;;) {
+		root[n] = '\0';
+		if (stat(root, &sb) == -1 || sb.st_uid != getuid())
+			return (NULL);
+		for (i = 0; names[i] != NULL; i++) {
+			if (strlcpy(root + n, names[i], len - n) < len - n &&
+			    access(root, F_OK) == 0) {
+				root[n] = '\0';
+				return (names[i]);
+			}
+			root[n] = '\0';
+		}
+		if (n <= 1)
+			return (NULL);
+		for (n--; n > 0 && root[n - 1] != '/'; n--)
+			;
+	}
+}
+
 #ifndef fisdir
 /*
  * Test if a supplied filename refers to a directory

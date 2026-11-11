@@ -503,26 +503,13 @@ go_fmt(int f, int n)
 static int
 go_root(char *root, size_t len)
 {
-	char	 path[NFILEN];
-	size_t	 n;
+	char	 dir[NFILEN];
 
-	if (getbufcwd(root, len) != TRUE)
+	if (getbufcwd(dir, sizeof(dir)) != TRUE)
 		return (FALSE);
-	n = strlen(root);
-	if (n == 0 || root[n - 1] != '/') {
-		if (strlcat(root, "/", len) >= len)
-			return (FALSE);
-		n++;
-	}
-	while (n > 1) {
-		if (snprintf(path, sizeof(path), "%.*sgo.mod", (int)n, root) <
-		    (int)sizeof(path) && access(path, F_OK) == 0) {
-			root[n] = '\0';
-			break;
-		}
-		for (n--; n > 0 && root[n - 1] != '/'; n--)
-			;
-	}
+	if (findup(dir, (const char *const[]){ "go.mod", NULL }, root,
+	    len) == NULL)
+		(void)strlcpy(root, dir, len);
 	return (TRUE);
 }
 
