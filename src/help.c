@@ -25,7 +25,6 @@ int		 helpsh = TRUE;		/* help-text in echo buffer */
 static int	 helpset = FALSE;	/* user set it, keep hands off */
 
 static int	showall(struct buffer *, KEYMAP *, char *);
-static PF	keyfunc(const KCHAR *, int, int *);
 
 /*
  * Toggle permanent display of short help text in echo buffer
@@ -187,38 +186,6 @@ whereiscmd(int f, int n)
 	else
 		ewprintf("%s is on %s", function_name(funct), keys);
 	return (TRUE);
-}
-
-/*
- * The function the n keys in keys run in the current buffer, the way
- * the command loop finds it: the top mode can bind a prefix of them,
- * the modes below only the whole sequence, and an unbound upper case
- * key falls back to its lower case one.  NULL when the keys are a
- * prefix, rescan when they are unbound.  *mode is set to the mode
- * that binds them.
- */
-static PF
-keyfunc(const KCHAR *keys, int n, int *mode)
-{
-	KEYMAP	*map, *pre;
-	PF	 fp = NULL;
-	int	 i;
-
-	for (*mode = curbp->b_nmodes; *mode >= 0; --*mode) {
-		map = pre = curbp->b_modes[*mode]->p_map;
-		for (i = 0; i < n; i++) {
-			pre = map;
-			if ((fp = doscan(map, keys[i], &map)) != NULL)
-				break;
-		}
-		if (fp == rescan && i == n - 1 && ISUPPER(keys[i]))
-			fp = doscan(pre, TOLOWER(keys[i]), &map);
-		if (fp == NULL)
-			return (NULL);
-		if (fp != rescan && (i == n - 1 || *mode == curbp->b_nmodes))
-			return (fp);
-	}
-	return (rescan);
 }
 
 #define NWHERE	32		/* key sequences where-is keeps */

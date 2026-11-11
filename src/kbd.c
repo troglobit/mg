@@ -308,6 +308,38 @@ rescan(int f, int n)
 	}
 }
 
+/*
+ * The function the n keys in keys run in the current buffer, the way
+ * the command loop finds it: the top mode can bind a prefix of them,
+ * the modes below only the whole sequence, and an unbound upper case
+ * key falls back to its lower case one.  NULL when the keys are a
+ * prefix, rescan when they are unbound.  *mode is set to the mode
+ * that binds them.
+ */
+PF
+keyfunc(const KCHAR *keys, int n, int *mode)
+{
+	KEYMAP	*map, *pre;
+	PF	 fp = NULL;
+	int	 i;
+
+	for (*mode = curbp->b_nmodes; *mode >= 0; --*mode) {
+		map = pre = curbp->b_modes[*mode]->p_map;
+		for (i = 0; i < n; i++) {
+			pre = map;
+			if ((fp = doscan(map, keys[i], &map)) != NULL)
+				break;
+		}
+		if (fp == rescan && i == n - 1 && ISUPPER(keys[i]))
+			fp = doscan(pre, TOLOWER(keys[i]), &map);
+		if (fp == NULL)
+			return (NULL);
+		if (fp != rescan && (i == n - 1 || *mode == curbp->b_nmodes))
+			return (fp);
+	}
+	return (rescan);
+}
+
 int
 universal_argument(int f, int n)
 {
