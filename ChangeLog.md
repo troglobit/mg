@@ -29,6 +29,7 @@ All relevant changes to the project are documented in this file.
   `q` closes it
 - `mg -h` shows a help text: the options, the environment, and the keys
   to start with
+- `mg -q` starts without reading `~/.mg`, and `mg -v` shows the version
 
 ### Fixes
 

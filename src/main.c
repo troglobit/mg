@@ -54,7 +54,7 @@ usage(int code)
 {
 	FILE	*fp = code ? stderr : stdout;
 
-	fprintf(fp, "Usage: %s [-hnRsS] [-b file] [-f mode] [-u file] "
+	fprintf(fp, "Usage: %s [-hnqRsSv] [-b file] [-f mode] [-u file] "
 	    "[+line[:col]] [file ...]\n", PACKAGE_TARNAME);
 	if (code) {
 		fprintf(fp, "Try '%s -h' for more information.\n",
@@ -68,10 +68,12 @@ usage(int code)
 	    "               buffer made from the command line\n"
 	    "  -h           Show this help text and exit\n"
 	    "  -n           No backup files\n"
+	    "  -q           Do not read the startup file, ~/.mg\n"
 	    "  -R           Open the files read-only\n"
 	    "  -s           Single-file mode: only the files named here can be opened\n"
 	    "  -S           Secure mode: commands that start a program are refused\n"
 	    "  -u file      Read file as the startup file, instead of ~/.mg\n"
+	    "  -v           Show the version and exit\n"
 	    "  +line[:col]  Go to line, and column, in the file after it; a\n"
 	    "               negative line counts from the end\n"
 	    "\n"
@@ -100,6 +102,7 @@ main(int argc, char **argv)
 	PF		 init_fcn = NULL;
 	int	 	 o, i, nfiles;
 	int	  	 nobackups = 0;
+	int		 noinit = 0;
 	struct buffer	*bp = NULL;
 	struct mgwin	*wp, *selwp;
 
@@ -111,7 +114,7 @@ main(int argc, char **argv)
 	if (getenv("MGSECURE") != NULL)
 		secure = 1;
 
-	while ((o = getopt(argc, argv, "hnRsSb:f:u:")) != -1)
+	while ((o = getopt(argc, argv, "hnqRsSvb:f:u:")) != -1)
 		switch (o) {
 		case 'b':
 			batch = 1;
@@ -130,6 +133,12 @@ main(int argc, char **argv)
 		case 'n':
 			nobackups = 1;
 			break;
+		case 'q':
+			noinit = 1;
+			break;
+		case 'v':
+			printf("%s\n", PACKAGE_STRING);
+			exit(0);
 		case 'f':
 			if (init_fcn_name != NULL)
 				errx(1, "cannot specify more than one "
@@ -154,11 +163,13 @@ main(int argc, char **argv)
 	}
 	if ((secure || singlefile) && (batch || conffile != NULL))
 		errx(1, "-b and -u are not allowed with -s or -S");
+	if (noinit && conffile != NULL)
+		errx(1, "-q and -u are mutually exclusive");
 	if (batch) {
 		pty_init();
 		conffile = batchfile;
 	}
-	if (secure || singlefile)
+	if (secure || singlefile || (noinit && conffile == NULL))
 		ffp = NULL;
 	else if ((ffp = startupfile(NULL, conffile, file, sizeof(file))) == NULL &&
 	    conffile != NULL) {

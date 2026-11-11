@@ -9,7 +9,7 @@
 .Nd emacs-like text editor
 .Sh SYNOPSIS
 .Nm mg
-.Op Fl hnRsS
+.Op Fl hnqRsSv
 .Op Fl b Ar file
 .Op Fl f Ar mode
 .Op Fl u Ar file
@@ -60,6 +60,14 @@ scratch buffer and all files.
 Show a help text, the options and the keys to start with, and exit.
 .It Fl n
 Turn off backup file generation.
+.It Fl q
+Do not read the startup file,
+.Pa ~/.mg
+or the one installed with
+.Nm ,
+for a session as it comes.
+Not with
+.Fl u .
 .It Fl R
 Files specified on the command line will be opened read-only.
 .It Fl s
@@ -99,6 +107,8 @@ Use
 .Ar file
 as the startup file, instead of the default
 .Pa ~/.mg .
+.It Fl v
+Show the version and exit.
 .El
 .Sh MINIBUFFER
 Commands that need a name or a string ask for it on the bottom line,
