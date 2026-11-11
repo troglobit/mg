@@ -308,6 +308,8 @@ Its commands are on C-c p:
 .Bl -tag -width xxxxxxx -offset indent -compact
 .It C-c p c
 .Ic project-compile
+.It C-c p f
+.Ic project-find-file
 .El
 .Sh GZIP
 .Nm
@@ -346,6 +348,8 @@ beginning-of-line
 backward-char
 .It C-c p c
 project-compile
+.It C-c p f
+project-find-file
 .It C-c s =
 cscope-find-assignments-to-this-symbol
 .It C-c s I
@@ -1784,6 +1788,10 @@ Run
 from the root of the project, see
 .Sx PROJECTS .
 Bound to C-c p c.
+.It Ic project-find-file
+Visit a file of the project, its name completed from the files git
+lists, or from every file below the root outside git.
+Bound to C-c p f.
 .It Ic push-shell
 Suspend
 .Nm

@@ -54,9 +54,7 @@ fileinsert(int f, int n)
 int
 filevisit(int f, int n)
 {
-	struct buffer	*bp;
 	char	 fname[NFILEN], *bufp, *adjf;
-	int	 status;
 
 	if (getbufcwd(fname, sizeof(fname)) != TRUE)
 		fname[0] = '\0';
@@ -69,6 +67,19 @@ filevisit(int f, int n)
 	adjf = adjustname(fname, TRUE);
 	if (adjf == NULL)
 		return (FALSE);
+	return (visitfile(adjf));
+}
+
+/*
+ * Show the file adjf, a name from adjustname(), in the current
+ * window, read in if no buffer has it yet, or dired on a directory.
+ */
+int
+visitfile(char *adjf)
+{
+	struct buffer	*bp;
+	int	 status;
+
 	if (fisdir(adjf) == TRUE)
 		return (do_dired(adjf));
 	if ((bp = findbuffer(adjf)) == NULL)
@@ -110,7 +121,6 @@ filevisitalt(int f, int n)
 int
 do_filevisitalt(char *fn)
 {
-	struct buffer	*bp;
 	int		 status;
 	char		*adjf;
 
@@ -121,19 +131,7 @@ do_filevisitalt(char *fn)
 	adjf = adjustname(fn, TRUE);
 	if (adjf == NULL)
 		return (FALSE);
-	if (fisdir(adjf) == TRUE)
-		return (do_dired(adjf));
-	if ((bp = findbuffer(adjf)) == NULL)
-		return (FALSE);
-	curbp = bp;
-	if (showbuffer(bp, curwp, WFFULL) != TRUE)
-		return (FALSE);
-	if (bp->b_fname[0] == '\0') {
-		if ((status = readin(adjf)) != TRUE)
-			killbuffer(bp);
-		return (status);
-	}
-	return (TRUE);
+	return (visitfile(adjf));
 }
 
 int

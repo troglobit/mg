@@ -22,7 +22,7 @@ All relevant changes to the project are documented in this file.
   comes, like `auto-revert-tail-mode`
 - `C-c C-b` runs `compile` in `c-mode`, like build in `go-mode`
 - Project commands on `C-c p`: `C-c p c` compiles from the project root,
-  a git checkout or Go module
+  a git checkout or Go module, and `C-c p f` finds a file in it
 
 [v4.6][] - 2026-11-01
 ---------------------

@@ -35,7 +35,6 @@ static void	 eputl(long, int);
 static void	 eputs(const char *);
 static void	 eputc(char);
 static struct list	*copy_list(struct list *);
-static int	 list_push(struct list **, const char *);
 
 int		epresf = FALSE;		/* stuff in echo line flag */
 
@@ -1561,7 +1560,7 @@ free_file_list(struct list *lp)
 }
 
 /* Put a copy of name at the head of the list; FALSE when out of memory. */
-static int
+int
 list_push(struct list **lh, const char *name)
 {
 	struct list	*lp;

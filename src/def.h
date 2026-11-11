@@ -498,6 +498,7 @@ int		 ask_makedir(void);
 struct buffer	*dired_(char *);
 int		 dired_jump(int, int);
 int 		 do_dired(char *);
+int		 visitfile(char *);
 
 /* file.c X */
 int		 fileinsert(int, int);
@@ -651,6 +652,7 @@ void		 eread_list(struct list *(*)(const char *));
 struct list	*eread_listed(const char *);
 int		 getxtra(struct list *, struct list *, int, int);
 void		 free_file_list(struct list *);
+int		 list_push(struct list **, const char *);
 
 /* fileio.c */
 int		 ffropen(FILE **, const char *, struct buffer *);

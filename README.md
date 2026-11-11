@@ -260,7 +260,8 @@ New features include, but are not limited to:
   `C-c C-v`, `C-c C-t` and `C-c C-r` build, vet, test and run, with the
   output in `*compile*` where `next-error` steps through the errors
 * Project commands on `C-c p`: `C-c p c` runs `compile` from the root
-  of the project, the nearest directory up with a `.git` or a `go.mod`
+  of the project, the nearest directory up with a `.git` or a `go.mod`,
+  and `C-c p f` finds a file in it
 * `M-;` comments code out and back in, `comment-dwim`, with the comment
   syntax of the buffer's mode
 * Line wrap with `M-x line-wrap-mode`: a line too long for the window
