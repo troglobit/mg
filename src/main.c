@@ -52,10 +52,42 @@ extern void	 closetags(void);
 static __dead void
 usage(int code)
 {
-	fprintf(stderr, "usage: %s [-hnRsS] [-b file] [-f mode] [-u file] "
-	    "[+number] [+number:col] [file ...]\n",
-	    PACKAGE_NAME);
-	exit(code);
+	FILE	*fp = code ? stderr : stdout;
+
+	fprintf(fp, "Usage: %s [-hnRsS] [-b file] [-f mode] [-u file] "
+	    "[+line[:col]] [file ...]\n", PACKAGE_TARNAME);
+	if (code) {
+		fprintf(fp, "Try '%s -h' for more information.\n",
+		    PACKAGE_TARNAME);
+		exit(code);
+	}
+	fputs("\n"
+	    "Options:\n"
+	    "  -b file      Batch mode: run the commands in file, then exit\n"
+	    "  -f mode      Run the command mode, like auto-fill-mode, in each\n"
+	    "               buffer made from the command line\n"
+	    "  -h           Show this help text and exit\n"
+	    "  -n           No backup files\n"
+	    "  -R           Open the files read-only\n"
+	    "  -s           Single-file mode: only the files named here can be opened\n"
+	    "  -S           Secure mode: commands that start a program are refused\n"
+	    "  -u file      Read file as the startup file, instead of ~/.mg\n"
+	    "  +line[:col]  Go to line, and column, in the file after it; a\n"
+	    "               negative line counts from the end\n"
+	    "\n"
+	    "Environment:\n"
+	    "  MGSECURE     Set for secure mode, as -S\n"
+	    "\n", fp);
+#ifdef ENABLE_HELP
+	fputs("In mg, C-h q shows quick help, C-h t the tutorial, and C-x C-c\n"
+	    "quits.  ", fp);
+#else
+	fputs("In mg, C-x C-c quits.  ", fp);
+#endif
+	fputs("See mg(1) for all of the commands and keys.\n"
+	    "\n"
+	    "Bug report address: " PACKAGE_BUGREPORT "\n", fp);
+	exit(0);
 }
 
 int
