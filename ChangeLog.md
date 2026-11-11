@@ -12,6 +12,8 @@ All relevant changes to the project are documented in this file.
   `C-c C-b`, `C-c C-v`, `C-c C-t` and `C-c C-r` build, vet, test and run
 - `next-error` finds indented `file:line:` locations, like those of
   `go test`
+- `conf-mode` for `*.cf` files, and for files no pattern names that
+  start with a `[section]` or `key = value`, like `~/.irssi/config`
 
 [v4.6][] - 2026-11-01
 ---------------------

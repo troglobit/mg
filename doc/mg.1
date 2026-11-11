@@ -752,6 +752,9 @@ or fundamental mode, but starts with a
 .Ql {
 or a JSON array, opens in
 .Ic json-mode .
+A file that would open in fundamental mode, but whose first line
+past # and ; comments is a [section] or a key = value, opens in
+.Ic conf-mode .
 .It Ic auto-fill-mode
 Toggle auto-fill mode (sometimes called
 .Ic mail-mode )
@@ -915,11 +918,13 @@ strings, numbers, and words like yes, no and off.
 Enabling it also sets the tab width to eight, which is what
 .Pa /etc
 is written for.
-Files named *.conf, *.cfg, *.ini and *.toml get the mode
+Files named *.conf, *.cf, *.cfg, *.ini and *.toml get the mode
 automatically, as do systemd units, .desktop entries, fstab,
 ssh_config, sshd_config, ~/.ssh/config, ~/.gitconfig, ~/.editorconfig,
 ~/.Xresources, ~/.Xdefaults, and the \&.config and *defconfig files
 written by kconfig.
+Other files that read like one get it too, see
+.Ic auto-execute .
 .It Ic clear-rectangle
 Replace the rectangle with blanks, so the text to its right keeps
 its place.

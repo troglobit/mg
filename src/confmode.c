@@ -51,6 +51,7 @@ confmode_init(void)
 	maps_add((KEYMAP *)&confmodemap, "conf");
 #ifdef ENABLE_AUTOEXEC
 	(void)add_autoexec("*.conf", "conf-mode");
+	(void)add_autoexec("*.cf", "conf-mode");
 	(void)add_autoexec("*.cfg", "conf-mode");
 	(void)add_autoexec("*.ini", "conf-mode");
 	(void)add_autoexec("*.toml", "conf-mode");

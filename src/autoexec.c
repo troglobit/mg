@@ -278,23 +278,59 @@ isjson(void)
 }
 
 /*
+ * Whether the buffer reads like a config file: past # and ; comment
+ * lines, it starts with a [section] or a key = value.
+ */
+static int
+isconf(void)
+{
+	struct line	*lp = bfirstlp(curbp);
+	int		 c, o = 0, key, len;
+
+	while ((c = nextnonblank(&lp, &o)) == '#' || c == ';') {
+		lp = lforw(lp);
+		o = 0;
+	}
+	if (c == -1)
+		return (FALSE);
+	len = llength(lp);
+	if (c == '[') {
+		while (isspace(lgetc(lp, len - 1)))
+			len--;
+		return (len - o > 2 && lgetc(lp, len - 1) == ']');
+	}
+	/* the key characters of the conf syntax rules */
+	for (key = o; o < len; o++)
+		if (!isalnum(c = lgetc(lp, o)) && strchr("_./-*", c) == NULL)
+			break;
+	if (o == key)
+		return (FALSE);
+	while (o < len && isblank(lgetc(lp, o)))
+		o++;
+	return (o < len && lgetc(lp, o) == '=');
+}
+
+/*
  * Run a mode command picked by what the current buffer holds, for a
  * file its name tells nothing about, or the wrong thing: a JSON file
- * named *.cfg, a script with no suffix.  named is set when a
- * built-in pattern gave the file its major mode.
+ * named *.cfg, a script or a config file with no suffix.  named is
+ * set when a built-in pattern gave the file its major mode.
  */
 void
 content_execute(int named)
 {
 	PF		 fp;
+	const char	*mode;
 
 	if (shebang_execute())
 		return;
 
-	/* JSON in a file named for something generic, or for nothing */
+	/* a file named for something generic, or for nothing */
 	if (named && buf_major(curbp) != name_mode("conf"))
 		return;
-	if (isjson() && (fp = name_function("json-mode")) != NULL)
+	mode = isjson() ? "json-mode" : !named && isconf() ? "conf-mode" :
+	    NULL;
+	if (mode != NULL && (fp = name_function(mode)) != NULL)
 		(void)(*fp)(FFARG, 1);
 }
 
