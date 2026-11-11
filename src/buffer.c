@@ -1077,6 +1077,8 @@ popbuffer(const char *name, struct maps_s *mode)
  * minor, a major mode can come on top of it, like diff-mode.
  */
 static int	 popquit(int, int);
+static int	 popend(struct buffer *, struct mgwin *, int);
+static int	 popback(struct buffer *, int);
 
 static PF pop_q[] = {
 	popquit			/* q */
@@ -1128,10 +1130,7 @@ popselect(struct buffer *bp)
 int
 popdone(struct buffer *bp)
 {
-	struct mgwin	*from = popfrom;
-
-	popfrom = NULL;
-	return (popclose(bp, from));
+	return (popback(bp, TRUE));
 }
 
 /* q in a pop-up: close it. */
@@ -1161,6 +1160,36 @@ popshow(struct buffer *bp)
 int
 popclose(struct buffer *bp, struct mgwin *from)
 {
+	return (popend(bp, from, TRUE));
+}
+
+/*
+ * Close the pop-up bp like popdone(), but keep the buffer, for
+ * next-error to go on with.
+ */
+int
+pophide(struct buffer *bp)
+{
+	return (popback(bp, FALSE));
+}
+
+/* See popend(), back in the window popselect() came from. */
+static int
+popback(struct buffer *bp, int kill)
+{
+	struct mgwin	*from = popfrom;
+
+	popfrom = NULL;
+	return (popend(bp, from, kill));
+}
+
+/*
+ * See popclose().  Without kill, a window not split off for bp shows
+ * the buffer it replaced.
+ */
+static int
+popend(struct buffer *bp, struct mgwin *from, int kill)
+{
 	struct mgwin	*wp, *owp;
 
 	wp = bufwind(bp);
@@ -1169,9 +1198,11 @@ popclose(struct buffer *bp, struct mgwin *from)
 		curwp = wp;
 		curbp = wp->w_bufp;
 		(void)delwind(FFRAND, 1);
-	}
-	/* a reused window gets another buffer from killbuffer */
-	if (killbuffer(bp) != TRUE)
+	} else if (!kill && wp != NULL && bp->b_altb != NULL &&
+	    showbuffer(bp->b_altb, wp, WFMODE | WFFRAME | WFFULL) != TRUE)
+		return (FALSE);
+	/* a reused window gets bp->b_altb, or another from killbuffer */
+	if (kill && killbuffer(bp) != TRUE)
 		return (FALSE);
 	for (wp = wheadp; wp != NULL; wp = wp->w_wndp)
 		if (wp == owp) {

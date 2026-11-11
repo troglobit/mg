@@ -607,6 +607,7 @@ int		 popclose(struct buffer *, struct mgwin *);
 struct maps_s	*popmode(const char *);
 int		 popselect(struct buffer *);
 int		 popdone(struct buffer *);
+int		 pophide(struct buffer *);
 int		 getbufcwd(char *, size_t);
 int		 checkdirty(struct buffer *);
 int		 revertbuffer(int, int);

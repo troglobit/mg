@@ -14,6 +14,8 @@ All relevant changes to the project are documented in this file.
   `go test`
 - `conf-mode` for `*.cf` files, and for files no pattern names that
   start with a `[section]` or `key = value`, like `~/.irssi/config`
+- `q` closes the `*compile*`, `*grep*` and `*gid*` windows, and
+  `next-error` goes on from the list
 
 [v4.6][] - 2026-11-01
 ---------------------

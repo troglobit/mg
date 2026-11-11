@@ -39,16 +39,23 @@ static char compile_last_command[NFILEN] = "make ";
  */
 static struct buffer	*compile_buffer;
 
+static int	 compile_quit(int, int);
+
 static PF compile_pf[] = {
 	compile_goto_error
 };
 
-static struct KEYMAPE (1) compilemap = {
-	1,
-	1,
+static PF compile_q[] = {
+	compile_quit
+};
+
+static struct KEYMAPE (2) compilemap = {
+	2,
+	2,
 	rescan,
 	{
-		{ CCHR('M'), CCHR('M'), compile_pf, NULL }
+		{ CCHR('M'), CCHR('M'), compile_pf, NULL },
+		{ 'q', 'q', compile_q, NULL }
 	}
 };
 
@@ -69,7 +76,6 @@ grep(int f, int n)
 {
 	char	 cprompt[NFILEN], *bufp;
 	struct buffer	*bp;
-	struct mgwin	*wp;
 
 	(void)strlcpy(cprompt, "grep -n ", sizeof(cprompt));
 	if ((bufp = eread("Run grep: ", cprompt, NFILEN,
@@ -82,11 +88,7 @@ grep(int f, int n)
 
 	if ((bp = compile_mode("*grep*", cprompt, NULL)) == NULL)
 		return (FALSE);
-	if ((wp = popbuf(bp, WNONE)) == NULL)
-		return (FALSE);
-	curbp = bp;
-	curwp = wp;
-	return (TRUE);
+	return (popselect(bp));
 }
 
 int
@@ -115,18 +117,12 @@ int
 compile_command(int f, const char *command, const char *dir)
 {
 	struct buffer	*bp;
-	struct mgwin	*wp;
 
 	if (savebuffers(f, 1) == ABORT)
 		return (ABORT);
 	if ((bp = compile_mode("*compile*", command, dir)) == NULL)
 		return (FALSE);
-	if ((wp = popbuf(bp, WNONE)) == NULL)
-		return (FALSE);
-	curbp = bp;
-	curwp = wp;
-	gotoline(FFARG, 0);
-	return (TRUE);
+	return (popselect(bp));
 }
 
 /* id-utils foo. */
@@ -137,7 +133,6 @@ gid(int f, int n)
 	char	 cprompt[NFILEN], *bufp;
 	int	c;
 	struct buffer	*bp;
-	struct mgwin	*wp;
 	int	 i, j, len;
 
 	/* catch ([^\s(){}]+)[\s(){}]* */
@@ -179,11 +174,7 @@ gid(int f, int n)
 
 	if ((bp = compile_mode("*gid*", command, NULL)) == NULL)
 		return (FALSE);
-	if ((wp = popbuf(bp, WNONE)) == NULL)
-		return (FALSE);
-	curbp = bp;
-	curwp = wp;
-	return (TRUE);
+	return (popselect(bp));
 }
 
 /*
@@ -351,6 +342,13 @@ found:
 	return (setlineno(lineno));
 }
 
+/* q in a compile buffer: close its window, see pophide(). */
+static int
+compile_quit(int f, int n)
+{
+	return (pophide(curbp));
+}
+
 /*
  * RET in a compile buffer: go to the location on this line, or the
  * first one after it.
@@ -410,7 +408,7 @@ next_error(int f, int n)
 	if (bp->b_modes[1] != name_mode("compile"))
 		return (xrefstep(dir, FALSE));
 #endif
-	if ((wp = popbuf(bp, WNONE)) == NULL)
+	if ((wp = popbuf(bp, WEPHEM)) == NULL)
 		return (FALSE);
 	curwp = wp;
 	curbp = bp;
