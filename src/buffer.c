@@ -24,7 +24,6 @@
 static struct buffer  *makelist(void);
 static struct buffer *bnew(const char *);
 
-static int usebufname(const char *);
 
 static void	 bfront(struct buffer *);
 

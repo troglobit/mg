@@ -22,8 +22,9 @@ All relevant changes to the project are documented in this file.
   comes, like `auto-revert-tail-mode`
 - `C-c C-b` runs `compile` in `c-mode`, like build in `go-mode`
 - Project commands on `C-c p`: `C-c p c` compiles from the project root,
-  a git checkout or Go module, `C-c p f` finds a file in it, and
-  `C-c p g` greps it
+  a git checkout or Go module, `C-c p f` finds a file in it, `C-c p g`
+  greps it, `C-c p b` switches between its buffers and `C-c p k` kills
+  them
 
 [v4.6][] - 2026-11-01
 ---------------------

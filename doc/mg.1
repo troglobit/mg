@@ -306,12 +306,16 @@ The project of a buffer is the nearest directory up from its own with a
 \&.git or a go.mod: a git checkout or a Go module.
 Its commands are on C-c p:
 .Bl -tag -width xxxxxxx -offset indent -compact
+.It C-c p b
+.Ic project-switch-to-buffer
 .It C-c p c
 .Ic project-compile
 .It C-c p f
 .Ic project-find-file
 .It C-c p g
 .Ic project-find-regexp
+.It C-c p k
+.Ic project-kill-buffers
 .El
 .Sh GZIP
 .Nm
@@ -348,12 +352,16 @@ set-mark-command
 beginning-of-line
 .It C-b, Left
 backward-char
+.It C-c p b
+project-switch-to-buffer
 .It C-c p c
 project-compile
 .It C-c p f
 project-find-file
 .It C-c p g
 project-find-regexp
+.It C-c p k
+project-kill-buffers
 .It C-c s =
 cscope-find-assignments-to-this-symbol
 .It C-c s I
@@ -1803,6 +1811,15 @@ outside git, and list the matches in
 for
 .Ic next-error .
 Bound to C-c p g.
+.It Ic project-kill-buffers
+Kill the buffers of the project, those visiting a file in it or with
+it as directory, like
+.Pa *compile* ,
+after asking once, and once more for each modified one.
+Bound to C-c p k.
+.It Ic project-switch-to-buffer
+Switch to another buffer of the project, its name completed from them.
+Bound to C-c p b.
 .It Ic push-shell
 Suspend
 .Nm

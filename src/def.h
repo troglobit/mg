@@ -603,6 +603,7 @@ int		 setbname(struct buffer *, const char *);
 struct mgwin    *popbuf(struct buffer *, int);
 int		 bufferinsert(int, int);
 int		 usebuffer(int, int);
+int		 usebufname(const char *);
 int		 notmodified(int, int);
 int		 popbuftop(struct buffer *, int);
 struct mgwin	*bufwind(struct buffer *);

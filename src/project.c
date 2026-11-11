@@ -188,13 +188,108 @@ project_find_regexp(int f, int n)
 	return (compile_run("*grep*", cmd, root));
 }
 
+/*
+ * Whether the file, or else the directory, of bp is in the project at
+ * root.
+ */
+static int
+project_has(const struct buffer *bp, const char *root)
+{
+	const char	*p = bp->b_fname[0] != '\0' ? bp->b_fname : bp->b_cwd;
+
+	return (p[0] != '\0' && strncmp(p, root, strlen(root)) == 0);
+}
+
+/* The root of the project project_buffers() completes for. */
+static char	proot[NFILEN];
+
+/*
+ * The other buffers of the project starting with prefix, see
+ * eread_list().
+ */
+static struct list *
+project_buffers(const char *prefix)
+{
+	struct buffer	*bp;
+	struct list	*lh = NULL;
+	size_t	 n = strlen(prefix);
+
+	for (bp = bheadp; bp != NULL; bp = bp->b_bufp)
+		if (bp != curbp && project_has(bp, proot) &&
+		    strncmp(bp->b_bname, prefix, n) == 0 &&
+		    list_push(&lh, bp->b_bname) == FALSE)
+			break;
+	return (lh);
+}
+
+/* Switch to another buffer of the project. */
+static int
+project_switch_to_buffer(int f, int n)
+{
+	char	 name[NBUFN], *bufp;
+
+	if (project_root(proot, sizeof(proot)) != TRUE)
+		return (FALSE);
+	eread_list(project_buffers);
+	if ((bufp = eread("Switch to buffer in %s: ", name, sizeof(name),
+	    EFNEW | EFCR | EFLIST, proot)) == NULL)
+		return (ABORT);
+	if (bufp[0] == '\0')
+		return (FALSE);
+	if (bfind(bufp, FALSE) == NULL)
+		return (dobeep_msgs("No buffer", bufp));
+	return (usebufname(bufp));
+}
+
+/*
+ * Kill the buffers of the project, after asking, each modified one
+ * asking again.
+ */
+static int
+project_kill_buffers(int f, int n)
+{
+	struct buffer	*bp, **bps;
+	char	 root[NFILEN], msg[NFILEN + 32];
+	int	 i, s = TRUE, nbp = 0;
+
+	if (project_root(root, sizeof(root)) != TRUE)
+		return (FALSE);
+	for (bp = bheadp; bp != NULL; bp = bp->b_bufp)
+		if (project_has(bp, root))
+			nbp++;
+	if (nbp == 0)
+		return (dobeep_msg("No buffers in the project"));
+	(void)snprintf(msg, sizeof(msg), "Kill %d buffer%s in %s", nbp,
+	    nbp == 1 ? "" : "s", root);
+	if (eyesno(msg) != TRUE)
+		return (FALSE);
+	/* a kill can move the buffer shown instead to the front: gather */
+	if ((bps = calloc(nbp, sizeof(*bps))) == NULL)
+		return (FALSE);
+	for (i = 0, bp = bheadp; bp != NULL && i < nbp; bp = bp->b_bufp)
+		if (project_has(bp, root))
+			bps[i++] = bp;
+	for (i = 0; i < nbp && s != ABORT; i++)
+		for (bp = bheadp; bp != NULL; bp = bp->b_bufp)
+			if (bp == bps[i]) {
+				s = killbuffer(bp);
+				break;
+			}
+	free(bps);
+	return (s == ABORT ? ABORT : TRUE);
+}
+
 void
 project_init(void)
 {
 	funmap_add(project_compile, "project-compile", 0);
 	funmap_add(project_find_file, "project-find-file", 0);
 	funmap_add(project_find_regexp, "project-find-regexp", 0);
+	funmap_add(project_kill_buffers, "project-kill-buffers", 0);
+	funmap_add(project_switch_to_buffer, "project-switch-to-buffer", 0);
 	dobindkey(fundamental_map, "project-compile", "^Cpc");
 	dobindkey(fundamental_map, "project-find-file", "^Cpf");
 	dobindkey(fundamental_map, "project-find-regexp", "^Cpg");
+	dobindkey(fundamental_map, "project-kill-buffers", "^Cpk");
+	dobindkey(fundamental_map, "project-switch-to-buffer", "^Cpb");
 }
