@@ -3,6 +3,15 @@ Change Log
 
 All relevant changes to the project are documented in this file.
 
+[UNRELEASED][]
+--------------
+
+### Fixes
+
+- Fix #57: build failure on NetBSD, `shquote()` clashed with the one
+  in libc
+
+
 [v4.7][] - 2026-11-11
 ---------------------
 

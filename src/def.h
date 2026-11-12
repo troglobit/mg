@@ -53,6 +53,10 @@ size_t  strlcpy(char *dst, const char *src, size_t siz);
 size_t  strlcat(char *dst, const char *src, size_t siz);
 #endif
 
+#ifndef HAVE_SHQUOTE
+size_t  shquote(const char *arg, char *buf, size_t bufsize);
+#endif
+
 #ifndef HAVE_STRTONUM
 long long strtonum(const char *numstr, long long minval, long long maxval, const char **errstrp);
 #endif

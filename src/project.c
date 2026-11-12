@@ -136,32 +136,6 @@ project_find_file(int f, int n)
 }
 
 /*
- * s quoted for the shell in buf, between single quotes.  Returns FALSE
- * when it does not fit.
- */
-static int
-shquote(char *buf, size_t len, const char *s)
-{
-	size_t	 i = 0;
-
-	buf[i++] = '\'';
-	for (; *s != '\0'; s++) {
-		/* room for an escaped quote, the closing one and the NUL */
-		if (i + 6 > len)
-			return (FALSE);
-		if (*s == '\'') {
-			/* close, an escaped quote, open again */
-			memcpy(buf + i, "'\\''", 4);
-			i += 4;
-		} else
-			buf[i++] = *s;
-	}
-	buf[i++] = '\'';
-	buf[i] = '\0';
-	return (TRUE);
-}
-
-/*
  * Search the files of the project for a regexp, with git grep, or
  * grep outside git, listing the matches in *grep* for next-error.
  */
@@ -179,7 +153,7 @@ project_find_regexp(int f, int n)
 		return (ABORT);
 	if (bufp[0] == '\0')
 		return (FALSE);
-	if (shquote(q, sizeof(q), bufp) != TRUE)
+	if (shquote(bufp, q, sizeof(q)) >= sizeof(q))
 		return (dobeep_msg("Regexp too long"));
 	usegit = findup(root, (const char *const[]){ ".git", NULL }, top,
 	    sizeof(top)) != NULL;
