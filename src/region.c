@@ -1351,8 +1351,8 @@ shellcommand(int f, int n)
 }
 
 /*
- * Prompt for a shell command and run it in dir, the current directory
- * when NULL, its output put in the buffer when n > 1.
+ * Prompt for a shell command and run it in dir, the directory of the
+ * buffer when NULL, its output put in the buffer when n > 1.
  */
 int
 shellprompt(int n, const char *dir)
@@ -1377,13 +1377,15 @@ shellcmdoutput(char* const cmd, char* const text, int len,
 	struct mgwin *wp;
 	struct line *tlp;
 	char	*argv[] = {NULL, "-c", cmd, NULL};
-	char	*shellp;
+	char	*shellp, cwd[NFILEN];
 	int	 tbo, ret, special = 0;
 
 	if (secure) {
 		free(text);
 		return (secure_denied());
 	}
+	if (dir == NULL && getbufcwd(cwd, sizeof(cwd)) == TRUE)
+		dir = cwd;
 	if (bp == NULL) {
 		special = 1;
 		bp = bfind("*Shell Command Output*", TRUE);

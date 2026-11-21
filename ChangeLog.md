@@ -10,6 +10,8 @@ All relevant changes to the project are documented in this file.
 
 - Fix #57: build failure on NetBSD, `shquote()` clashed with the one
   in libc
+- Fix #58: `shell-command`, `shell-command-on-region` and
+  `dired-shell-command` ran in the directory mg was started in
 
 
 [v4.7][] - 2026-11-11

@@ -39,7 +39,8 @@ static int	 d_expunge(int, int);
 static int	 d_copy(int, int);
 static int	 d_del(int, int);
 static int	 d_rename(int, int);
-static int	 d_exec(int, struct buffer *, const char *, const char *, ...);
+static int	 d_exec(int, struct buffer *, const char *, const char *,
+		    const char *, ...);
 static int	 d_shell_command(int, int);
 static int	 d_create_directory(int, int);
 static int	 d_makename(struct line *, char *, size_t);
@@ -623,7 +624,10 @@ d_shell_command(int f, int n)
 	char		 command[512], fname[PATH_MAX], *bufp;
 	struct buffer	*bp;
 	struct mgwin	*wp;
-	char		 sname[NFILEN];
+	char		 sname[NFILEN], dir[NFILEN];
+
+	if (getbufcwd(dir, sizeof(dir)) != TRUE)
+		return (ABORT);
 
 	bp = bfind("*Shell Command Output*", TRUE);
 	if (bclear(bp) != TRUE)
@@ -641,7 +645,7 @@ d_shell_command(int f, int n)
 	if (bufp == NULL)
 		return (ABORT);
 
-	if (d_exec(0, bp, fname, "sh", "-c", command, NULL) != TRUE)
+	if (d_exec(0, bp, dir, fname, "sh", "-c", command, NULL) != TRUE)
 		return (ABORT);
 
 	if ((wp = popbuf(bp, WNONE)) == NULL)
@@ -652,12 +656,13 @@ d_shell_command(int f, int n)
 }
 
 /*
- * Pipe input file to cmd and insert the command's output in the
- * given buffer.  Each line will be prefixed with the given
- * number of spaces.
+ * Pipe input file to cmd, run in dir unless NULL, and insert the
+ * command's output in the given buffer.  Each line will be prefixed
+ * with the given number of spaces.
  */
 static int
-d_exec(int space, struct buffer *bp, const char *input, const char *cmd, ...)
+d_exec(int space, struct buffer *bp, const char *dir, const char *input,
+    const char *cmd, ...)
 {
 	char	 buf[BUFSIZ];
 	va_list	 ap;
@@ -726,6 +731,8 @@ d_exec(int space, struct buffer *bp, const char *input, const char *cmd, ...)
 		dup2(infd, STDIN_FILENO);
 		dup2(fds[1], STDOUT_FILENO);
 		dup2(fds[1], STDERR_FILENO);
+		if (dir != NULL && chdir(dir) == -1)
+			_exit(1);
 		if (execvp(argv[0], argv) == -1)
 			ewprintf("Can't exec %s: %s", argv[0], strerror(errno));
 		exit(1);
@@ -985,7 +992,7 @@ dired_(char *dname)
 	bp = bfind(dname, TRUE);
 	bp->b_flag |= BFREADONLY | BFIGNDIRTY;
 
-	if ((d_exec(2, bp, NULL, "ls", "-al", dname, NULL)) != TRUE)
+	if ((d_exec(2, bp, NULL, NULL, "ls", "-al", dname, NULL)) != TRUE)
 		return (NULL);
 
 	/* Find the line with ".." on it. */
